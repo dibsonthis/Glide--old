@@ -1,0 +1,7 @@
+ls = import["../../../dev_env/imports/list.gl"]
+
+values = 1..100 
+-> ls.map[[x] => { x / 100 }] 
+-> ls.filter[[x] => { x > 0.5 && x < 0.8 }]
+
+values -> print

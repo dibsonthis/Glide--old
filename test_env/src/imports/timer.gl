@@ -1,0 +1,7 @@
+time_it = [func] => {
+    start = time[]
+    func[]
+    end = time[]
+    duration = end - start
+    ret duration
+}

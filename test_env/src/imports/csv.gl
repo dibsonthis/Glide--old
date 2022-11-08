@@ -1,0 +1,29 @@
+ls = import["_imports/list.gl"]
+str = import["_imports/string.gl"]
+
+to_obj = [data] => {
+
+    if [data.length == ""] => {
+        ret []
+    }
+
+    data = data 
+    -> str.split["\n"]
+    -> ls.pop_f
+    -> [x] => { x.front = x.front -> str.split[","] ret x }
+    -> [x] => { x.rest = x.rest -> ls.filter[[elem] => { ret elem.length > 0 }] ret x}
+    -> [x] => { x.rest = x.rest -> ls.map[[elem] => { ret (elem -> str.split[","]) }] ret x }
+    -> [x] => {
+        _list = []
+        for [x.rest i value] => {
+            obj = @{}
+            for [value j v] => {
+                obj.[x.front.[j]] = v
+            }
+            _list = _list + obj
+        }
+        ret _list
+    }
+
+    ret data
+}

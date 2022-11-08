@@ -1,0 +1,289 @@
+
+map = [func _list] => {
+	copy = #_list
+	for [copy index] => {
+		copy.[index] = copy.[index] -> func
+	}
+	ret copy
+}
+
+map2 = [func _list] => {
+	copy = #_list
+	for [copy index] => {
+		copy.[index] = (copy.[index], index) -> func
+	}
+	ret copy
+}
+
+map3 = [func _list] => {
+	copy = #_list
+	for [copy index] => {
+		copy.[index] = (copy.[index], index, copy) -> func
+	}
+	ret copy
+}
+
+filter = [func _list] => {
+	new = []
+	for [_list index] => {
+		if [_list.[index] -> func] => {
+			if => {
+				type[_list.[index]] == "_list": { new = new + [_list.[index]]}
+				default: { new = new + _list.[index] }
+			}
+		}
+	}
+	ret new
+}
+
+filter2 = [func _list] => {
+	new = []
+	for [_list index] => {
+		if [(_list.[index], index) -> func] => {
+			new = new + _list.[index]
+		}
+	}
+	ret new
+}
+
+filter3 = [func _list] => {
+	new = []
+	for [_list index] => {
+		if [(_list.[index], index, _list) -> func] => {
+			new = new + _list.[index]
+		}
+	}
+	ret new
+}
+
+reduce = [func _list] => {
+	if [_list.length == 0] => {
+		ret 0
+	}
+
+	if [_list.length == 1] => {
+		ret _list.[0]
+	}
+
+	if [_list.length == 2] => {
+		ret (_list.[0], _list.[1]) -> func
+	}
+
+	x = _list.[0]
+	for [1..(_list.length - 1) index] => {
+		x = (x, _list.[index + 1]) -> func
+	}
+	ret x
+}
+
+zip = [func list_a list_b] => {
+	if [list_a.length != list_b.length] => {
+		ret []
+	}
+
+	copy = []
+	for [list_a index] => {
+		res = (list_a.[index], list_b.[index]) -> func
+		copy += res
+	}
+	ret copy
+}
+
+length = [_list] => {
+	ret _list.length
+}
+
+// should be a builtin
+insert = [pos item _list] => {
+	new = []
+	for [_list index] => {
+		if [index == pos] => {
+			new = new + item
+		}
+		new = new + _list.[index]
+	}
+	ret new
+}
+
+append = [item _list] => {
+	copy = #_list
+	copy = copy + item
+	ret copy
+}
+
+prepend = [item _list] => {
+	copy = #_list
+	copy = item + copy
+	ret copy
+}
+
+pop_f = [_list] => {
+	
+	if [_list.length == 0] => {
+		obj = @{
+			rest: []
+		}
+		ret obj
+	}
+
+	obj = @{
+		front: _list.[0]
+		rest: _list -> filter2[[x i] => {i != 0}]
+	}
+	ret obj
+}
+
+pop_b = [_list] => {
+	if [_list.length == 0] => {
+		obj = @{
+			rest: []
+		}
+		ret obj
+	}
+
+	last_index = _list.length - 1
+	obj = @{
+		back: _list.[last_index]
+		rest: _list -> filter2[[x i] => { i != last_index}]
+	}
+	ret obj
+}
+
+match = [a b] => {
+	if [a.length != b.length] => { ret false }
+	match_func = [a b] => { 
+		if [a == "_" || b == "_"] => { ret true } 
+		ret a == b 
+	}
+	ret (a, b) -> zip[match_func] -> reduce[&&]
+}
+
+create_iter = [start end step] => {
+	iter = @{
+		start: start
+		end: end
+		step: step
+		index: start
+	}
+
+	next = [iter] => {
+		iter.index = iter.index + iter.step
+		if [iter.index > iter.end] => {
+			iter.index = iter.end
+		}
+		ret iter
+	}
+
+	prev = [iter] => {
+		iter.index = iter.index - iter.step
+		if [iter.index < iter.start] => {
+			iter.index = iter.start
+		}
+		ret iter
+	}
+
+	obj = @{
+		iter: iter
+		next: next
+		prev: prev
+	}
+
+	ret obj
+}
+
+iter_to__list = [iter] => {
+	_list = []
+	iter.iter.index = iter.iter.start
+	while [iter.iter.index < iter.iter.end] => {
+		_list = _list + iter.iter.index
+		iter.iter -> iter.next
+	}
+	ret _list
+}
+
+index_of = [element x] => {
+    for[x] => {
+        if [_it == element] => {
+            ret _i
+        }
+    }
+
+    ret (-1)
+}
+
+at = [index _list] => {
+	_list.[index]
+}
+
+slice = [start end _list] => {
+    _list -> filter2[[x i] => {
+        i >= start && i <= end
+    }]
+}
+
+unique = [_list] => {
+    prev = @{}
+    unique_list = []
+    for [_list index item] => {
+        if [prev.[to_string[item]] == empty] => {
+            prev.[to_string[item]] = index
+            unique_list.[unique_list.length + 1] = item
+        }
+    }
+    ret unique_list
+}
+
+sort = [_list] => {
+    l = #_list
+    len = l.length
+    i = 1
+
+	to_sortable = [x] => {
+		if => {
+			type[x] == string: { ret (x.to_chars.[0] -> to_int) }
+			type[x] == object: { ret x._keys.length }
+			type[x] == list: { ret x.length }
+			default: { ret x }
+		}
+	}
+
+    while [i < len] => {
+        x = l.[i]
+        j = i - 1
+        while [j >= 0 && to_sortable[l.[j]] > to_sortable[x]] => {
+            l.[j + 1] = l.[j]
+            j = j - 1
+        }
+        l.[j+1] = x
+        i = i + 1
+    }
+
+    ret l
+}
+
+sort_by = [key _list] => {
+    l = #_list
+    len = l.length
+    i = 1
+
+	keyed = [x] => {
+		if => {
+			x == empty: { ret x }
+			default: { ret key[x] }
+		}
+	}
+
+    while [i < len] => {
+        x = l.[i]
+        j = i - 1
+
+        while [j >= 0 && keyed[l.[j]] > keyed[x]] => {
+            l.[j + 1] = l.[j]
+            j = j - 1
+        }
+        l.[j+1] = x
+        i = i + 1
+    }
+
+    ret l
+}

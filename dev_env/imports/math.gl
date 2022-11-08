@@ -1,0 +1,92 @@
+fib = [n] => {
+
+    if [type[n] != "int"] => {
+        print["\nError in 'fib': n must be of type 'int' - returning 0\n"]
+        ret 0
+    }
+	if [n == 0] => {
+		ret 0
+	}
+    if [n <= 2] => {
+        ret 1
+    }
+
+    ret fib[n-1] + fib[n-2]
+}
+
+fib2 = [prev n] => {
+	str_n = n -> to_string
+
+	if [prev.[str_n] != empty] => {
+		ret prev.[str_n]
+	}
+
+	result = empty
+
+	if => {
+		n == 0: { result = 0 }
+		n <= 2: { result = 1 }
+		default: {
+			result = fib2[prev n - 1] + fib2[prev n - 2]
+		}
+	}
+
+	prev.[str_n] = result
+	ret result
+}
+
+pow = [exponent base] => {
+    if [exponent < 0] => {
+        ret (1 / ((-exponent, base) -> pow))
+    }
+    num = 1
+    while [exponent > 0] => {
+        num = num * base
+        exponent = exponent - 1
+    }
+    ret num
+}
+
+pow2 = [prev exponent base] => {
+
+    key = to_string[exponent] + ":" + to_string[base]
+    if [prev.[key] != empty] => {
+        print["Found for " key "\n"]
+        ret prev.[key]
+    }
+
+    if [exponent < 0] => {
+        result = (1 / ((-exponent, base) -> pow))
+        prev.[key] = result
+        ret result
+    }
+    num = 1
+    while [exponent > 0] => {
+        num = num * base
+        exponent = exponent - 1
+    }
+    prev.[key] = num
+    ret num
+}
+
+abs = [n] => {
+    if [n < 0] => {
+        ret (-n)
+    }
+    ret n
+}
+
+floor = [n] => {
+    if [n < 0] => {
+        ret n + (abs[n] % 1) - 1
+    }
+    ret n - (n % 1)
+}
+
+ceil = [n] => {
+    if [n == 0] => {
+        ret 0
+    }
+    n = floor[n]
+    ret n + 1
+}

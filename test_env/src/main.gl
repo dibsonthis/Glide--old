@@ -1,0 +1,8 @@
+ls = import["src/imports/list.gl"]
+
+1..100 
+-> ls.map[*2] 
+-> ls.filter[[x] => { x >= 50 && x < 80 }] 
+-> print
+
+print["\n\nHello world, welcome to Glide!\n\n"]
