@@ -1,0 +1,113 @@
+ls = import["../../../dev_env/imports/list.gl"]
+
+chars = [string] => {
+	ret string.to_chars
+}
+
+upper = [string] => {
+	if [string == ""] => {
+		ret ""
+	}
+
+	_list = string -> chars
+	for [_list i c] => {
+		if => {
+			c == "a": { _list.[i] = "A" }
+			c == "b": { _list.[i] = "B" }
+			c == "c": { _list.[i] = "C" }
+			c == "d": { _list.[i] = "D" }
+			c == "e": { _list.[i] = "E" }
+			c == "f": { _list.[i] = "F" }
+			c == "g": { _list.[i] = "G" }
+			c == "h": { _list.[i] = "H" }
+			c == "i": { _list.[i] = "I" }
+			c == "j": { _list.[i] = "J" }
+			c == "k": { _list.[i] = "K" }
+			c == "l": { _list.[i] = "L" }
+			c == "m": { _list.[i] = "M" }
+			c == "n": { _list.[i] = "N" }
+			c == "o": { _list.[i] = "O" }
+			c == "p": { _list.[i] = "P" }
+			c == "q": { _list.[i] = "Q" }
+			c == "r": { _list.[i] = "R" }
+			c == "s": { _list.[i] = "S" }
+			c == "t": { _list.[i] = "T" }
+			c == "u": { _list.[i] = "U" }
+			c == "v": { _list.[i] = "V" }
+			c == "w": { _list.[i] = "W" }
+			c == "x": { _list.[i] = "X" }
+			c == "y": { _list.[i] = "Y" }
+			c == "z": { _list.[i] = "Z" }
+		}
+	}
+
+	_list = _list -> ls.reduce[+]
+	ret _list
+}
+
+lower = [string] => {
+	if [string == ""] => {
+		ret ""
+	}
+	
+	_list = string -> chars
+	for [_list i c] => {
+		if => {
+			c == "A": { _list.[i] = "a" }
+			c == "B": { _list.[i] = "b" }
+			c == "C": { _list.[i] = "c" }
+			c == "D": { _list.[i] = "d" }
+			c == "E": { _list.[i] = "e" }
+			c == "F": { _list.[i] = "f" }
+			c == "G": { _list.[i] = "g" }
+			c == "H": { _list.[i] = "h" }
+			c == "I": { _list.[i] = "i" }
+			c == "J": { _list.[i] = "j" }
+			c == "K": { _list.[i] = "k" }
+			c == "L": { _list.[i] = "l" }
+			c == "M": { _list.[i] = "m" }
+			c == "N": { _list.[i] = "n" }
+			c == "O": { _list.[i] = "o" }
+			c == "P": { _list.[i] = "p" }
+			c == "Q": { _list.[i] = "q" }
+			c == "R": { _list.[i] = "r" }
+			c == "S": { _list.[i] = "s" }
+			c == "T": { _list.[i] = "t" }
+			c == "U": { _list.[i] = "u" }
+			c == "V": { _list.[i] = "v" }
+			c == "W": { _list.[i] = "w" }
+			c == "X": { _list.[i] = "x" }
+			c == "Y": { _list.[i] = "y" }
+			c == "Z": { _list.[i] = "z" }
+		}
+	}
+
+	_list = _list -> ls.reduce[+]
+	ret _list
+}
+
+split = [delim x] => {
+	if [delim == ""] => {
+		ret x -> chars
+	}
+	
+    new = []
+    _list = x -> chars
+    s = ""
+
+    for[_list i c] => {
+        if => {
+            c == delim: {
+                new = new + s
+                s = ""
+            }
+            default: {
+                s = s + c
+            }
+        }
+    }
+
+    new = new + s
+
+    ret new
+}

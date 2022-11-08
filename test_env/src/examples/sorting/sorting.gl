@@ -1,0 +1,37 @@
+ls = import["src/imports/list.gl"]
+obj = import["src/imports/object.gl"]
+
+x = [
+    @{
+        name: "John"
+        age: 24
+        score: 89
+    }
+
+    @{
+        name: "Adam"
+        age: 45
+        score: 45
+    }
+
+    @{
+        name: "Blake"
+        age: 16
+        score: 76
+    }
+
+    @{
+        name: "Steve"
+        age: 46
+        score: 57
+    }
+]
+
+t = @{
+    age: int
+    name: string
+    score: int
+}
+
+sorted = x -> ls.sort_by[[x] => { x.age }]
+print[sorted "\n\n"]

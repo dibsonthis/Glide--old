@@ -37,9 +37,21 @@ To run, make sure to select: ```C/C++: g++.exe build repl``` (Windows) or ```C/C
 
 After compiling the interpreter, you should copy and paste the executable inside ```test_env```. This directory is where you can test your newly created REPL. You can run the REPL using ```./glide-repl```. The REPL is probably the fastest way to prototype Glide code.
 
+## Standard Lib
+
+There are some pre-built imports that are heavily used (by me), those can for the time being be referred to as the "standard library".
+
+## Examples
+
+There are some Glide examples in the ```test_env/src/examples``` directory. All you have to do is run those files.
+
 ## Glide outside of the repo
 
 After you've compiled the interpreter/REPL, feel free to move the executables to any other location. I personally have my own directory that I use as an isolated Glide test environment.
+
+## Syntax highlighting
+
+Syntax highlighting is currently non-existent. Best thing to do is mark the file as a C file in VScode, at least it'll look prettier.
 
 # Current status of Glide
 

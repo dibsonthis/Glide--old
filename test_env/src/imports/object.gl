@@ -1,0 +1,45 @@
+get = [property _object] => {
+    ret _object.[property]
+}
+
+rem = [property _object] => {
+    delete_prop[_object property]
+    ret _object
+}
+
+same_shape = [a b] => {
+	shape_a = shape[a]
+	shape_b = shape[b]
+	if [shape_a.length != shape_b.length] => {
+		ret false
+	}
+	for [shape_a.keys index key] => {
+		if [key != shape_b.keys.[index]] => {
+			ret false
+		}
+	}
+	ret true
+}
+
+same_obj = [a b] => {
+    if [address[a] == address[b]] => {
+        ret true
+    }
+    ret false
+}
+
+equal = [a b] => {
+    if [(a, b) -> same_obj] => {
+        ret true
+    }
+
+    shape_a = shape[a]
+	shape_b = shape[b]
+
+    for [shape_a.keys index key] => {
+		if [key != shape_b.keys.[index] || a.[key] != b.[key]] => {
+			ret false
+		}
+	}
+    ret true
+}

@@ -1,0 +1,24 @@
+ls = import["src/imports/list.gl"]
+str = import["src/imports/string.gl"]
+csv = import["src/imports/csv.gl"]
+
+start = time[]
+
+data = read["src/examples/csv/people.csv"]
+data = data 
+    -> csv.to_obj
+    -> ls.map[[x] => { x.id = to_int[x.id] x }]
+    -> ls.filter[[x] => { x.profession == "firefighter" && x.id > 300 && x.id <= 350 }]
+    -> ls.map[[x] => { x.firstname + " " + x.lastname }]
+    -> ls.sort_by[[x] => { x.to_chars.[0] -> to_int }]
+    -> ls.reduce[[a b] => { a + ", " + b }]
+
+file_name = "src/examples/csv/people.txt"
+// Clear file
+write[file_name ""]
+
+append[file_name to_string[data]]
+
+end = time[]
+
+append[file_name ("\n\nProgram took " + (end - start) + "ms to run\n")]

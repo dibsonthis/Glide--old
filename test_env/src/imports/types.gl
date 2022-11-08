@@ -1,5 +1,5 @@
-ls = import["_imports/list.gl"]
-obj = import["_imports/object.gl"]
+ls = import["src/imports/list.gl"]
+obj = import["src/imports/object.gl"]
 
 get_type = [_object] => {
     _type = type[_object]

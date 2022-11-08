@@ -1,0 +1,26 @@
+math = import["src/imports/math.gl"]
+
+file_name = "src/examples/fib/fib.txt"
+write[file_name ""]
+
+num = 25
+
+start = time[]
+
+res1 = math.fib[num]
+
+duration1 = time[] - start
+
+append[file_name "Memoization test: Fib\n"]
+
+append[file_name "\nfib[" + num + "] = " + res1 + "\nDuration: " + duration1 + "ms\n"]
+
+start = time[]
+
+res2 = math.fib2[@{} num]
+
+duration2 = time[] - start
+
+append[file_name "\nfib2[" + num + "] = " + res2 + "\nDuration: " + duration2 + "ms\n"]
+
+append[file_name "\nDifference in time: " + (duration1 - duration2)/60000 + " mins"]

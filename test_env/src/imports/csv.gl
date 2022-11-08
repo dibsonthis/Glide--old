@@ -1,5 +1,5 @@
-ls = import["_imports/list.gl"]
-str = import["_imports/string.gl"]
+ls = import["src/imports/list.gl"]
+str = import["src/imports/string.gl"]
 
 to_obj = [data] => {
 
