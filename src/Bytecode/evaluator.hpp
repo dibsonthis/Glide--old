@@ -2,6 +2,7 @@
 #include <chrono>
 #include <sstream>
 #include <fstream>
+#include <cmath>
 #include "generator.hpp"
 #include "../Lexer.hpp"
 #include "../Parser.hpp"

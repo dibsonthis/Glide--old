@@ -1,5 +1,4 @@
 ls = import["src/imports/list.gl"]
-obj = import["src/imports/object.gl"]
 
 x = [
     @{
@@ -27,11 +26,6 @@ x = [
     }
 ]
 
-t = @{
-    age: int
-    name: string
-    score: int
-}
+sorted = x -> ls.sort_by[[x] => { x.name.to_chars.[0] -> to_int }]
 
-sorted = x -> ls.sort_by[[x] => { x.age }]
-print[sorted "\n\n"]
+write["src/examples/sorting/sorting.txt" sorted -> to_string]
