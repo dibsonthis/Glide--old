@@ -2354,12 +2354,13 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
 void Bytecode_Evaluator::eval_build_function(Bytecode op, std::shared_ptr<StackFrame>& frame)
 {
     // We capture local scope upon definition
+    auto function = std::make_shared<StackObject>(*op.data);
     for (auto element : frame->locals)
     {
-        op.data->FUNCTION.closure[element.first] = element.second;
+        function->FUNCTION.closure[element.first] = element.second;
     }
 
-    frame->stack.push_back(op.data);
+    frame->stack.push_back(function);
 }
 
 void Bytecode_Evaluator::eval_call_function(Bytecode op, std::shared_ptr<StackFrame>& frame)

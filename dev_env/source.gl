@@ -1,9 +1,3 @@
-ls = import["../../../dev_env/imports/list.gl"]
-types = import["../../../dev_env/imports/types.gl"]
-
-values = 1..100 
--> ls.map[[x] => { x / 100 }] 
--> ls.filter[[x] => { x > 0.5 && x < 0.8 }]
-
-values -> print
-values -> types.get_type -> print
+for [1..10 i] => {
+    i -> [x] => { print[i * 2] }
+}
