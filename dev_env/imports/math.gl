@@ -1,3 +1,5 @@
+ls = import["../../../dev_env/imports/list.gl"]
+
 fib = [n] => {
 
     if [type[n] != "int"] => {
@@ -89,4 +91,27 @@ ceil = [n] => {
     }
     n = floor[n]
     ret n + 1
+}
+
+min = [a b] => {
+    if [a < b] => {
+        ret a
+    }
+    ret b
+}
+
+max = [a b] => {
+    if [a > b] => {
+        ret a
+    }
+    ret b
+}
+
+bin_to_int = [bin_string] => {
+    -(bin_string.to_chars)
+    -> ls.map3[[x i l] => { 
+        x = x -> to_int
+        x * pow[i 2]
+        }] 
+    -> ls.reduce[+]
 }

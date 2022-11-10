@@ -1,5 +1,5 @@
 ls = import["../../../dev_env/imports/list.gl"]
-obj = import["../../../dev_env/imports/object.gl"]
+obj = import["imports/object.gl"]
 
 get_type = [_object] => {
     _type = type[_object]
