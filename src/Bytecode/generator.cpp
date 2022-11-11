@@ -233,45 +233,47 @@ std::vector<Bytecode> Bytecode_Generator::gen_arrow(std::shared_ptr<Node> node)
 
 std::vector<Bytecode> Bytecode_Generator::gen_dot(std::shared_ptr<Node> node)
 {
+    auto dot = std::make_shared<Node>(*node);
+
     // x.[4], x.[y]
-    if (is_type(node->right, {NodeType::LIST}) && node->right->LIST.nodes.size() == 1)
+    if (is_type(dot->right, {NodeType::LIST}) && dot->right->LIST.nodes.size() == 1)
     {
-        instructions = gen_bytecode(node->left);
-        node->right = node->right->LIST.nodes[0];
+        instructions = gen_bytecode(dot->left);
+        dot->right = dot->right->LIST.nodes[0];
     }
     // x.length
-    else if (is_type(node->right, {NodeType::ID}))
+    else if (is_type(dot->right, {NodeType::ID}))
     {
-        instructions = gen_bytecode(node->left);
-        node->right->type = NodeType::STRING;
-        node->right->STRING.value = node->right->ID.value;
+        instructions = gen_bytecode(dot->left);
+        dot->right->type = NodeType::STRING;
+        dot->right->STRING.value = dot->right->ID.value;
     }
-    else if (is_type(node->right, {NodeType::FUNC_CALL}))
+    else if (is_type(dot->right, {NodeType::FUNC_CALL}))
     {
-        for (auto arg : node->right->FUNC_CALL.args)
+        for (auto arg : dot->right->FUNC_CALL.args)
         {
             instructions = gen_bytecode(arg);
         }
 
-        instructions = gen_bytecode(node->left);
-        auto name = so_make_string(node->right->FUNC_CALL.name->ID.value);
+        instructions = gen_bytecode(dot->left);
+        auto name = so_make_string(dot->right->FUNC_CALL.name->ID.value);
         add_instruction(Bytecode(OpType::LOAD_CONST, name));
         add_instruction(Bytecode(OpType::DOT));
-        add_instruction(Bytecode(OpType::CALL_FUNCTION, node->right->FUNC_CALL.args.size()));
+        add_instruction(Bytecode(OpType::CALL_FUNCTION, dot->right->FUNC_CALL.args.size()));
         return instructions;
     }
     else
     {
-        auto error = error_message(node, file_name, "Invalid right operand of operator '.'");
+        auto error = error_message(dot, file_name, "Invalid right operand of operator '.'");
         errors.push_back(error);
         return instructions;
     }
 
-    instructions = gen_bytecode(node->right);
-    auto dot = Bytecode(OpType::DOT);
-    dot.line = node->line;
-    dot.column = node->column;
-    add_instruction(dot);
+    instructions = gen_bytecode(dot->right);
+    auto dot_op = Bytecode(OpType::DOT);
+    dot_op.line = node->line;
+    dot_op.column = node->column;
+    add_instruction(dot_op);
     return instructions;
 }
 

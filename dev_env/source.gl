@@ -1,2 +1,8 @@
-print[["hello" "world"]]
-print["\n goodbye"]
+a = @{ 
+    name: "Sarah"
+}
+
+n = "name"
+
+a.name += " Connor"
+a
