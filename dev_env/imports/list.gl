@@ -298,8 +298,9 @@ contains = [value _list] => {
 }
 
 join = [delim _list] => {
-	_list -> reduce[[a b] => { a + b}]
+	_list -> reduce[[a b] => { a + delim + b }]
 }
+
 
 count = [value _list] => {
 	res = 0

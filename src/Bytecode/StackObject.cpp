@@ -33,7 +33,17 @@ std::string StackObject::repr()
             std::string repr = "[ ";
             for (auto elem : LIST.objects)
             {
-                repr += (elem->repr() + " ");
+                std::string elem_repr = "";
+                if (elem->type == SO_Type::STRING)
+                {
+                    elem_repr = "\"" + elem->repr() + "\"";
+                }
+                else
+                {
+                    elem_repr = elem->repr();
+                }
+                
+                repr += (elem_repr + " ");
             }
             repr += "]";
             return repr;
