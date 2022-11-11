@@ -1,8 +1,5 @@
 a = @{ 
-    name: "Sarah"
 }
 
-n = "name"
-
-a.name += " Connor"
+a.count += 10
 a
