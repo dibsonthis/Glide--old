@@ -98,7 +98,7 @@ split = [delim x] => {
     for[_list i c] => {
         if => {
             c == delim: {
-                new = new + s
+                new.[new.length] = s
                 s = ""
             }
             default: {
@@ -107,7 +107,16 @@ split = [delim x] => {
         }
     }
 
-    new = new + s
+    new.[new.length] = s
 
     ret new
+}
+
+is_digit = [c] => {
+	digits = ["0" "1" "2" "3" "4" "5" "6" "7" "8" "9"]
+	if [digits -> ls.contains[c]] => {
+		ret true
+	}
+
+	ret false
 }
