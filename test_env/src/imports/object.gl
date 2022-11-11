@@ -43,3 +43,14 @@ equal = [a b] => {
 	}
     ret true
 }
+
+items = [_object] => {
+	iter = []
+	for[_object._keys index key] => {
+		iter.[iter.length] = @{
+			key: key
+			value: _object.[key]
+		}
+	}
+	ret iter
+}
