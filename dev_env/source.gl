@@ -1,5 +1,10 @@
-add = [a b] => {
-    a + b
+types = import["../../../dev_env/imports/types.gl"]
+
+
+add = [a b c] => {
+    a + b + c
 }
 
-shape[5 -> add].args.length
+add_i = types.func_t[add @{ a: int b: int c: int ret: (int, float) }]
+
+10 -> (5 -> add_i[5])

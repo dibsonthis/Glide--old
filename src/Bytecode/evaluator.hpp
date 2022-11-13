@@ -18,8 +18,10 @@ struct StackFrame
         {"string", so_make_string("string")},
         {"object", so_make_string("object")},
         {"list", so_make_string("list")},
-        {"function", so_make_string("function")},
+        {"list", so_make_string("list")},
+        {"comma_list", so_make_string("comma_list")},
         {"empty_type", so_make_string("empty")},
+        {"function", so_make_string("function")},
     };
     std::vector<std::shared_ptr<StackObject>> stack;
 };

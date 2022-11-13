@@ -1,5 +1,5 @@
 ls = import["../../../dev_env/imports/list.gl"]
-obj = import["imports/object.gl"]
+obj = import["../../../dev_env/imports/object.gl"]
 
 get_type = [_object] => {
     _type = type[_object]
@@ -24,8 +24,67 @@ get_type = [_object] => {
 
 is_type = [_type value] => {
     calculated_type = type[value]
-    if [calculated_type == object] => {
+    if [calculated_type == object && type[_type] == object] => {
         ret (value -> get_type, _type) -> obj.equal
     }
+    if [calculated_type == list] => {
+        ret (value -> get_type, _type) -> ls.match
+    }
     ret (calculated_type == _type)
+}
+
+func_t = [func _type args] => {
+
+    name = shape[func].name
+    func_args = shape[func].args
+    func_params = shape[func].params
+
+    arg_index = func_args.length
+
+    if => {
+        type[args] == list: {
+            for [args i arg] => {
+                param_key = func_params.[i]
+                if [!(arg -> is_type[_type.[param_key]])] => {
+                    print["TypeError in function '" name "' - expected argument '" param_key "' in position " i " to be of type '" _type.[param_key] "' but received argument of type '" arg -> get_type "'\n"]
+                    ret
+                }
+                func = arg -> func
+            }
+        }
+        default: {
+            param_key = func_params.[arg_index]
+            if [!(args -> is_type[_type.[param_key]])] => {
+                    print["TypeError in function '" name "' - expected argument '" param_key "' in position " arg_index " to be of type '" _type.[param_key] "' but received argument of type '" args -> get_type "'\n"]
+                    ret
+                }
+            func = args -> func
+        }
+    }
+
+    if [type[func] != function && _type.ret != empty] => {
+        if [type[_type.ret] == comma_list] => {
+
+            pass_check = false
+            for [1..(_type.ret.length) i] => {
+                if [func -> is_type[_type.ret.[i]]] => {
+                    pass_check = true
+                }
+            }
+
+            if [pass_check] => {
+                ret func
+            }
+
+            print["TypeError in function '" name "' - expected return value to be of type '" _type.ret "' but returned value is of type '" func -> get_type "'\n"]
+            ret
+        }
+
+        if [!(func -> is_type[_type.ret])] => {
+            print["TypeError in function '" name "' - expected return value to be of type '" _type.ret "' but returned value is of type '" func -> get_type "'\n"]
+            ret
+        }
+    }
+
+    ret func_t[var[name func] _type]
 }

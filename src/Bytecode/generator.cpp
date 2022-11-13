@@ -436,6 +436,7 @@ std::vector<Bytecode> Bytecode_Generator::gen_function_call(std::shared_ptr<Node
         || function_name->STRING.value == "import"
         || function_name->STRING.value == "address"
         || function_name->STRING.value == "shape"
+        || function_name->STRING.value == "var"
         || function_name->STRING.value == "delete"
         || function_name->STRING.value == "delete_prop"
         || function_name->STRING.value == "out"
@@ -447,6 +448,8 @@ std::vector<Bytecode> Bytecode_Generator::gen_function_call(std::shared_ptr<Node
         || function_name->STRING.value == "write"
         || function_name->STRING.value == "append"
         || function_name->STRING.value == "frame"
+        || function_name->STRING.value == "_update_function_params"
+        || function_name->STRING.value == "clear_args"
         )
     {
         add_instruction(Bytecode(OpType::LOAD_BUILTIN, function_name));
@@ -700,6 +703,7 @@ std::vector<Bytecode> Bytecode_Generator::gen_bytecode(std::shared_ptr<Node> nod
             || node->ID.value == "import"
             || node->ID.value == "address"
             || node->ID.value == "shape"
+            || node->ID.value == "var"
             || node->ID.value == "delete"
             || node->ID.value == "delete_prop"
             || node->ID.value == "out"
@@ -711,6 +715,8 @@ std::vector<Bytecode> Bytecode_Generator::gen_bytecode(std::shared_ptr<Node> nod
             || node->ID.value == "write"
             || node->ID.value == "append"
             || node->ID.value == "frame"
+            || node->ID.value == "_update_function_params"
+            || node->ID.value == "clear_args"
             )
         {
             load = Bytecode(OpType::LOAD_BUILTIN, data);
