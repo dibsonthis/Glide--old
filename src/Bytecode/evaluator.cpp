@@ -396,7 +396,8 @@ void Bytecode_Evaluator::eval_store_at(std::shared_ptr<StackFrame>& frame)
 
     auto right = frame->stack.back();
     frame->stack.pop_back();
-    auto& left = frame->stack.back();
+    // does this need to be a & ref?
+    auto left = frame->stack.back();
     frame->stack.pop_back();
     auto value = frame->stack.back();
     frame->stack.pop_back();

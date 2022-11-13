@@ -1,5 +1,3 @@
-add = [a b] => {
-    a + b
-}
-
-shape[5 -> add].args.length
+x = @{ name: "f" }
+x.name = "g"
+x
