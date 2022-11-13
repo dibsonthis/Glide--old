@@ -1506,6 +1506,24 @@ void Bytecode_Evaluator::eval_dot(std::shared_ptr<StackFrame>& frame)
 
     }
 
+    if (left->type == SO_Type::COMMA_LIST && right->type == SO_Type::INT)
+    {
+        int list_length = left->COMMA_LIST.objects.size();
+        int index = right->INT.value;
+        if (index >= list_length || index < 0)
+        {
+            res = so_make_empty();
+            frame->stack.push_back(res);
+            return;
+        }
+        else
+        {
+            auto& val = left->COMMA_LIST.objects[index];
+            frame->stack.push_back(val);
+            return;
+        }
+    }
+
     if (left->type == SO_Type::LIST && right->type == SO_Type::STRING)
     {
         // accessing list built-in methods
@@ -1519,6 +1537,23 @@ void Bytecode_Evaluator::eval_dot(std::shared_ptr<StackFrame>& frame)
         }
         
         make_error("Property '" + right->STRING.value + "' does not exist on type 'list'");
+        exit();
+        return;
+    }
+
+     if (left->type == SO_Type::COMMA_LIST && right->type == SO_Type::STRING)
+    {
+        // accessing list built-in methods
+        if (right->STRING.value == "length")
+        {
+            int length = left->COMMA_LIST.objects.size();
+            res->type = SO_Type::INT;
+            res->INT.value = length;
+            frame->stack.push_back(res);
+            return;
+        }
+        
+        make_error("Property '" + right->STRING.value + "' does not exist on type 'comma_list'");
         exit();
         return;
     }
@@ -2039,6 +2074,28 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         return;
     }
 
+    if (function->FUNCTION.name == "clear_args")
+    {
+        auto args = function->FUNCTION.arguments;
+        if (args.size() != 1)
+        {
+            make_error("Builtin function 'clear_args' expects 2 argument but " 
+            + std::to_string(args.size()) + " were provided");
+            exit();
+            return;
+        }
+
+        if (args[0]->type != SO_Type::FUNCTION)
+        {
+            make_error("Builtin function 'clear_args' expects an argument of type 'function'");
+            exit();
+            return;
+        }
+
+        args[0]->FUNCTION.arguments.clear();
+        frame->stack.push_back(args[0]);
+    }
+
     if (function->FUNCTION.name == "_update_function_params")
     {
         auto args = function->FUNCTION.arguments;
@@ -2247,6 +2304,33 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         return;
     }
 
+    if (function->FUNCTION.name == "var")
+    {
+        auto args = function->FUNCTION.arguments;
+        if (args.size() != 2)
+        {
+            make_error("Builtin function 'var' expects 2 argument but " 
+            + std::to_string(args.size()) + " were provided");
+            exit();
+            return;
+        }
+
+        if (args[0]->type != SO_Type::STRING)
+        {
+            make_error("Builtin function 'create' expects a variable name");
+            exit();
+            return;
+        }
+
+        frame->locals[args[0]->STRING.value] = args[1];
+        if (args[1]->type == SO_Type::FUNCTION)
+        {
+            args[1]->FUNCTION.name = args[0]->STRING.value;
+        }
+        frame->stack.push_back(args[1]);
+        return;
+    }
+
     if (function->FUNCTION.name == "delete")
     {
         auto args = function->FUNCTION.arguments;
@@ -2448,6 +2532,7 @@ void Bytecode_Evaluator::eval_build_function(Bytecode op, std::shared_ptr<StackF
 {
     // We capture local scope upon definition
     auto function = std::make_shared<StackObject>(*op.data);
+
     for (auto element : frame->locals)
     {
         function->FUNCTION.closure[element.first] = element.second;
@@ -2513,19 +2598,10 @@ void Bytecode_Evaluator::eval_call_function(Bytecode op, std::shared_ptr<StackFr
         return;
     }
 
-    if (arguments.size() > parameters.size())
-    {
-        make_error("Function '" + name + "' expects " + std::to_string(parameters.size()) 
-            + " argument(s) but " + std::to_string(arguments.size()) 
-            + " were provided.");
+    auto param_count = parameters.size();
+    auto arg_count = arguments.size();
 
-        exit();
-        return;
-    }
-
-    // Create curried function and push back on stack
-
-    if (arguments.size() < parameters.size())
+    if (arg_count < param_count)
     {
         frame->stack.push_back(function);
         return;
@@ -2533,11 +2609,6 @@ void Bytecode_Evaluator::eval_call_function(Bytecode op, std::shared_ptr<StackFr
 
     auto function_frame = std::make_shared<StackFrame>();
     function_frame->outer_frame = frame;
-
-    function_frame->locals["_" + name] = so_make_object();
-    function_frame->locals["_" + name]->OBJECT.properties["name"] = so_make_string(name);
-    function_frame->locals["_" + name]->OBJECT.properties["args"] = so_make_list();
-    function_frame->locals["_" + name]->OBJECT.properties["params"] = so_make_list();
 
     for (auto elem : function->FUNCTION.closure)
     {
@@ -2551,16 +2622,42 @@ void Bytecode_Evaluator::eval_call_function(Bytecode op, std::shared_ptr<StackFr
         }
     }
 
-    for (int i = 0; i < parameters.size(); i++)
+    function_frame->locals["_args"] = so_make_list();
+
+    if (param_count == 0)
     {
-        function_frame->locals[parameters[i]] = arguments[i];
-        function_frame->locals["_" + name]->OBJECT.properties["args"]->LIST.objects.push_back(arguments[i]);
-        function_frame->locals["_" + name]->OBJECT.properties["params"]->LIST.objects.push_back(so_make_string(parameters[i]));
+        for (int i = 0; i < arguments.size(); i++)
+        {
+            function_frame->locals["_args"]->LIST.objects.push_back(arguments[i]);
+        }
+    }
+    else
+    {
+        for (int i = 0; i < arguments.size(); i++)
+        {
+            if (i == param_count)
+            {
+                function_frame->locals[parameters[param_count-1]] = so_make_list();
+                function_frame->locals[parameters[param_count-1]]->LIST.objects.push_back(arguments[i-1]);
+                function_frame->locals[parameters[param_count-1]]->LIST.objects.push_back(arguments[i]);
+                function_frame->locals["_args"]->LIST.objects.push_back(arguments[i]);
+            }
+            else if (i > parameters.size())
+            {
+                function_frame->locals[parameters[param_count-1]]->LIST.objects.push_back(arguments[i]);
+                function_frame->locals["_args"]->LIST.objects.push_back(arguments[i]);
+            }
+            else
+            {
+                function_frame->locals[parameters[i]] = arguments[i];
+                function_frame->locals["_args"]->LIST.objects.push_back(arguments[i]);
+            }
+        }
     }
 
     Bytecode_Evaluator evaluator(function->FUNCTION.instructions);
     evaluator.repl = repl;
-    evaluator.file_name = file_name;
+    evaluator.file_name = name;
     evaluator.evaluate(function_frame);
 
     function_frame->locals.clear();
@@ -2767,19 +2864,8 @@ void Bytecode_Evaluator::eval_arrow(std::shared_ptr<StackFrame>& frame)
             return;
         }
 
-        // check if too many args
-
         auto arg_count = right->FUNCTION.arguments.size();
         auto param_count = right->FUNCTION.parameters.size();
-
-        if (arg_count > param_count)
-        {
-            make_error("Function '" + right->FUNCTION.name + "' expects " 
-            + std::to_string(param_count) + " arguments but " + std::to_string(arg_count) 
-            + " were provided");
-            exit();
-            return;
-        }
 
         // check if not enough arguments to call
 
@@ -2796,11 +2882,6 @@ void Bytecode_Evaluator::eval_arrow(std::shared_ptr<StackFrame>& frame)
 
         auto name = right->FUNCTION.name;
 
-        function_frame->locals["_" + name] = so_make_object();
-        function_frame->locals["_" + name]->OBJECT.properties["name"] = so_make_string(name);
-        function_frame->locals["_" + name]->OBJECT.properties["args"] = so_make_list();
-        function_frame->locals["_" + name]->OBJECT.properties["params"] = so_make_list();
-
         for (auto elem : right->FUNCTION.closure)
         {
             function_frame->locals[elem.first] = std::make_shared<StackObject>(*elem.second);
@@ -2809,15 +2890,41 @@ void Bytecode_Evaluator::eval_arrow(std::shared_ptr<StackFrame>& frame)
         auto parameters = right->FUNCTION.parameters;
         auto arguments = right->FUNCTION.arguments;
 
-        for (int i = 0; i < parameters.size(); i++)
+        function_frame->locals["_args"] = so_make_list();
+
+        if (param_count == 0)
         {
-            function_frame->locals[parameters[i]] = arguments[i];
-            function_frame->locals["_" + name]->OBJECT.properties["args"]->LIST.objects.push_back(arguments[i]);
-            function_frame->locals["_" + name]->OBJECT.properties["params"]->LIST.objects.push_back(so_make_string(parameters[i]));
+            for (int i = 0; i < arguments.size(); i++)
+            {
+                function_frame->locals["_args"]->LIST.objects.push_back(arguments[i]);
+            }
+        }
+        else
+        {
+            for (int i = 0; i < arguments.size(); i++)
+            {
+                if (i == param_count)
+                {
+                    function_frame->locals[parameters[param_count-1]] = so_make_list();
+                    function_frame->locals[parameters[param_count-1]]->LIST.objects.push_back(arguments[i-1]);
+                    function_frame->locals[parameters[param_count-1]]->LIST.objects.push_back(arguments[i]);
+                    function_frame->locals["_args"]->LIST.objects.push_back(arguments[i]);
+                }
+                else if (i > parameters.size())
+                {
+                    function_frame->locals[parameters[param_count-1]]->LIST.objects.push_back(arguments[i]);
+                    function_frame->locals["_args"]->LIST.objects.push_back(arguments[i]);
+                }
+                else
+                {
+                    function_frame->locals[parameters[i]] = arguments[i];
+                    function_frame->locals["_args"]->LIST.objects.push_back(arguments[i]);
+                }
+            }
         }
 
         Bytecode_Evaluator evaluator(right->FUNCTION.instructions);
-        evaluator.file_name = file_name;
+        evaluator.file_name = name;
         evaluator.repl = repl;
         evaluator.evaluate(function_frame);
 

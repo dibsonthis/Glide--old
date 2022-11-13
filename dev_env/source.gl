@@ -1,37 +1,10 @@
 types = import["../../../dev_env/imports/types.gl"]
 
-function_t = [func _type] => {
-    f = [] => {
-        f_info = frame[].locals._f
-        args = f_info.args
-        params = f_info.params
 
-        for [f_info.args i arg] => {
-            param_key = params.[i]
-            if [!(arg -> types.is_type[_type.[param_key]])] => {
-                print["TypeError: Function '" f_info.name "' expects argument " params.[i] " (at position " i ") to be of type '" _type.[param_key] "' but received argument of type '" types.get_type[arg] "'\n"]
-                ret empty
-            }
-            func = arg -> func
-        }
-
-        if [type[func] != function] => {
-            if [!(func -> types.is_type[_type.ret])] => {
-                print["TypeError: Function '" f_info.name "' should return value of type '" _type.ret "' but returned value of type '" types.get_type[func] "'\n"]
-                ret empty
-            }
-        }
-
-        ret func
-    }
-
-    f = _update_function_params[f shape[func].params]
-    ret f
+add = [a b c] => {
+    a + b + c
 }
 
-add = [a b] => {
-    [a + b]
-}
+add_i = types.func_t[add @{ a: int b: int c: int ret: (int, float) }]
 
-f = create_func[add @{ a: int b: int ret: [int] }]
-f[4 6.9]
+10 -> (5 -> add_i[5])
