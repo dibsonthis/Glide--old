@@ -2039,6 +2039,48 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         return;
     }
 
+    if (function->FUNCTION.name == "_update_function_params")
+    {
+        auto args = function->FUNCTION.arguments;
+        if (args.size() != 2)
+        {
+            make_error("Builtin function '_update_function_params' expects 2 argument but " 
+            + std::to_string(args.size()) + " were provided");
+            exit();
+            return;
+        }
+
+        if (args[0]->type != SO_Type::FUNCTION)
+        {
+            make_error("Builtin function '_update_function_params' expects argument 1 to be of type 'function'");
+            exit();
+            return;
+        }
+
+        if (args[1]->type != SO_Type::LIST)
+        {
+            make_error("Builtin function '_update_function_params' expects argument 1 to be of type 'list'");
+            exit();
+            return;
+        }
+
+        args[0]->FUNCTION.parameters.clear();
+        for (auto elem : args[1]->LIST.objects)
+        {
+            if (elem->type != SO_Type::STRING)
+            {
+                make_error("Builtin function '_update_function_params' expects argument 2 to contain only elements of type 'string'");
+                exit();
+                return;
+            }
+
+            args[0]->FUNCTION.parameters.push_back(elem->STRING.value);
+        }
+
+        frame->stack.push_back(args[0]);
+        return;
+    }
+
     if (function->FUNCTION.name == "to_string")
     {
         auto args = function->FUNCTION.arguments;
@@ -2492,6 +2534,11 @@ void Bytecode_Evaluator::eval_call_function(Bytecode op, std::shared_ptr<StackFr
     auto function_frame = std::make_shared<StackFrame>();
     function_frame->outer_frame = frame;
 
+    function_frame->locals["_" + name] = so_make_object();
+    function_frame->locals["_" + name]->OBJECT.properties["name"] = so_make_string(name);
+    function_frame->locals["_" + name]->OBJECT.properties["args"] = so_make_list();
+    function_frame->locals["_" + name]->OBJECT.properties["params"] = so_make_list();
+
     for (auto elem : function->FUNCTION.closure)
     {
         if (elem.second->type == SO_Type::OP || elem.second->type == SO_Type::FUNCTION)
@@ -2507,6 +2554,8 @@ void Bytecode_Evaluator::eval_call_function(Bytecode op, std::shared_ptr<StackFr
     for (int i = 0; i < parameters.size(); i++)
     {
         function_frame->locals[parameters[i]] = arguments[i];
+        function_frame->locals["_" + name]->OBJECT.properties["args"]->LIST.objects.push_back(arguments[i]);
+        function_frame->locals["_" + name]->OBJECT.properties["params"]->LIST.objects.push_back(so_make_string(parameters[i]));
     }
 
     Bytecode_Evaluator evaluator(function->FUNCTION.instructions);
@@ -2745,6 +2794,13 @@ void Bytecode_Evaluator::eval_arrow(std::shared_ptr<StackFrame>& frame)
         auto function_frame = std::make_shared<StackFrame>();
         function_frame->outer_frame = frame;
 
+        auto name = right->FUNCTION.name;
+
+        function_frame->locals["_" + name] = so_make_object();
+        function_frame->locals["_" + name]->OBJECT.properties["name"] = so_make_string(name);
+        function_frame->locals["_" + name]->OBJECT.properties["args"] = so_make_list();
+        function_frame->locals["_" + name]->OBJECT.properties["params"] = so_make_list();
+
         for (auto elem : right->FUNCTION.closure)
         {
             function_frame->locals[elem.first] = std::make_shared<StackObject>(*elem.second);
@@ -2756,6 +2812,8 @@ void Bytecode_Evaluator::eval_arrow(std::shared_ptr<StackFrame>& frame)
         for (int i = 0; i < parameters.size(); i++)
         {
             function_frame->locals[parameters[i]] = arguments[i];
+            function_frame->locals["_" + name]->OBJECT.properties["args"]->LIST.objects.push_back(arguments[i]);
+            function_frame->locals["_" + name]->OBJECT.properties["params"]->LIST.objects.push_back(so_make_string(parameters[i]));
         }
 
         Bytecode_Evaluator evaluator(right->FUNCTION.instructions);

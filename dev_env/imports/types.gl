@@ -1,5 +1,5 @@
 ls = import["../../../dev_env/imports/list.gl"]
-obj = import["imports/object.gl"]
+obj = import["../../../dev_env/imports/object.gl"]
 
 get_type = [_object] => {
     _type = type[_object]
@@ -24,8 +24,11 @@ get_type = [_object] => {
 
 is_type = [_type value] => {
     calculated_type = type[value]
-    if [calculated_type == object] => {
+    if [calculated_type == object && type[_type] == object] => {
         ret (value -> get_type, _type) -> obj.equal
+    }
+    if [calculated_type == list] => {
+        ret (value -> get_type, _type) -> ls.match
     }
     ret (calculated_type == _type)
 }

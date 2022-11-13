@@ -447,6 +447,7 @@ std::vector<Bytecode> Bytecode_Generator::gen_function_call(std::shared_ptr<Node
         || function_name->STRING.value == "write"
         || function_name->STRING.value == "append"
         || function_name->STRING.value == "frame"
+        || function_name->STRING.value == "_update_function_params"
         )
     {
         add_instruction(Bytecode(OpType::LOAD_BUILTIN, function_name));
@@ -711,6 +712,7 @@ std::vector<Bytecode> Bytecode_Generator::gen_bytecode(std::shared_ptr<Node> nod
             || node->ID.value == "write"
             || node->ID.value == "append"
             || node->ID.value == "frame"
+            || node->ID.value == "_update_function_params"
             )
         {
             load = Bytecode(OpType::LOAD_BUILTIN, data);
