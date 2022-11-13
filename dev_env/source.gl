@@ -1,10 +1,6 @@
 types = import["../../../dev_env/imports/types.gl"]
+ls = import["../../../dev_env/imports/list.gl"]
 
+map_i = types.func_t[ls.map @{ func: function _list: [int] ret: [int]}]
 
-add = [a b c] => {
-    a + b + c
-}
-
-add_i = types.func_t[add @{ a: int b: int c: int ret: (int, float) }]
-
-10 -> (5 -> add_i[5])
+1..10 -> map_i[[x] => { x * 2 }]

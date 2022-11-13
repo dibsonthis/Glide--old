@@ -42,10 +42,11 @@ func_t = [func _type args] => {
     arg_index = func_args.length
 
     if => {
-        type[args] == list: {
+        type[args] == comma_list: {
             for [args i arg] => {
                 param_key = func_params.[i]
                 if [!(arg -> is_type[_type.[param_key]])] => {
+                    print[arg]
                     print["TypeError in function '" name "' - expected argument '" param_key "' in position " i " to be of type '" _type.[param_key] "' but received argument of type '" arg -> get_type "'\n"]
                     ret
                 }
@@ -62,7 +63,12 @@ func_t = [func _type args] => {
         }
     }
 
-    if [type[func] != function && _type.ret != empty] => {
+    if [type[func] != function] => {
+
+        if [_type.ret == empty] => {
+            ret func
+        }
+
         if [type[_type.ret] == comma_list] => {
 
             pass_check = false
@@ -84,6 +90,8 @@ func_t = [func _type args] => {
             print["TypeError in function '" name "' - expected return value to be of type '" _type.ret "' but returned value is of type '" func -> get_type "'\n"]
             ret
         }
+
+        ret func
     }
 
     ret func_t[var[name func] _type]
