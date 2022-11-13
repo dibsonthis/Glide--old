@@ -2259,30 +2259,52 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
             return;
         }
 
-        if (args[0]->type != SO_Type::OBJECT)
+        if (args[0]->type == SO_Type::OBJECT)
         {
-            make_error("Builtin function 'shape' expects argument of type 'object'");
-            exit();
+            auto shape = so_make_object();
+            shape->OBJECT.properties["length"] = so_make_int(args[0]->OBJECT.properties.size());
+            shape->OBJECT.properties["keys"] = so_make_list();
+            for (auto prop : args[0]->OBJECT.properties)
+            {
+                auto key = so_make_string(prop.first);
+                shape->OBJECT.properties["keys"]->LIST.objects.push_back(key);
+            }
+
+            auto& keys = shape->OBJECT.properties["keys"]->LIST.objects;
+            
+            sort( keys.begin( ), keys.end( ), [ ]( const auto& lhs, const auto& rhs )
+            {
+                return lhs->STRING.value < rhs->STRING.value;
+            });
+
+            frame->stack.push_back(shape);
             return;
         }
 
-        auto shape = so_make_object();
-        shape->OBJECT.properties["length"] = so_make_int(args[0]->OBJECT.properties.size());
-        shape->OBJECT.properties["keys"] = so_make_list();
-        for (auto prop : args[0]->OBJECT.properties)
+        if (args[0]->type == SO_Type::FUNCTION)
         {
-            auto key = so_make_string(prop.first);
-            shape->OBJECT.properties["keys"]->LIST.objects.push_back(key);
+            auto shape = so_make_object();
+
+            shape->OBJECT.properties["name"] = so_make_string(args[0]->FUNCTION.name);
+
+            shape->OBJECT.properties["params"] = so_make_list();
+            for (auto param : args[0]->FUNCTION.parameters)
+            {
+                shape->OBJECT.properties["params"]->LIST.objects.push_back(so_make_string(param));
+            }
+
+            shape->OBJECT.properties["args"] = so_make_list();
+            for (auto arg : args[0]->FUNCTION.arguments)
+            {
+                shape->OBJECT.properties["args"]->LIST.objects.push_back(arg);
+            }
+
+            frame->stack.push_back(shape);
+            return;
         }
 
-        auto& keys = shape->OBJECT.properties["keys"]->LIST.objects;
-        
-        sort( keys.begin( ), keys.end( ), [ ]( const auto& lhs, const auto& rhs )
-        {
-            return lhs->STRING.value < rhs->STRING.value;
-        });
-
-        frame->stack.push_back(shape);
+        make_error("Builtin function 'shape' expects argument of type 'object' or 'function'");
+        exit();
         return;
     }
 

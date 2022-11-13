@@ -816,7 +816,7 @@ void Parser::parse_keywords(std::vector<NodeType> end_node_types)
             break;
         }
 
-        std::vector<std::string> keywords = {"shape", "fx", "ret", "break", "continue"};
+        std::vector<std::string> keywords = {"ret", "break", "continue"};
         std::vector<NodeType> next_types = {NodeType::R_BRACKET, NodeType::R_BRACE, NodeType::R_PAREN, NodeType::COMMA, NodeType::COLON, NodeType::END_OF_FILE};
 
         if (is_type(current_node, {NodeType::ID}) && (std::count(keywords.begin(), keywords.end(), current_node->ID.value)))
