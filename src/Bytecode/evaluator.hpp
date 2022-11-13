@@ -18,6 +18,7 @@ struct StackFrame
         {"string", so_make_string("string")},
         {"object", so_make_string("object")},
         {"list", so_make_string("list")},
+        {"function", so_make_string("function")},
         {"empty_type", so_make_string("empty")},
     };
     std::vector<std::shared_ptr<StackObject>> stack;

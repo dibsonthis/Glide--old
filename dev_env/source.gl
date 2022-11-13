@@ -1,5 +1,5 @@
-a = @{ 
+add = [a b] => {
+    a + b
 }
 
-a.count += 10
-a
+shape[5 -> add].args.length
