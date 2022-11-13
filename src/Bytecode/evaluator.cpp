@@ -2226,7 +2226,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
 
         if (args[0]->type == SO_Type::BOOL)
         {
-            result->INT.value = (double)args[0]->BOOL.value;
+            result->FLOAT.value = (double)args[0]->BOOL.value;
         }
         else if (args[0]->type == SO_Type::FLOAT)
         {
@@ -2234,12 +2234,12 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         }
         else if (args[0]->type == SO_Type::INT)
         {
-            result->INT.value = (double)args[0]->INT.value;
+            result->FLOAT.value = (double)args[0]->INT.value;
         }
         else if (args[0]->type == SO_Type::STRING)
         {
             try {
-                result->INT.value = std::stof(args[0]->STRING.value);
+                result->FLOAT.value = std::stof(args[0]->STRING.value);
             } catch(...) {
                 make_error("Unable to cast '" + args[0]->repr() + "' to a float");
                 exit();
