@@ -2226,7 +2226,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
 
         if (args[0]->type == SO_Type::BOOL)
         {
-            result->INT.value = (double)args[0]->BOOL.value;
+            result->FLOAT.value = (double)args[0]->BOOL.value;
         }
         else if (args[0]->type == SO_Type::FLOAT)
         {
@@ -2234,12 +2234,12 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         }
         else if (args[0]->type == SO_Type::INT)
         {
-            result->INT.value = (double)args[0]->INT.value;
+            result->FLOAT.value = (double)args[0]->INT.value;
         }
         else if (args[0]->type == SO_Type::STRING)
         {
             try {
-                result->INT.value = std::stof(args[0]->STRING.value);
+                result->FLOAT.value = std::stof(args[0]->STRING.value);
             } catch(...) {
                 make_error("Unable to cast '" + args[0]->repr() + "' to a float");
                 exit();
@@ -2637,14 +2637,14 @@ void Bytecode_Evaluator::eval_call_function(Bytecode op, std::shared_ptr<StackFr
         {
             if (i == param_count)
             {
-                function_frame->locals[parameters[param_count-1]] = so_make_list();
-                function_frame->locals[parameters[param_count-1]]->LIST.objects.push_back(arguments[i-1]);
-                function_frame->locals[parameters[param_count-1]]->LIST.objects.push_back(arguments[i]);
+                function_frame->locals[parameters[param_count-1]] = so_make_comma_list();
+                function_frame->locals[parameters[param_count-1]]->COMMA_LIST.objects.push_back(arguments[i-1]);
+                function_frame->locals[parameters[param_count-1]]->COMMA_LIST.objects.push_back(arguments[i]);
                 function_frame->locals["_args"]->LIST.objects.push_back(arguments[i]);
             }
             else if (i > parameters.size())
             {
-                function_frame->locals[parameters[param_count-1]]->LIST.objects.push_back(arguments[i]);
+                function_frame->locals[parameters[param_count-1]]->COMMA_LIST.objects.push_back(arguments[i]);
                 function_frame->locals["_args"]->LIST.objects.push_back(arguments[i]);
             }
             else
@@ -2905,14 +2905,14 @@ void Bytecode_Evaluator::eval_arrow(std::shared_ptr<StackFrame>& frame)
             {
                 if (i == param_count)
                 {
-                    function_frame->locals[parameters[param_count-1]] = so_make_list();
-                    function_frame->locals[parameters[param_count-1]]->LIST.objects.push_back(arguments[i-1]);
-                    function_frame->locals[parameters[param_count-1]]->LIST.objects.push_back(arguments[i]);
+                    function_frame->locals[parameters[param_count-1]] = so_make_comma_list();
+                    function_frame->locals[parameters[param_count-1]]->COMMA_LIST.objects.push_back(arguments[i-1]);
+                    function_frame->locals[parameters[param_count-1]]->COMMA_LIST.objects.push_back(arguments[i]);
                     function_frame->locals["_args"]->LIST.objects.push_back(arguments[i]);
                 }
                 else if (i > parameters.size())
                 {
-                    function_frame->locals[parameters[param_count-1]]->LIST.objects.push_back(arguments[i]);
+                    function_frame->locals[parameters[param_count-1]]->COMMA_LIST.objects.push_back(arguments[i]);
                     function_frame->locals["_args"]->LIST.objects.push_back(arguments[i]);
                 }
                 else

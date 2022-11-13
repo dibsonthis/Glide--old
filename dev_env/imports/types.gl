@@ -42,10 +42,11 @@ func_t = [func _type args] => {
     arg_index = func_args.length
 
     if => {
-        type[args] == list: {
+        type[args] == comma_list: {
             for [args i arg] => {
                 param_key = func_params.[i]
                 if [!(arg -> is_type[_type.[param_key]])] => {
+                    print[arg]
                     print["TypeError in function '" name "' - expected argument '" param_key "' in position " i " to be of type '" _type.[param_key] "' but received argument of type '" arg -> get_type "'\n"]
                     ret
                 }
@@ -62,7 +63,12 @@ func_t = [func _type args] => {
         }
     }
 
-    if [type[func] != function && _type.ret != empty] => {
+    if [type[func] != function] => {
+
+        if [_type.ret == empty] => {
+            ret func
+        }
+
         if [type[_type.ret] == comma_list] => {
 
             pass_check = false
@@ -84,7 +90,54 @@ func_t = [func _type args] => {
             print["TypeError in function '" name "' - expected return value to be of type '" _type.ret "' but returned value is of type '" func -> get_type "'\n"]
             ret
         }
+
+        ret func
     }
 
     ret func_t[var[name func] _type]
+}
+
+var_t = [value _type] => {
+
+    typed_var = @{
+        value: value
+        type: _type
+        eq = [new_val] => {
+            t = import["imports/types.gl"]
+
+            if [type[new_val] == int && this.type == float] => {
+                this.value = new_val -> to_float
+                ret this
+            }
+
+            if [type[new_val] == float && this.type == int] => {
+                this.value = new_val -> to_int
+                ret this
+            }
+
+            if [new_val -> t.is_type[this.type]] => {
+                this.value = new_val
+                ret this
+            }
+
+            print["TypeError - variable of type '" this.type "' cannot be assigned a value of type '" new_val -> t.get_type "'\n"]
+        }
+    }
+
+    if [type[value] == int && _type == float] => {
+        typed_var.value = value -> to_float
+        ret typed_var
+    }
+
+    if [type[value] == float && _type == int] => {
+        typed_var.value = value -> to_int
+        ret typed_var
+    }
+
+    if [!(value -> is_type[_type])] => {
+        print["TypeError - variable of type '" _type "' cannot be assigned a value of type '" value -> get_type "'\n"]
+        ret
+    }
+
+    ret typed_var
 }
