@@ -383,6 +383,11 @@ void Bytecode_Evaluator::eval_store(Bytecode op, std::shared_ptr<StackFrame>& fr
     {
         value->FUNCTION.name = name;
     }
+
+    if (value->type == SO_Type::OBJECT)
+    {
+        value->OBJECT.properties["_name"] = so_make_string(name);
+    }
 }
 
 void Bytecode_Evaluator::eval_store_at(std::shared_ptr<StackFrame>& frame)

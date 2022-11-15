@@ -1,6 +1,5 @@
-for [1..10 i] => {
-
-    if [i > 5] => {
-        break
-    }
+hello = @{
+    name: "John"
 }
+
+hello._name -> print
