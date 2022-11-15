@@ -2613,7 +2613,14 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
                 symbol.second->FUNCTION.closure[symbol.first] = symbol.second;
             }
 
-            frame->locals[symbol.first] = symbol.second;
+            // only import if it doesn't exist in local scope, otherwise
+            // local scope takes precedence
+
+            if (frame->locals.find(symbol.first) == frame->locals.end())
+            {
+                frame->locals[symbol.first] = symbol.second;
+            }
+
         }
 
         frame->stack.push_back(so_make_empty());
