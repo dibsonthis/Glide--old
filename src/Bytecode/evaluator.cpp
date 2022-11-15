@@ -386,7 +386,7 @@ void Bytecode_Evaluator::eval_store(Bytecode op, std::shared_ptr<StackFrame>& fr
 
     if (value->type == SO_Type::OBJECT)
     {
-        value->OBJECT.properties["_name"] = so_make_string(name);
+        value->OBJECT.name = name;
     }
 }
 
@@ -1592,6 +1592,28 @@ void Bytecode_Evaluator::eval_dot(std::shared_ptr<StackFrame>& frame)
             return;
         }
 
+        if (name == "_name")
+        {
+            res = so_make_string(left->OBJECT.name);
+            frame->stack.push_back(res);
+            return;
+        }
+
+        if (name == "_items")
+        {
+            res->type = SO_Type::LIST;
+            for (auto props : left->OBJECT.properties)
+            {
+                auto item = so_make_object();
+                item->OBJECT.properties["key"] = so_make_string(props.first);
+                item->OBJECT.properties["value"] = props.second;
+                res->LIST.objects.insert(res->LIST.objects.begin(), item);
+            }
+
+            frame->stack.push_back(res);
+            return;
+        }
+
         if (left->OBJECT.properties.find(name) == left->OBJECT.properties.end())
         {
             res = so_make_empty();
@@ -2308,7 +2330,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
 
         if (args[0]->type != SO_Type::STRING)
         {
-            make_error("Builtin function 'create' expects a variable name");
+            make_error("Builtin function 'var' expects a variable name");
             exit();
             return;
         }
@@ -2319,6 +2341,40 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
             args[1]->FUNCTION.name = args[0]->STRING.value;
         }
         frame->stack.push_back(args[1]);
+        return;
+    }
+
+    if (function->FUNCTION.name == "var_out")
+    {
+        auto args = function->FUNCTION.arguments;
+        if (args.size() != 2)
+        {
+            make_error("Builtin function 'var_out' expects 2 argument but " 
+            + std::to_string(args.size()) + " were provided");
+            exit();
+            return;
+        }
+
+        if (args[0]->type != SO_Type::STRING)
+        {
+            make_error("Builtin function 'var_out' expects a variable name");
+            exit();
+            return;
+        }
+
+        if (frame->outer_frame == nullptr)
+        {
+            make_error("Builtin function 'var_out' cannot be called at the top level");
+            exit();
+            return;
+        }
+
+        frame->outer_frame->locals[args[0]->STRING.value] = args[1];
+        if (args[1]->type == SO_Type::FUNCTION)
+        {
+            args[1]->FUNCTION.name = args[0]->STRING.value;
+        }
+        frame->stack.push_back(so_make_empty());
         return;
     }
 

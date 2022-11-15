@@ -1,5 +1,12 @@
-hello = @{
-    name: "John"
+
+ls = import["../../../dev_env/imports/list.gl"]
+
+use = [_import] => {
+    for [_import._items index item] => {
+        var_out[item.key -> to_string item.value]
+    }
 }
 
-hello._name -> print
+use[ls]
+
+1..10 -> map[*2]

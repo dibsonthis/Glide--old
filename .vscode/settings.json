@@ -82,6 +82,7 @@
     "variant": "cpp",
     "regex": "cpp",
     "unordered_map": "cpp",
-    "*.txt": "c"
+    "*.txt": "c",
+    "*.gl": "c"
   }
 }
