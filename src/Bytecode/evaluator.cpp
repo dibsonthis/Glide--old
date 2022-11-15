@@ -1942,14 +1942,13 @@ void Bytecode_Evaluator::eval_remove_iter(std::shared_ptr<StackFrame>& frame)
         return;
     }
 
-    auto iter = frame->stack.back();
+    auto iter = so_make_empty();
 
     while (iter->type != SO_Type::ITERATOR)
     {
         iter = frame->stack.back();
+        frame->stack.pop_back();
     }
-
-    frame->stack.pop_back();
 
     frame->locals.erase(iter->ITER.index_name);
     frame->locals.erase(iter->ITER.item_name);
@@ -2096,48 +2095,6 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         frame->stack.push_back(args[0]);
     }
 
-    if (function->FUNCTION.name == "_update_function_params")
-    {
-        auto args = function->FUNCTION.arguments;
-        if (args.size() != 2)
-        {
-            make_error("Builtin function '_update_function_params' expects 2 argument but " 
-            + std::to_string(args.size()) + " were provided");
-            exit();
-            return;
-        }
-
-        if (args[0]->type != SO_Type::FUNCTION)
-        {
-            make_error("Builtin function '_update_function_params' expects argument 1 to be of type 'function'");
-            exit();
-            return;
-        }
-
-        if (args[1]->type != SO_Type::LIST)
-        {
-            make_error("Builtin function '_update_function_params' expects argument 1 to be of type 'list'");
-            exit();
-            return;
-        }
-
-        args[0]->FUNCTION.parameters.clear();
-        for (auto elem : args[1]->LIST.objects)
-        {
-            if (elem->type != SO_Type::STRING)
-            {
-                make_error("Builtin function '_update_function_params' expects argument 2 to contain only elements of type 'string'");
-                exit();
-                return;
-            }
-
-            args[0]->FUNCTION.parameters.push_back(elem->STRING.value);
-        }
-
-        frame->stack.push_back(args[0]);
-        return;
-    }
-
     if (function->FUNCTION.name == "to_string")
     {
         auto args = function->FUNCTION.arguments;
@@ -2150,6 +2107,35 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         }
 
         frame->stack.push_back(so_make_string(args[0]->repr()));
+        return;
+    }
+
+    if (function->FUNCTION.name == "to_list")
+    {
+        auto args = function->FUNCTION.arguments;
+        if (args.size() != 1)
+        {
+            make_error("Builtin function 'to_list' expects 1 argument but " 
+            + std::to_string(args.size()) + " were provided");
+            exit();
+            return;
+        }
+
+        auto list = so_make_list();
+
+        if (args[0]->type == SO_Type::COMMA_LIST)
+        {
+            for (auto elem : args[0]->COMMA_LIST.objects)
+            {
+                list->LIST.objects.push_back(elem);
+            }
+        }
+        else
+        {
+            list->LIST.objects.push_back(args[0]);
+        }
+
+        frame->stack.push_back(list);
         return;
     }
 

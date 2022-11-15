@@ -443,12 +443,12 @@ std::vector<Bytecode> Bytecode_Generator::gen_function_call(std::shared_ptr<Node
         || function_name->STRING.value == "to_string"
         || function_name->STRING.value == "to_int"
         || function_name->STRING.value == "to_float"
+        || function_name->STRING.value == "to_list"
         || function_name->STRING.value == "time"
         || function_name->STRING.value == "read"
         || function_name->STRING.value == "write"
         || function_name->STRING.value == "append"
         || function_name->STRING.value == "frame"
-        || function_name->STRING.value == "_update_function_params"
         || function_name->STRING.value == "clear_args"
         )
     {
@@ -710,12 +710,12 @@ std::vector<Bytecode> Bytecode_Generator::gen_bytecode(std::shared_ptr<Node> nod
             || node->ID.value == "to_string"
             || node->ID.value == "to_int"
             || node->ID.value == "to_float"
+            || node->ID.value == "to_list"
             || node->ID.value == "time"
             || node->ID.value == "read"
             || node->ID.value == "write"
             || node->ID.value == "append"
             || node->ID.value == "frame"
-            || node->ID.value == "_update_function_params"
             || node->ID.value == "clear_args"
             )
         {

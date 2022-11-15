@@ -1,8 +1,6 @@
-types = import["../../../dev_env/imports/types.gl"]
-ls = import["../../../dev_env/imports/list.gl"]
+for [1..10 i] => {
 
-// map_i = types.func_t[ls.map @{ func: function _list: [int] ret: [int]}]
-
-// 1..10 -> map_i[[x] => { x * 2 }]
-
-55 -> to_float
+    if [i > 5] => {
+        break
+    }
+}
