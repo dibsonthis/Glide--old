@@ -2572,8 +2572,56 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         frame->stack.push_back(import_object);
     }
 
+    if (function->FUNCTION.name == "use")
+    {
+        auto args = function->FUNCTION.arguments;
+        if (args.size() != 1)
+        {
+            make_error("Builtin function 'use' expects 1 argument but " 
+            + std::to_string(args.size()) + " were provided");
+            exit();
+            return;
+        }
+
+        Lexer lexer(args[0]->STRING.value);
+        lexer.tokenize();
+
+        Parser parser(lexer.file_name, lexer.nodes);
+        parser.parse();
+
+        Bytecode_Generator generator(parser.file_name, parser.nodes);
+        auto instructions = generator.generate();
+        //generator.print_instructions();
+
+        parser.nodes.clear();
+
+        auto import_frame = std::make_shared<StackFrame>();
+
+        Bytecode_Evaluator evaluator(instructions);
+        evaluator.repl = repl;
+        evaluator.file_name = parser.file_name;
+        evaluator.evaluate(import_frame);
+
+        for (auto symbol : import_frame->locals)
+        {
+            // if symbol is a lambda, we include itself in its own closure
+            // so that in the case it's recursive, it can be referenced
+            // from a different scope
+
+            if (symbol.second->type == SO_Type::FUNCTION)
+            {
+                symbol.second->FUNCTION.closure[symbol.first] = symbol.second;
+            }
+
+            frame->locals[symbol.first] = symbol.second;
+        }
+
+        frame->stack.push_back(so_make_empty());
+    }
+
     return;
 }
+
 
 void Bytecode_Evaluator::eval_build_function(Bytecode op, std::shared_ptr<StackFrame>& frame)
 {
