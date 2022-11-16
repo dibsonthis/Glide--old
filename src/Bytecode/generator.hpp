@@ -42,6 +42,7 @@ enum class OpType
     FRAME_IN,
     FRAME_OUT,
     BUILD_ITER,
+    BUILD_LOOP,
     REMOVE_ITER,
     BUILD_FUNCTION,
     LOOP_START,
@@ -102,6 +103,7 @@ struct Bytecode_Generator
     std::vector<Bytecode> gen_if_block(std::shared_ptr<Node> node);
     std::vector<Bytecode> gen_block(std::shared_ptr<Node> node);
     std::vector<Bytecode> gen_for_loop(std::shared_ptr<Node> node);
+    std::vector<Bytecode> gen_builtin_for_loop(std::shared_ptr<Node> node);
     std::vector<Bytecode> gen_while_loop(std::shared_ptr<Node> node);
     std::vector<Bytecode> gen_function_call(std::shared_ptr<Node> node);
     std::vector<Bytecode> generate();

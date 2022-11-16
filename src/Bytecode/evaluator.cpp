@@ -238,6 +238,11 @@ void Bytecode_Evaluator::eval_instruction(std::shared_ptr<StackFrame>& frame)
         eval_loop_start(current_op, frame);
         return;
     }
+    if (current_op.type == OpType::BUILD_LOOP)
+    {
+        eval_builtin_loop(current_op, frame);
+        return;
+    }
     if (current_op.type == OpType::WHILE_START)
     {
         eval_while_start(frame);
@@ -1821,6 +1826,136 @@ void Bytecode_Evaluator::eval_build_partial_op(std::shared_ptr<StackFrame>& fram
     partial_op->OP.right = right;
 
     frame->stack.push_back(partial_op);
+}
+
+void Bytecode_Evaluator::eval_builtin_loop(Bytecode op, std::shared_ptr<StackFrame>& frame)
+{
+    if (frame->stack.size() < op.index + 1)
+    {
+        make_error("Malformed expression <Empty stack>");
+        exit();
+        return;
+    }
+
+    auto instruction_block = frame->stack.back();
+    frame->stack.pop_back();
+
+    std::shared_ptr<StackObject> value = nullptr;
+    std::shared_ptr<StackObject> index = nullptr;
+    std::shared_ptr<StackObject> iter = so_make_empty();
+
+    if (op.index == 3)
+    {
+        value = frame->stack.back();
+        frame->stack.pop_back();
+
+        index = frame->stack.back();
+        frame->stack.pop_back();
+
+        iter = frame->stack.back();
+        frame->stack.pop_back();
+    }
+    else if (op.index == 2)
+    {
+        index = frame->stack.back();
+        frame->stack.pop_back();
+
+        iter = frame->stack.back();
+        frame->stack.pop_back();
+    }
+    else if (op.index == 1)
+    {
+        iter = frame->stack.back();
+        frame->stack.pop_back();
+    }
+
+    Bytecode_Evaluator eval(instruction_block->BLOCK.instructions);
+    eval.file_name = file_name;
+    eval.import_cache = import_cache;
+
+    if (index != nullptr)
+    {
+        frame->locals[index->STRING.value] = so_make_int(0);
+    }
+
+    for (int i = 0; i < iter->LIST.objects.size(); i++)
+    {
+        if (index != nullptr)
+        {
+            if (i > 0)
+            {
+                frame->locals[index->STRING.value]->INT.value = i;
+            }
+        }
+
+        if (value != nullptr)
+        {
+            frame->locals[value->STRING.value] = iter->LIST.objects[i];
+        }
+
+        while (eval.current_op.type != OpType::EXIT)
+        { 
+            if (eval.current_op.type == OpType::JUMP_IF_FALSE ||
+                eval.current_op.type == OpType::JUMP_TO)
+                {
+                    int current_index = eval.index;
+                    eval.eval_instruction(frame);
+
+                    if (eval.errors.size() > 0)
+                    {
+                        for (auto error : eval.errors)
+                        {
+                            std::cout << error << "\n";
+                        }
+
+                        goto loop_exit;
+                    }
+
+                    if (eval.index != current_index)
+                    {
+                        // then we've jumped
+                        eval.eval_instruction(frame);
+                    }
+                }
+            else
+            {
+                eval.eval_instruction(frame);
+            }
+
+            if (eval.errors.size() > 0)
+            {
+                for (auto error : eval.errors)
+                {
+                    std::cout << error << "\n";
+                }
+
+                goto loop_exit;
+            }
+
+            eval.forward();
+
+            if (eval.current_op.type == OpType::BREAK)
+            {
+                goto loop_exit;
+            }
+
+            if (eval.errors.size() > 0)
+            {
+                for (auto error : eval.errors)
+                {
+                    std::cout << error << "\n";
+                }
+
+                goto loop_exit;
+            }
+        }
+
+        eval.index = 0;
+        eval.current_op = eval.instructions[0];
+    }
+
+    loop_exit:
+        return;
 }
 
 void Bytecode_Evaluator::eval_loop_start(Bytecode op, std::shared_ptr<StackFrame>& frame)

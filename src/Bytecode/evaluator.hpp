@@ -74,6 +74,7 @@ struct Bytecode_Evaluator
     void eval_build_function(Bytecode op, std::shared_ptr<StackFrame>& frame);
     void eval_call_function(Bytecode op, std::shared_ptr<StackFrame>& frame);
     void eval_loop_start(Bytecode op, std::shared_ptr<StackFrame>& frame);
+    void eval_builtin_loop(Bytecode op, std::shared_ptr<StackFrame>& frame);
     void eval_while_start(std::shared_ptr<StackFrame>& frame);
     void eval_jump_to(Bytecode op, std::shared_ptr<StackFrame>& frame);
     void eval_frame_in(std::shared_ptr<StackFrame>& frame);

@@ -41,36 +41,37 @@ enum class SO_Type
     OBJECT,
     FUNCTION,
     ITERATOR,
+    BLOCK,
     EMPTY,
 };
 
-struct INT_Object
+struct Int_Object
 {
     long long value;
 };
 
-struct FLOAT_Object
+struct Float_Object
 {
     double value;
 };
 
-struct BOOL_Object
+struct Bool_Object
 {
     bool value;
 };
 
-struct STRING_Object
+struct String_Object
 {
     std::string value;
 };
 
-struct LIST_Object
+struct List_Object
 {
     std::vector<std::shared_ptr<StackObject>> objects;
     int length;
 };
 
-struct COMMA_LIST_Object
+struct Comma_List_Object
 {
     std::vector<std::shared_ptr<StackObject>> objects;
     int length;
@@ -93,7 +94,7 @@ struct Function_Object
     bool builtin = false;
 };
 
-struct OP_Object
+struct Op_Object
 {
     std::string repr;
     Operation_Type type;
@@ -113,6 +114,11 @@ struct Iterator_Object
 	int iter_count = 0;
 };
 
+struct Block_Object
+{
+    std::vector<Bytecode> instructions;
+};
+
 struct StackObject
 {
     SO_Type type;
@@ -125,16 +131,17 @@ struct StackObject
 
     std::string var_name;
 
-    INT_Object INT;
-    FLOAT_Object FLOAT;
-    BOOL_Object BOOL;
-    STRING_Object STRING;
-    LIST_Object LIST;
-    COMMA_LIST_Object COMMA_LIST;
+    Int_Object INT;
+    Float_Object FLOAT;
+    Bool_Object BOOL;
+    String_Object STRING;
+    List_Object LIST;
+    Comma_List_Object COMMA_LIST;
     Function_Object FUNCTION;
     Object_Object OBJECT;
-    OP_Object OP;
+    Op_Object OP;
     Iterator_Object ITER;
+    Block_Object BLOCK;
 
     std::string repr();
 };
@@ -149,4 +156,5 @@ std::shared_ptr<StackObject> so_make_list();
 std::shared_ptr<StackObject> so_make_comma_list();
 std::shared_ptr<StackObject> so_make_object();
 std::shared_ptr<StackObject> so_make_function();
+std::shared_ptr<StackObject> so_make_block();
 std::shared_ptr<StackObject> so_make_empty();

@@ -93,6 +93,10 @@ std::string StackObject::repr()
             repr += "]\n}";
             return repr;
         }
+        case SO_Type::BLOCK:
+        {
+            return "{ block }";
+        }
         default:
         {
             return "<no repr>";
@@ -314,6 +318,12 @@ std::shared_ptr<StackObject> so_make_object()
 std::shared_ptr<StackObject> so_make_function()
 {
     auto object = std::make_shared<StackObject>(SO_Type::FUNCTION);
+    return object;
+}
+
+std::shared_ptr<StackObject> so_make_block()
+{
+    auto object = std::make_shared<StackObject>(SO_Type::BLOCK);
     return object;
 }
 

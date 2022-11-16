@@ -508,6 +508,14 @@ void Parser::parse_right_arrow(std::vector<NodeType> end_node_types)
                 }
 
             else if (is_type(current_node->left, {NodeType::FUNC_CALL}) 
+                && current_node->left->FUNC_CALL.name->ID.value == "_for" 
+                && is_type(current_node->right, {NodeType::BLOCK}))
+                {
+                    current_node->type = NodeType::BUILTIN_FOR_LOOP;
+                    current_node->right->BLOCK.context = current_node->type;
+                }
+
+            else if (is_type(current_node->left, {NodeType::FUNC_CALL}) 
                 && current_node->left->FUNC_CALL.name->ID.value == "while" 
                 && is_type(current_node->right, {NodeType::BLOCK}))
                 {
