@@ -1,5 +1,4 @@
 
+//use["../../../dev_env/imports/csv.gl"]
 use["../../../dev_env/imports/list.gl"]
-ls = import["../../../dev_env/imports/list.gl"]
-
-1..10 -> map[*2]
+use["../../../dev_env/imports/string.gl"]
