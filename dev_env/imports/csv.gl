@@ -1,4 +1,4 @@
-ls = import["../../../dev_env/imports/list.gl"]
+use["../../../dev_env/imports/list.gl"]
 str = import["../../../dev_env/imports/string.gl"]
 
 to_obj = [data] => {
@@ -9,10 +9,10 @@ to_obj = [data] => {
 
     data = data 
     -> str.split["\n"]
-    -> ls.pop_f
+    -> pop_f
     -> [x] => { x.front = x.front -> str.split[","] ret x }
-    -> [x] => { x.rest = x.rest -> ls.filter[[elem] => { ret elem.length > 0 }] ret x}
-    -> [x] => { x.rest = x.rest -> ls.map[[elem] => { ret (elem -> str.split[","]) }] ret x }
+    -> [x] => { x.rest = x.rest -> filter[[elem] => { ret elem.length > 0 }] ret x}
+    -> [x] => { x.rest = x.rest -> map[[elem] => { ret (elem -> str.split[","]) }] ret x }
     -> [x] => {
         _list = []
         for [x.rest i value] => {

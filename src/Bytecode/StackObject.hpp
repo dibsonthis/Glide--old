@@ -79,11 +79,11 @@ struct COMMA_LIST_Object
 struct Object_Object
 {
     std::unordered_map<std::string, std::shared_ptr<StackObject>> properties;
-    int size;
+    std::string name;
 };
 
 
-struct FUNCTION_Object
+struct Function_Object
 {
     std::string name;
     std::vector<std::string> parameters;
@@ -131,7 +131,7 @@ struct StackObject
     STRING_Object STRING;
     LIST_Object LIST;
     COMMA_LIST_Object COMMA_LIST;
-    FUNCTION_Object FUNCTION;
+    Function_Object FUNCTION;
     Object_Object OBJECT;
     OP_Object OP;
     Iterator_Object ITER;

@@ -383,6 +383,11 @@ void Bytecode_Evaluator::eval_store(Bytecode op, std::shared_ptr<StackFrame>& fr
     {
         value->FUNCTION.name = name;
     }
+
+    if (value->type == SO_Type::OBJECT)
+    {
+        value->OBJECT.name = name;
+    }
 }
 
 void Bytecode_Evaluator::eval_store_at(std::shared_ptr<StackFrame>& frame)
@@ -1587,6 +1592,28 @@ void Bytecode_Evaluator::eval_dot(std::shared_ptr<StackFrame>& frame)
             return;
         }
 
+        if (name == "_name")
+        {
+            res = so_make_string(left->OBJECT.name);
+            frame->stack.push_back(res);
+            return;
+        }
+
+        if (name == "_items")
+        {
+            res->type = SO_Type::LIST;
+            for (auto props : left->OBJECT.properties)
+            {
+                auto item = so_make_object();
+                item->OBJECT.properties["key"] = so_make_string(props.first);
+                item->OBJECT.properties["value"] = props.second;
+                res->LIST.objects.insert(res->LIST.objects.begin(), item);
+            }
+
+            frame->stack.push_back(res);
+            return;
+        }
+
         if (left->OBJECT.properties.find(name) == left->OBJECT.properties.end())
         {
             res = so_make_empty();
@@ -2303,7 +2330,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
 
         if (args[0]->type != SO_Type::STRING)
         {
-            make_error("Builtin function 'create' expects a variable name");
+            make_error("Builtin function 'var' expects a variable name");
             exit();
             return;
         }
@@ -2314,6 +2341,40 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
             args[1]->FUNCTION.name = args[0]->STRING.value;
         }
         frame->stack.push_back(args[1]);
+        return;
+    }
+
+    if (function->FUNCTION.name == "var_out")
+    {
+        auto args = function->FUNCTION.arguments;
+        if (args.size() != 2)
+        {
+            make_error("Builtin function 'var_out' expects 2 argument but " 
+            + std::to_string(args.size()) + " were provided");
+            exit();
+            return;
+        }
+
+        if (args[0]->type != SO_Type::STRING)
+        {
+            make_error("Builtin function 'var_out' expects a variable name");
+            exit();
+            return;
+        }
+
+        if (frame->outer_frame == nullptr)
+        {
+            make_error("Builtin function 'var_out' cannot be called at the top level");
+            exit();
+            return;
+        }
+
+        frame->outer_frame->locals[args[0]->STRING.value] = args[1];
+        if (args[1]->type == SO_Type::FUNCTION)
+        {
+            args[1]->FUNCTION.name = args[0]->STRING.value;
+        }
+        frame->stack.push_back(so_make_empty());
         return;
     }
 
@@ -2473,7 +2534,16 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
             return;
         }
 
-        Lexer lexer(args[0]->STRING.value);
+        std::string file_path = args[0]->STRING.value;
+
+        if (import_cache.find(file_path) != import_cache.end())
+        {
+            auto import_object = import_cache[file_path];
+            frame->stack.push_back(import_object);
+            return;
+        }
+
+        Lexer lexer(file_path);
         lexer.tokenize();
 
         Parser parser(lexer.file_name, lexer.nodes);
@@ -2481,16 +2551,18 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
 
         Bytecode_Generator generator(parser.file_name, parser.nodes);
         auto instructions = generator.generate();
-        //generator.print_instructions();
 
         parser.nodes.clear();
 
         auto import_frame = std::make_shared<StackFrame>();
 
         Bytecode_Evaluator evaluator(instructions);
+        evaluator.import_cache = import_cache;
         evaluator.repl = repl;
         evaluator.file_name = parser.file_name;
         evaluator.evaluate(import_frame);
+
+        import_cache = evaluator.import_cache;
 
         auto import_object = so_make_object();
 
@@ -2508,11 +2580,94 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
             import_object->OBJECT.properties[symbol.first] = symbol.second;
         }
 
+        import_cache[file_path] = import_object;
+
         frame->stack.push_back(import_object);
+    }
+
+    if (function->FUNCTION.name == "use")
+    {
+        auto args = function->FUNCTION.arguments;
+        if (args.size() != 1)
+        {
+            make_error("Builtin function 'use' expects 1 argument but " 
+            + std::to_string(args.size()) + " were provided");
+            exit();
+            return;
+        }
+
+        std::string file_path = args[0]->STRING.value;
+
+        if (import_cache.find(file_path) != import_cache.end())
+        {
+            auto import_object = import_cache[file_path];
+            for (auto elem : import_object->OBJECT.properties)
+            {
+                if (frame->locals.find(elem.first) == frame->locals.end())
+                {
+                    frame->locals[elem.first] = elem.second;
+                }
+            }
+
+            frame->stack.push_back(so_make_empty());
+            
+            return;
+        }
+
+        Lexer lexer(file_path);
+        lexer.tokenize();
+
+        Parser parser(lexer.file_name, lexer.nodes);
+        parser.parse();
+
+        Bytecode_Generator generator(parser.file_name, parser.nodes);
+        auto instructions = generator.generate();
+
+        parser.nodes.clear();
+
+        auto import_frame = std::make_shared<StackFrame>();
+
+        Bytecode_Evaluator evaluator(instructions);
+        evaluator.import_cache = import_cache;
+        evaluator.repl = repl;
+        evaluator.file_name = parser.file_name;
+        evaluator.evaluate(import_frame);
+
+        import_cache = evaluator.import_cache;
+
+        auto import_object = so_make_object();
+
+        for (auto symbol : import_frame->locals)
+        {
+            // if symbol is a lambda, we include itself in its own closure
+            // so that in the case it's recursive, it can be referenced
+            // from a different scope
+
+            if (symbol.second->type == SO_Type::FUNCTION)
+            {
+                symbol.second->FUNCTION.closure[symbol.first] = symbol.second;
+            }
+
+            // only import if it doesn't exist in local scope, otherwise
+            // local scope takes precedence
+
+            if (frame->locals.find(symbol.first) == frame->locals.end())
+            {
+                frame->locals[symbol.first] = symbol.second;
+            }
+
+            import_object->OBJECT.properties[symbol.first] = symbol.second;
+
+        }
+
+        import_cache[file_path] = import_object;
+
+        frame->stack.push_back(so_make_empty());
     }
 
     return;
 }
+
 
 void Bytecode_Evaluator::eval_build_function(Bytecode op, std::shared_ptr<StackFrame>& frame)
 {
