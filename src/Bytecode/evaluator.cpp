@@ -2538,7 +2538,6 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
 
         if (import_cache.find(file_path) != import_cache.end())
         {
-            std::cout << "Hit the import cache: " + file_path + "\n";
             auto import_object = import_cache[file_path];
             frame->stack.push_back(import_object);
             return;
@@ -2558,14 +2557,12 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         auto import_frame = std::make_shared<StackFrame>();
 
         Bytecode_Evaluator evaluator(instructions);
+        evaluator.import_cache = import_cache;
         evaluator.repl = repl;
         evaluator.file_name = parser.file_name;
         evaluator.evaluate(import_frame);
 
-        for (auto import_frame_import_cache : evaluator.import_cache)
-        {
-            import_cache[import_frame_import_cache.first] = import_frame_import_cache.second;
-        }
+        import_cache = evaluator.import_cache;
 
         auto import_object = so_make_object();
 
@@ -2603,7 +2600,6 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
 
         if (import_cache.find(file_path) != import_cache.end())
         {
-            std::cout << "Hit the import cache: " + file_path + "\n";
             auto import_object = import_cache[file_path];
             for (auto elem : import_object->OBJECT.properties)
             {
@@ -2632,14 +2628,12 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         auto import_frame = std::make_shared<StackFrame>();
 
         Bytecode_Evaluator evaluator(instructions);
+        evaluator.import_cache = import_cache;
         evaluator.repl = repl;
         evaluator.file_name = parser.file_name;
         evaluator.evaluate(import_frame);
 
-        for (auto import_frame_import_cache : evaluator.import_cache)
-        {
-            import_cache[import_frame_import_cache.first] = import_frame_import_cache.second;
-        }
+        import_cache = evaluator.import_cache;
 
         auto import_object = so_make_object();
 
