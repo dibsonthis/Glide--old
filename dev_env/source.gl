@@ -1,4 +1,5 @@
 
 use["../../../dev_env/imports/list.gl"]
+ls = import["../../../dev_env/imports/list.gl"]
 
 1..10 -> map[*2]

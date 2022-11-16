@@ -2534,7 +2534,16 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
             return;
         }
 
-        Lexer lexer(args[0]->STRING.value);
+        std::string file_path = args[0]->STRING.value;
+
+        if (import_cache.find(file_path) != import_cache.end())
+        {
+            auto import_object = import_cache[file_path];
+            frame->stack.push_back(import_object);
+            return;
+        }
+
+        Lexer lexer(file_path);
         lexer.tokenize();
 
         Parser parser(lexer.file_name, lexer.nodes);
@@ -2569,6 +2578,8 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
             import_object->OBJECT.properties[symbol.first] = symbol.second;
         }
 
+        import_cache[file_path] = import_object;
+
         frame->stack.push_back(import_object);
     }
 
@@ -2583,7 +2594,23 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
             return;
         }
 
-        Lexer lexer(args[0]->STRING.value);
+        std::string file_path = args[0]->STRING.value;
+
+        if (import_cache.find(file_path) != import_cache.end())
+        {
+            auto import_object = import_cache[file_path];
+            for (auto elem : import_object->OBJECT.properties)
+            {
+                if (frame->locals.find(elem.first) == frame->locals.end())
+                {
+                    frame->locals[elem.first] = elem.second;
+                }
+            }
+            
+            return;
+        }
+
+        Lexer lexer(file_path);
         lexer.tokenize();
 
         Parser parser(lexer.file_name, lexer.nodes);
@@ -2601,6 +2628,8 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         evaluator.repl = repl;
         evaluator.file_name = parser.file_name;
         evaluator.evaluate(import_frame);
+
+        auto import_object = so_make_object();
 
         for (auto symbol : import_frame->locals)
         {
@@ -2621,7 +2650,11 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
                 frame->locals[symbol.first] = symbol.second;
             }
 
+            import_object->OBJECT.properties[symbol.first] = symbol.second;
+
         }
+
+        import_cache[file_path] = import_object;
 
         frame->stack.push_back(so_make_empty());
     }
