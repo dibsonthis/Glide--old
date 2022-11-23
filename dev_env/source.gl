@@ -1,4 +1,7 @@
+a = []
 
-use["../../../dev_env/imports/csv.gl"]
-use["../../../dev_env/imports/list.gl"]
-use["../../../dev_env/imports/string.gl"]
+_for[1..10 i] => {
+    a.[a.length] = i
+}
+
+a

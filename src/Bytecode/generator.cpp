@@ -99,6 +99,12 @@ void Bytecode::print()
             std::cout << index;
         } break;
 
+        case OpType::BUILD_LOOP:
+        {
+            std::cout << "BUILD_LOOP ";
+            std::cout << index;
+        } break;
+
         case OpType::JUMP_IF_FALSE:
         {
             std::cout << "JUMP_IF_FALSE ";
@@ -465,6 +471,83 @@ std::vector<Bytecode> Bytecode_Generator::gen_function_call(std::shared_ptr<Node
     add_instruction(Bytecode(OpType::CALL_FUNCTION, args_length));
     return instructions;
 }
+
+std::vector<Bytecode> Bytecode_Generator::gen_builtin_for_loop(std::shared_ptr<Node> node)
+{
+    auto left = node->left->FUNC_CALL;
+    int args_length = left.args.size();
+
+    if (args_length < 1)
+    {
+        auto error = error_message(node, file_name, "For loop must have an iterator");
+        errors.push_back(error);
+        return instructions;
+    }
+
+    auto iterator = left.args[0];
+    instructions = gen_bytecode(iterator);
+
+    if (args_length > 1)
+    {
+        if (!is_type(left.args[1], {NodeType::ID}))
+        {
+            auto error = error_message(node, file_name, "For loop index must be an id");
+            errors.push_back(error);
+            return instructions;
+        }
+
+        auto string_node = std::make_shared<Node>(*left.args[1]);
+        string_node->type = NodeType::STRING;
+        string_node->STRING.value = left.args[1]->ID.value;
+        instructions = gen_bytecode(string_node);
+    }
+
+    if (args_length > 2)
+    {
+        if (!is_type(left.args[2], {NodeType::ID}))
+        {
+            auto error = error_message(node, file_name, "For loop iteration element must be an id");
+            errors.push_back(error);
+            return instructions;
+        }
+
+        auto string_node = std::make_shared<Node>(*left.args[2]);
+        string_node->type = NodeType::STRING;
+        string_node->STRING.value = left.args[2]->ID.value;
+        instructions = gen_bytecode(string_node);
+    }
+
+    auto args_length_node = std::make_shared<Node>(*node->left);
+
+    auto instruction_block = so_make_block();
+
+    Bytecode_Generator gen("_for", node->right->BLOCK.nodes);
+
+    int current_instruction_index = instruction_counter;
+
+    gen.nodes.insert(gen.nodes.begin(), std::make_shared<Node>(NodeType::START_OF_FILE));
+    gen.nodes.push_back(std::make_shared<Node>(NodeType::END_OF_FILE));
+
+    gen.generate();
+
+    for (auto& instruction : gen.instructions)
+    {
+        if (instruction.type == OpType::JUMP_IF_FALSE ||
+            instruction.type == OpType::JUMP_TO)
+            {
+                instruction.index += 1;
+            }
+    }
+
+    instruction_block->BLOCK.instructions = gen.instructions;
+
+    add_instruction(Bytecode(OpType::LOAD_CONST, instruction_block));
+
+    add_instruction(Bytecode(OpType::BUILD_LOOP, args_length));
+    
+    return instructions;
+}
+
 
 std::vector<Bytecode> Bytecode_Generator::gen_for_loop(std::shared_ptr<Node> node)
 {
@@ -896,6 +979,10 @@ std::vector<Bytecode> Bytecode_Generator::gen_bytecode(std::shared_ptr<Node> nod
     if (is_type(node, {NodeType::FOR_LOOP}))
     {
         return gen_for_loop(node);
+    }
+    if (is_type(node, {NodeType::BUILTIN_FOR_LOOP}))
+    {
+        return gen_builtin_for_loop(node);
     }
     if (is_type(node, {NodeType::WHILE_LOOP}))
     {
