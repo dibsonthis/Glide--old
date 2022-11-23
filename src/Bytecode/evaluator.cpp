@@ -1666,7 +1666,7 @@ void Bytecode_Evaluator::eval_range(std::shared_ptr<StackFrame>& frame)
     if (left->type == SO_Type::INT && right->type == SO_Type::INT)
     {
         res->type = SO_Type::LIST;
-        for (int i = left->INT.value; i <= right->INT.value; i++)
+        for (int i = left->INT.value; i < right->INT.value; i++)
         {
             auto element = std::make_shared<StackObject>(SO_Type::INT);
             element->INT.value = i;
@@ -1873,19 +1873,11 @@ void Bytecode_Evaluator::eval_builtin_loop(Bytecode op, std::shared_ptr<StackFra
     eval.file_name = file_name;
     eval.import_cache = import_cache;
 
-    if (index != nullptr)
-    {
-        frame->locals[index->STRING.value] = so_make_int(0);
-    }
-
     for (int i = 0; i < iter->LIST.objects.size(); i++)
     {
         if (index != nullptr)
         {
-            if (i > 0)
-            {
-                frame->locals[index->STRING.value]->INT.value = i;
-            }
+            frame->locals[index->STRING.value] = so_make_int(i);
         }
 
         if (value != nullptr)
@@ -1920,6 +1912,11 @@ void Bytecode_Evaluator::eval_builtin_loop(Bytecode op, std::shared_ptr<StackFra
             else
             {
                 eval.eval_instruction(frame);
+            }
+
+            if (eval.current_op.type == OpType::EXIT)
+            {
+                break;
             }
 
             if (eval.errors.size() > 0)
