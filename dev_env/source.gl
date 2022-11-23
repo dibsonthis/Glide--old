@@ -1,7 +1,5 @@
-a = []
-
-_for[1..10 i] => {
-    a.[a.length] = i
+f = [a b] => {
+    print[a " - " b " - " _catch]
 }
 
-a
+f[1 4 6 7]

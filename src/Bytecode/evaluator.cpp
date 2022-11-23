@@ -2896,6 +2896,7 @@ void Bytecode_Evaluator::eval_call_function(Bytecode op, std::shared_ptr<StackFr
     }
 
     function_frame->locals["_args"] = so_make_list();
+    function_frame->locals["_catch"] = so_make_comma_list();
 
     if (param_count == 0)
     {
@@ -2908,16 +2909,9 @@ void Bytecode_Evaluator::eval_call_function(Bytecode op, std::shared_ptr<StackFr
     {
         for (int i = 0; i < arguments.size(); i++)
         {
-            if (i == param_count)
+            if (i >= parameters.size())
             {
-                function_frame->locals[parameters[param_count-1]] = so_make_comma_list();
-                function_frame->locals[parameters[param_count-1]]->COMMA_LIST.objects.push_back(arguments[i-1]);
-                function_frame->locals[parameters[param_count-1]]->COMMA_LIST.objects.push_back(arguments[i]);
-                function_frame->locals["_args"]->LIST.objects.push_back(arguments[i]);
-            }
-            else if (i > parameters.size())
-            {
-                function_frame->locals[parameters[param_count-1]]->COMMA_LIST.objects.push_back(arguments[i]);
+                function_frame->locals["_catch"]->COMMA_LIST.objects.push_back(arguments[i]);
                 function_frame->locals["_args"]->LIST.objects.push_back(arguments[i]);
             }
             else
@@ -3164,6 +3158,7 @@ void Bytecode_Evaluator::eval_arrow(std::shared_ptr<StackFrame>& frame)
         auto arguments = right->FUNCTION.arguments;
 
         function_frame->locals["_args"] = so_make_list();
+        function_frame->locals["_catch"] = so_make_comma_list();
 
         if (param_count == 0)
         {
@@ -3176,16 +3171,9 @@ void Bytecode_Evaluator::eval_arrow(std::shared_ptr<StackFrame>& frame)
         {
             for (int i = 0; i < arguments.size(); i++)
             {
-                if (i == param_count)
+                if (i >= parameters.size())
                 {
-                    function_frame->locals[parameters[param_count-1]] = so_make_comma_list();
-                    function_frame->locals[parameters[param_count-1]]->COMMA_LIST.objects.push_back(arguments[i-1]);
-                    function_frame->locals[parameters[param_count-1]]->COMMA_LIST.objects.push_back(arguments[i]);
-                    function_frame->locals["_args"]->LIST.objects.push_back(arguments[i]);
-                }
-                else if (i > parameters.size())
-                {
-                    function_frame->locals[parameters[param_count-1]]->COMMA_LIST.objects.push_back(arguments[i]);
+                    function_frame->locals["_catch"]->COMMA_LIST.objects.push_back(arguments[i]);
                     function_frame->locals["_args"]->LIST.objects.push_back(arguments[i]);
                 }
                 else
