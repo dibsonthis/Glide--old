@@ -1,4 +1,4 @@
-ls = import["src/imports/list.gl"]
+use["imports/std/std.gl"]
 
 fib = [n] => {
 
@@ -16,7 +16,7 @@ fib = [n] => {
     ret fib[n-1] + fib[n-2]
 }
 
-fib2 = [prev n] => {
+fib_memo = [prev n] => {
 	str_n = n -> to_string
 
 	if [prev.[str_n] != empty] => {
@@ -29,7 +29,7 @@ fib2 = [prev n] => {
 		n == 0: { result = 0 }
 		n <= 2: { result = 1 }
 		default: {
-			result = fib2[prev n - 1] + fib2[prev n - 2]
+			result = fib_memo[prev n - 1] + fib_memo[prev n - 2]
 		}
 	}
 
@@ -49,7 +49,7 @@ pow = [exponent base] => {
     ret num
 }
 
-pow2 = [prev exponent base] => {
+pow_memo = [prev exponent base] => {
 
     key = to_string[exponent] + ":" + to_string[base]
     if [prev.[key] != empty] => {
@@ -58,7 +58,7 @@ pow2 = [prev exponent base] => {
     }
 
     if [exponent < 0] => {
-        result = (1 / ((-exponent, base) -> pow))
+        result = (1 / ((-exponent, base) -> pow_memo))
         prev.[key] = result
         ret result
     }
@@ -109,9 +109,9 @@ max = [a b] => {
 
 bin_to_int = [bin_string] => {
     -(bin_string.to_chars)
-    -> ls.map3[[x i l] => { 
+    -> map[[x i l] => { 
         x = x -> to_int
         x * pow[i 2]
         }] 
-    -> ls.reduce[+]
+    -> reduce[+]
 }

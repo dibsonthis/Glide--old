@@ -1,0 +1,89 @@
+quicksort = [_l] => {
+  _l = #_l
+  swap = [i j] => {
+    tmp = _l.[i]
+    _l.[i] = _l.[j]
+    _l.[j] = tmp
+  }
+
+  partition = [low high] => {
+    pivot = _l.[high]
+    i = low - 1
+    for [low..high j x] => {
+      if [_l.[x] < pivot] => {
+        i = i + 1
+        swap[i x]
+      }
+    }
+    swap[(i + 1) high]
+    ret i + 1
+  }
+
+  _inner = [low high] => {
+    if [low < high] => {
+      pi = partition[low high]
+      _inner[low (pi - 1)]
+      _inner[(pi + 1) high]
+    }
+  }
+  
+  _inner[0 (_l.length - 1)]
+  ret _l
+}
+
+quicksort_f = [_l] => {
+  _l = #_l
+  swap = [i j] => {
+    tmp = _l.[i]
+    _l.[i] = _l.[j]
+    _l.[j] = tmp
+  }
+
+  partition = [low high] => {
+    pivot = _l.[high]
+    i = low - 1
+    _for [low..high j x] => {
+      if [_l.[x] < pivot] => {
+        i = i + 1
+        swap[i x]
+      }
+    }
+    swap[(i + 1) high]
+    ret i + 1
+  }
+
+  _inner = [low high] => {
+    if [low < high] => {
+      pi = partition[low high]
+      _inner[low (pi - 1)]
+      _inner[(pi + 1) high]
+    }
+  }
+  
+  _inner[0 (_l.length - 1)]
+  ret _l
+}
+
+insertion_sort = [_list] => {
+
+    if [type[_list] != list] => {
+        ret empty
+    }
+
+    l = #_list
+    len = l.length
+    i = 1
+
+    while [i < len] => {
+        x = l.[i]
+        j = i - 1
+        while [j >= 0 && l.[j] > x] => {
+            l.[j + 1] = l.[j]
+            j = j - 1
+        }
+        l.[j+1] = x
+        i = i + 1
+    }
+
+    ret l
+}

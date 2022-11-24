@@ -1,0 +1,980 @@
+// -------- Const ---------- //
+
+number = (int, float)
+alpha_lower = "abcdefghijklmnopqrstuvwxyz"
+alpha_upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+digits = "0123456789"
+whitespace = " \n\t\r"
+
+// -------- List ---------- //
+
+map = [func _list] => {
+
+    if [type[_list] != list] => {
+        ret empty
+    }
+
+	copy = #_list
+
+    if [type[func] == function] => {
+
+        func_param_size = shape[func].params.length
+
+        if [func_param_size == 1] => {
+            for [copy index] => {
+                copy.[index] = func[copy.[index]]
+            }
+
+            ret copy
+        }
+
+        if [func_param_size == 2] => {
+            for [copy index] => {
+                copy.[index] = func[copy.[index] index]
+            }
+
+            ret copy
+        }
+
+        if [func_param_size == 3] => {
+            for [copy index] => {
+                copy.[index] = func[copy.[index] index _list]
+            }
+
+            ret copy
+        }
+
+        ret []
+    }
+
+    _for [copy index] => {
+		copy.[index] = copy.[index] -> func
+	}
+
+	ret copy
+}
+
+filter = [func _list] => {
+
+    if [type[_list] != list] => {
+        ret empty
+    }
+
+	new = []
+
+    if [type[func] == function] => {
+
+        func_param_size = shape[func].params.length
+
+        if [func_param_size == 1] => {
+            for [_list index] => {
+                if [func[_list.[index]]] => {
+                    if => {
+                        type[_list.[index]] == "_list": { new.[new.length] = [_list.[index]]}
+                        default: { new.[new.length] = _list.[index] }
+                    }
+                }
+            }
+            ret new
+        }
+
+        if [func_param_size == 2] => {
+            for [_list index] => {
+                if [func[_list.[index] index]] => {
+                    if => {
+                        type[_list.[index]] == "_list": { new.[new.length] = [_list.[index]]}
+                        default: { new.[new.length] = _list.[index] }
+                    }
+                }
+            }
+            ret new
+        }
+
+        if [func_param_size == 3] => {
+            for [_list index] => {
+                if [func[_list.[index] index _list]] => {
+                    if => {
+                        type[_list.[index]] == "_list": { new.[new.length] = [_list.[index]]}
+                        default: { new.[new.length] = _list.[index] }
+                    }
+                }
+            }
+            ret new
+        }
+
+        ret []
+    }
+
+	_for [_list index] => {
+		if [_list.[index] -> func] => {
+			if => {
+				type[_list.[index]] == "_list": { new.[new.length] = [_list.[index]]}
+				default: { new.[new.length] = _list.[index] }
+			}
+		}
+	}
+	ret new
+}
+
+find = [func _list] => {
+    if [type[_list] != list] => {
+        ret
+    }
+
+    if => {
+        type[func] == function: {
+
+            func_param_size = shape[func].params.length
+
+            if [func_param_size == 1] => {
+                for [_list index] => {
+                    if [func[_list.[index]]] => {
+                        ret _list.[index]
+                    }
+                }
+            }
+
+            if [func_param_size == 2] => {
+                for [_list index] => {
+                    if [func[_list.[index] index]] => {
+                        ret _list.[index]
+                    }
+                }
+            }
+
+            if [func_param_size == 3] => {
+                for [_list index] => {
+                    if [func[_list.[index] index _list]] => {
+                        ret _list.[index]
+                    }
+                }
+            }
+
+            ret
+        }
+        default: {
+            _for [_list index value] => {
+                if [value -> func] => {
+                    ret _list.[index]
+                }
+            }
+        }
+    }
+}
+
+reduce = [func _list] => {
+
+    if [type[_list] != list] => {
+        ret empty
+    }
+
+	if [_list.length == 0] => {
+		ret 0
+	}
+
+	if [_list.length == 1] => {
+		ret _list.[0]
+	}
+
+	if [_list.length == 2] => {
+        if [type[func] == function] => {
+            ret func[(_list.[0] _list.[1])]
+        }
+		ret (_list.[0], _list.[1]) -> func
+	}
+
+	x = _list.[0]
+    if [type[func] == function] => {
+        for [1..(_list.length) index] => {
+            x = func[(x _list.[index + 1])]
+        }
+        ret x
+    }
+
+	_for [1..(_list.length) index] => {
+		x = (x, _list.[index + 1]) -> func
+	}
+	ret x
+}
+
+zip = [func list_a list_b] => {
+
+    if [type[list_a] != list || type[list_b] != list] => {
+        ret empty
+    }
+
+	if [list_a.length != list_b.length] => {
+		ret []
+	}
+
+	copy = []
+    if [type[func] == function] => {
+        for [list_a index] => {
+            res = func[list_a.[index] list_b.[index]]
+            copy.[copy.length] = res
+        }
+        ret copy
+    }
+
+    for [list_a index] => {
+		res = (list_a.[index], list_b.[index]) -> func
+		copy.[copy.length] = res
+	}
+	ret copy
+}
+
+zip_many = [func args] => {
+
+    if [type[args] != list] => {
+        ret
+    }
+
+    if [shape[func].params.length != args.length] => {
+        ret
+    }
+
+    _list = []
+    for [args.[0] arg_i elem] => {
+        res = func
+        for [args args_i arg] => {
+            res = arg.[arg_i] -> res
+        }
+        _list.[arg_i] = res
+    }
+    ret _list
+}
+
+insert = [pos item _list] => {
+
+    if [type[_list] != list] => {
+        ret empty
+    }
+
+	new = []
+	for [_list index] => {
+		if [index == pos] => {
+			new.[new.length] = item
+		}
+		new.[new.length] = _list.[index]
+	}
+	ret new
+}
+
+append = [item _list] => {
+
+    if [type[_list] != list] => {
+        ret empty
+    }
+
+	copy = #_list
+	copy.[copy.length] = item
+	ret copy
+}
+
+prepend = [item _list] => {
+
+    if [type[_list] != list] => {
+        ret empty
+    }
+
+	copy = #_list
+	copy.[-1] = item
+	ret copy
+}
+
+pop_f = [_list] => {
+
+    if [type[_list] != list] => {
+        ret empty
+    }
+	
+	if [_list.length == 0] => {
+		obj = @{
+			rest: []
+		}
+		ret obj
+	}
+
+	obj = @{
+		front: _list.[0]
+		rest: _list -> filter[[x i] => {i != 0}]
+	}
+	ret obj
+}
+
+pop_b = [_list] => {
+
+    if [type[_list] != list] => {
+        ret empty
+    }
+
+	if [_list.length == 0] => {
+		obj = @{
+			rest: []
+		}
+		ret obj
+	}
+
+	last_index = _list.length - 1
+	obj = @{
+		back: _list.[last_index]
+		rest: _list -> filter[[x i] => { i != last_index}]
+	}
+	ret obj
+}
+
+index_of = [element _list] => {
+
+    if [type[_list] != list] => {
+        ret empty
+    }
+
+    for[_list index item] => {
+        if [item == element] => {
+            ret index
+        }
+    }
+
+    ret (-1)
+}
+
+at = [index _list] => {
+
+    if [type[_list] != list] => {
+        ret empty
+    }
+
+	_list.[index]
+}
+
+slice = [start end _list] => {
+
+    if [type[_list] != list] => {
+        ret empty
+    }
+
+    _list -> filter[[x i] => {
+        i >= start && i <= end
+    }]
+}
+
+unique = [_list] => {
+
+    if [type[_list] != list] => {
+        ret empty
+    }
+
+    prev = @{}
+    unique_list = []
+    for [_list index item] => {
+        if [prev.[to_string[item]] == empty] => {
+            prev.[to_string[item]] = index
+            unique_list.[unique_list.length + 1] = item
+        }
+    }
+    ret unique_list
+}
+
+sort = [_list] => {
+
+    if [type[_list] != list] => {
+        ret
+    }
+
+    if [_list.length == 0] => {
+        ret []
+    }
+
+    sortable = [x] => {
+        t = type[x]
+        if => {
+            t == string: {
+                if [x.length == 1] => {
+                    ret x -> to_int
+                }
+
+                ret x.to_chars.[0] -> to_int
+            }
+            t == list || t == comma_list: {
+                ret x.length
+            }
+            t == object: {
+                ret x._keys.length
+            }
+            default: {
+                ret x
+            }
+        }
+    }
+
+    quicksort = [_l] => {
+        swap = [i j] => {
+            tmp = _l.[i]
+            _l.[i] = _l.[j]
+            _l.[j] = tmp
+        }
+
+        partition = [low high] => {
+            pivot = sortable[_l.[high]]
+            i = low - 1
+            for [low..high j x] => {
+            if [sortable[_l.[x]] < pivot] => {
+                i = i + 1
+                swap[i x]
+            }
+            }
+            swap[(i + 1) high]
+            ret i + 1
+        }
+
+        _inner = [low high] => {
+            if [low < high] => {
+            pi = partition[low high]
+            _inner[low (pi - 1)]
+            _inner[(pi + 1) high]
+            }
+        }
+        
+        _inner[0 (_l.length - 1)]
+        ret _l
+    }
+
+    ret _list -> quicksort
+}
+
+sort_by = [key _list] => {
+
+    if [type[_list] != list] => {
+        ret
+    }
+
+    if [_list.length == 0] => {
+        ret []
+    }
+
+    keyed = [x] => {
+		if => {
+			x == empty: { ret x }
+			default: { ret key[x] }
+		}
+	}
+
+    quicksort = [_l] => {
+        swap = [i j] => {
+            tmp = _l.[i]
+            _l.[i] = _l.[j]
+            _l.[j] = tmp
+        }
+
+        partition = [low high] => {
+            pivot = keyed[_l.[high]]
+            i = low - 1
+            for [low..high j x] => {
+            if [keyed[_l.[x]] < pivot] => {
+                i = i + 1
+                swap[i x]
+            }
+            }
+            swap[(i + 1) high]
+            ret i + 1
+        }
+
+        _inner = [low high] => {
+            if [low < high] => {
+            pi = partition[low high]
+            _inner[low (pi - 1)]
+            _inner[(pi + 1) high]
+            }
+        }
+        
+        _inner[0 (_l.length - 1)]
+        ret _l
+    }
+
+    ret _list -> quicksort
+}
+
+join = [delim _list] => {
+
+    if [type[_list] != list] => {
+        ret empty
+    }
+
+	_list -> reduce[[a b] => { a + delim + b }]
+}
+
+swap = [i j _list] => {
+
+    if [type[_list] != list] => {
+        ret empty
+    }
+
+    copy = #_list
+
+    tmp = copy.[i]
+    copy.[i] = copy.[j]
+    copy.[j] = tmp
+
+    ret copy
+}
+
+count = [value _list] => {
+
+    if [type[_list] != list] => {
+        ret empty
+    }
+
+	res = 0
+	for [_list index item] => {
+		if [item == value] => {
+			res += 1
+		}
+	}
+	ret res
+}
+
+to_object = [_list] => {
+
+    if [type[_list] == object] => {
+        ret _list
+    }
+
+    if [type[_list] != list] => {
+        ret empty
+    }
+
+    _list -> map[[x i] => { @{to_string[x]: i} }] -> reduce[+]
+}
+
+// -------- Object ---------- //
+
+get = [property _object] => {
+    _object.[property]
+}
+
+// -------- Function ---------- //
+
+call = [f] => {
+
+    if [type[f] != function] => {
+        ret
+    }
+    
+    f[]
+}
+
+// -------- String ---------- //
+
+chars = [_str] => {
+    if [type[_str] != string] => {
+        ret
+    }
+
+    _str.to_chars
+}
+
+split = [delim _str] => {
+
+    if [type[_str] != string] => {
+        ret
+    }
+
+	if [delim == ""] => {
+		ret _str.to_chars
+	}
+	
+    new = []
+    _list = _str.to_chars
+    s = ""
+
+    _for[_list i c] => {
+        if => {
+            c == delim: {
+                new.[new.length] = s
+                s = ""
+            }
+            default: {
+                s = s + c
+            }
+        }
+    }
+
+    new.[new.length] = s
+
+    ret new
+}
+
+
+// -------- Equality ---------- //
+
+equals = [a b] => {
+
+    if [address[a] == address[b]] => {
+        ret true
+    }
+
+    if [a == b] => {
+        ret true
+    }
+
+    ta = type[a]
+    tb = type[b]
+
+    if [ta != tb] =>{
+        ret false
+    }
+
+    if => {
+        ta == list: {
+            if [a.length != b.length] => {
+                ret false
+            }
+
+            sa = a -> sort
+            sb = b -> sort
+
+            for [sa index item] => {
+                if [!(item -> equals[sb.[index]])] => {
+                    ret false
+                }
+            }
+
+            ret true
+        }
+        ta == object: {
+            if [a._keys.length != b._keys.length] => {
+                ret false
+            }
+
+            if [!(a._keys -> sort -> equals[b._keys -> sort])] => {
+                ret false
+            }
+
+            for [a._keys index key] => {
+                if [a.[key] != b.[key]] => {
+                    ret false
+                }
+            }
+
+            ret true
+
+        }
+        default: {
+            ret false
+        }
+    }
+}
+
+// -------- Generics ---------- //
+
+length = [_object] => {
+    t = type[_object]
+    if => {
+        t == list || t == comma_list: {
+            ret _object.length
+        }
+        t == object: {
+            ret _object._keys.length
+        }
+        default: {
+            ret empty
+        }
+    }
+}
+
+contains = [value _object] => {
+    t = type[_object]
+    if => {
+        t == list: {
+            for [_object index item] => {
+                if [item == value] => {
+                    ret true
+                }
+            }
+        }
+        t == comma_list: {
+            for [to_list[_object] index item] => {
+                if [item == value] => {
+                    ret true
+                }
+            }
+        }
+        t == object: {
+            for [_object._keys index item] => {
+                if [item == value] => {
+                    ret true
+                }
+            }
+        }
+        t == string: {
+            for [_object.to_chars index item] => {
+                if [item == value] => {
+                    ret true
+                }
+            }
+        }
+        default: {
+            ret empty
+        }
+    }
+
+    ret false
+}
+
+remove = [item _object] => {
+    t = type[_object]
+
+    if => {
+        t == object: {
+            delete_prop[_object item]
+            ret _object
+        }
+        t == list: {
+            
+            ret _object -> filter[[x] => { x != item }]
+        }
+        default: {
+            ret empty
+        }
+    }
+}
+
+// -------- Types ---------- //
+
+get_type = [_object] => {
+    _type = type[_object]
+
+    if [_type == list] => {
+        type_list = _object -> map[[x] => { get_type[x] }] -> unique -> sort
+        ret type_list
+    }
+
+    if [_type == comma_list] => {
+        type_list = to_list[_object] -> map[[x] => { get_type[x] }] -> unique -> sort
+        ret type_list
+    }
+
+    if [_type != object] => {
+        ret _type
+    }
+
+    type_obj = @{}
+
+    for [_object._keys index key] => {
+        type_obj.[key] = get_type[_object.[key]]
+    }
+
+    ret type_obj
+}
+
+is_type = [_type value] => {
+    if [type[_type] == comma_list] => {
+        for [to_list[_type] i v] => {
+            if [value -> is_type[v]] => {
+                ret true
+            }
+        }
+        ret false
+    }
+
+    (value -> get_type, _type) -> equals
+}
+
+func_t = [func _type args] => {
+
+    name = shape[func].name
+    func_args = shape[func].args
+    func_params = shape[func].params
+
+    arg_index = func_args.length
+
+    if => {
+        type[args] == comma_list: {
+            args = to_list[args]
+            for [args i arg] => {
+                param_key = func_params.[i]
+
+                if [param_key == empty] => {
+                print["\nTypeError in function '" name "' - expected argument count of " func_params.length " but received " i + 1 " arguments\n"]
+                ret
+            }
+
+                if [!(arg -> is_type[_type.[param_key]])] => {
+                    print["\nTypeError in function '" name "' - expected argument '" param_key "' in position " i " to be of type '" _type.[param_key] "' but received argument of type '" arg -> get_type "'\n"]
+                    ret
+                }
+                func = arg -> func
+            }
+        }
+        default: {
+            param_key = func_params.[arg_index]
+
+            if [param_key == empty] => {
+                print["\nTypeError in function '" name "' - expected argument count of " func_params.length " but received " arg_index + 1 " arguments\n"]
+                ret
+            }
+
+            if [!(args -> is_type[_type.[param_key]])] => {
+                    print["\nTypeError in function '" name "' - expected argument '" param_key "' in position " arg_index " to be of type '" _type.[param_key] "' but received argument of type '" args -> get_type "'\n"]
+                    ret
+                }
+            func = args -> func
+        }
+    }
+
+    if [type[func] != function] => {
+
+        if [_type.ret == empty] => {
+            ret func
+        }
+
+        if [type[_type.ret] == comma_list] => {
+
+            if [func -> is_type[_type.ret]] => {
+                ret func
+            }
+
+            print["TypeError in function '" name "' - expected return value to be of type '" _type.ret "' but returned value is of type '" func -> get_type "'\n"]
+            ret
+        }
+
+        if [!(func -> is_type[_type.ret])] => {
+            print["TypeError in function '" name "' - expected return value to be of type '" _type.ret "' but returned value is of type '" func -> get_type "'\n"]
+            ret
+        }
+
+        ret func
+    }
+
+    ret func_t[var[name func] _type]
+}
+
+var_t = [value _type] => {
+
+    typed_var = @{
+        is_type: is_type
+        get_type: get_type
+        value: value
+        type: _type
+        set: [new_val] => {
+
+            ls = this.ls
+            obj = this.obj
+
+            if [type[new_val] == int && this.type == float] => {
+                this.value = new_val -> to_float
+                ret this
+            }
+
+            if [type[new_val] == float && this.type == int] => {
+                this.value = new_val -> to_int
+                ret this
+            }
+
+            if [new_val -> this.is_type[this.type]] => {
+                this.value = new_val
+                ret this
+            }
+
+            print["TypeError in '" this._name "' - variable of type '" this.type "' cannot be assigned a value of type '" new_val -> this.get_type "'\n"]
+        }
+        get: [] => {
+            this.value
+        }
+    }
+
+    if [type[value] == int && _type == float] => {
+        typed_var.value = value -> to_float
+        ret typed_var
+    }
+
+    if [type[value] == float && _type == int] => {
+        typed_var.value = value -> to_int
+        ret typed_var
+    }
+
+    if [!(value -> is_type[_type])] => {
+        print["TypeError - variable of type '" _type "' cannot be assigned a value of type '" value -> get_type "'\n"]
+        ret
+    }
+
+    ret typed_var
+}
+
+// -------- I/O ---------- //
+
+println = [] => {
+    for [_args i arg] => {
+        print[arg "\n"]
+    }
+}
+
+clear = [file_path] => {
+    write[file_path ""]
+}
+
+// -------- Generic Dependant: String ---------- //
+
+is_digit = [c] => {
+	digits = digits.to_chars
+	if [digits -> contains[c]] => {
+		ret true
+	}
+
+	ret false
+}
+
+is_alpha = [c] => {
+	alpha = (alpha_lower + alpha_upper).to_chars
+	if [alpha -> contains[c]] => {
+		ret true
+	}
+
+	ret false
+}
+
+upper = [_str] => {
+
+    if [type[_str] != string] => {
+        ret
+    }
+
+	if [_str == ""] => {
+		ret ""
+	}
+
+    lower_to_upper_dict = (alpha_lower.to_chars, alpha_upper.to_chars) -> zip[[a b] => { @{a -> to_string : b} }] -> reduce[+]
+
+	_list = _str -> chars
+	for [_list i c] => {
+        if [lower_to_upper_dict -> contains[c]] => {
+            _list.[i] = lower_to_upper_dict.[c]
+        }
+	}
+
+	_list = _list -> join[""]
+	ret _list
+}
+
+lower = [_str] => {
+
+    if [type[_str] != string] => {
+        ret
+    }
+
+	if [_str == ""] => {
+		ret ""
+	}
+
+    upper_to_lower_dict = (alpha_upper.to_chars, alpha_lower.to_chars) -> zip[[a b] => { @{a -> to_string : b} }] -> reduce[+]
+
+	_list = _str -> chars
+	for [_list i c] => {
+        if [upper_to_lower_dict -> contains[c]] => {
+            _list.[i] = upper_to_lower_dict.[c]
+        }
+	}
+
+	_list = _list -> join[""]
+	ret _list
+}

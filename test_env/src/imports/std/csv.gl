@@ -1,0 +1,90 @@
+std = import["imports/std/std.gl"]
+
+to_obj = [data] => {
+
+    if [data.length == 0] => {
+        ret []
+    }
+
+    data = data 
+    -> std.split["\n"]
+    -> std.pop_f
+    -> [x] => { x.front = x.front -> std.split[","] ret x }
+    -> [x] => { x.rest = x.rest -> std.filter[[elem] => { elem.length > 0 }] ret x}
+    -> [x] => { x.rest = x.rest -> std.map[[elem] => { (elem -> std.split[","]) }] ret x }
+    -> [x] => {
+        _list = []
+        _for [x.rest i value] => {
+            obj = @{}
+            _for [value j v] => {
+                obj.[x.front.[j]] = v
+            }
+            _list.[_list.length] = obj
+        }
+        ret _list
+    }
+
+    ret data
+}
+
+load = [filepath] => {
+    if [type[filepath] != string] => {
+        ret
+    }
+
+    ret (read[filepath] -> to_obj)
+}
+
+save = [filepath data] => {
+    if [type[filepath] != string] => {
+        ret
+    }
+
+    if [type[data] != list] => {
+        ret
+    }
+
+    data_str = (-(data.[0]._keys) -> std.join[","]) + "\n"
+    for [data index row] => {
+        data_str += ((-(row._values) -> std.join[","]) + "\n")
+    }
+    write[filepath data_str]
+}
+
+// ----- //
+
+to_data_obj = [data] => {
+    data
+    -> std.split["\n"] 
+    -> std.pop_f 
+    -> [x] => {
+        @{
+            header: x.front -> std.split[","] -> std.map[[x i] => { @{to_string[x]: i} }] -> std.reduce[+]
+            data: x.rest -> std.filter[[x] => { x != "" }] -> std.map[[x] => { x -> std.split[","] }]
+        }
+    }
+}
+
+load_data_obj = [filepath] => {
+    if [type[filepath] != string] => {
+        ret
+    }
+
+    ret (read[filepath] -> to_data_obj)
+}
+
+save_data_obj = [filepath data] => {
+    if [type[filepath] != string] => {
+        ret
+    }
+
+    if [!(data._keys -> std.equals[["header" "data"]])] => {
+        ret
+    }
+
+    data_str = (-(data.header._keys) -> std.join[","]) + "\n"
+    for [data.data index row] => {
+        data_str += ((row -> std.join[","]) + "\n")
+    }
+    write[filepath data_str]
+}

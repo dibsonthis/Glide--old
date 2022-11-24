@@ -1,0 +1,42 @@
+create_iter = [start end step] => {
+	iter = @{
+		start: start
+		end: end
+		step: step
+		index: start
+	}
+
+	next = [iter] => {
+		iter.index = iter.index + iter.step
+		if [iter.index > iter.end] => {
+			iter.index = iter.end
+		}
+		ret iter
+	}
+
+	prev = [iter] => {
+		iter.index = iter.index - iter.step
+		if [iter.index < iter.start] => {
+			iter.index = iter.start
+		}
+		ret iter
+	}
+
+	obj = @{
+		iter: iter
+		next: next
+		prev: prev
+	}
+
+	ret obj
+}
+
+iter_to_list = [iter] => {
+	_list = []
+	iter.iter.index = iter.iter.start
+	while [iter.iter.index < iter.iter.end] => {
+		_list[_list.length] =  iter.iter.index
+		iter.iter -> iter.next
+	}
+	ret _list
+}
