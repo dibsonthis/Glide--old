@@ -1,48 +1,50 @@
-{
-    a: {type: int, value: 45},
-    Vec2: {type: type, value: { x: [int, float], y: [int, float] }}
-    vec: {type: Vec2, value: {x: 45 y: 83}}
-    Vec3: {type: type, value: { x: Vec2.x, y: Vec2.y, z: [int, float] }}
-}
+x :: (float, string, list) = [1 2 3]
 
-a :: int = 45
+// {
+//     a: {type: int, value: 45},
+//     Vec2: {type: type, value: { x: [int, float], y: [int, float] }}
+//     vec: {type: Vec2, value: {x: 45 y: 83}}
+//     Vec3: {type: type, value: { x: Vec2.x, y: Vec2.y, z: [int, float] }}
+// }
 
-= (:: (a, int), 45)
+// a :: int = 45
 
-= (a<int>, 45)
+// = (:: (a, int), 45)
 
----
+// = (a<int>, 45)
 
-Vec2 = %{
-    x: int | float
-    y: int | float
-}
+// ---
 
-vec :: Vec2 = @{x: 45 y: 83}
+// Vec2 = %{
+//     x: int | float
+//     y: int | float
+// }
 
-= (:: (vec, Vec2), @{x: 45 y: 83})
+// vec :: Vec2 = @{x: 45 y: 83}
 
-= (vec<Vec2>, @{x: 45 y: 83})
+// = (:: (vec, Vec2), @{x: 45 y: 83})
 
-Vec3 = %{
-    x: Vec2.x
-    y: Vec2.y
-    z: int | float
-}
+// = (vec<Vec2>, @{x: 45 y: 83})
 
-----
+// Vec3 = %{
+//     x: Vec2.x
+//     y: Vec2.y
+//     z: int | float
+// }
 
-Opt = %{
-    a: int
-    b: int
-    x?: int
-}
+// ----
 
-Opt: {
-    type: type, 
-    value: {
-        a: {type: int, required: true}, 
-        b: {type: int, required: true}, 
-        x: {type: int, required: false}
-    }
-}
+// Opt = %{
+//     a: int
+//     b: int
+//     x?: int
+// }
+
+// Opt: {
+//     type: type, 
+//     value: {
+//         a: {type: int, required: true}, 
+//         b: {type: int, required: true}, 
+//         x: {type: int, required: false}
+//     }
+// }

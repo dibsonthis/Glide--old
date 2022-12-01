@@ -40,7 +40,7 @@ std::string Node::repr()
         case (NodeType::COMMA_LIST):
         {
             std::string value = "( ";
-            for (std::shared_ptr<Node> child : LIST.nodes)
+            for (std::shared_ptr<Node> child : COMMA_LIST.nodes)
             {
                 value += child->repr() + " ";
             }
