@@ -25,6 +25,7 @@ struct Typechecker
     bool is_simple(std::string type);
     bool simple_check(std::string type, std::shared_ptr<Node> node);
     bool validate(std::shared_ptr<Node> type, std::shared_ptr<Node> value);
+    std::string get_type(std::shared_ptr<Node> node);
     bool typecheck(std::shared_ptr<Node> node);
     std::string make_error(std::string name, std::string message);
     void run();

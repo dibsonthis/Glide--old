@@ -1,4 +1,9 @@
-x :: (float, string, list) = [1 2 3]
+x = 4.4
+g :: (int, float) = x
+
+f = [a::int b::int] :: int => {
+    a + b
+}
 
 // {
 //     a: {type: int, value: 45},
