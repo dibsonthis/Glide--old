@@ -1,0 +1,19 @@
+T = @{ x: int y: int }
+
+x :: T = { x: 4 y: 5 }
+y :: T = { x: 10 y: 50 }
+
+g = x + y
+
+---
+
+get_type(value)
+if x exists:
+    get_type(x)
+    validate()
+else:
+    assign_type(x)
+
+---
+
+
