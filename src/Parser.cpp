@@ -537,6 +537,12 @@ void Parser::parse_right_arrow(std::vector<NodeType> end_node_types)
                     current_node->type = NodeType::LAMBDA;
                     current_node->right->BLOCK.context = current_node->type;
                 }
+            else if (is_type(current_node->left, {NodeType::DOUBLE_COLON}) 
+                && is_type(current_node->right, {NodeType::BLOCK}))
+                {
+                    current_node->type = NodeType::LAMBDA;
+                    current_node->right->BLOCK.context = current_node->type;
+                }
         }
 
         advance();
@@ -1113,9 +1119,9 @@ std::vector<std::shared_ptr<Node>> Parser::parse(std::vector<NodeType> end_node_
     NodeType::GT_EQUAL, NodeType::LT_EQUAL}, end_node_types);
     parse_not(end_node_types);
     parse_bin_op({NodeType::AND, NodeType::OR}, end_node_types);
+	parse_bin_op({NodeType::DOUBLE_COLON}, end_node_types);
     parse_right_arrow(end_node_types);
 	parse_arrow(end_node_types);
-	parse_bin_op({NodeType::DOUBLE_COLON}, end_node_types);
 	parse_colon(end_node_types);
     parse_comma(end_node_types);
     parse_keywords(end_node_types);

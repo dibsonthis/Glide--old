@@ -14,6 +14,8 @@ enum class NodeType {
 	ID,
 	OP,
 	ERROR,
+	ANY,
+	FUNC_T,
 	EQ_EQ,
 	NOT_EQUAL,
 	LT_EQUAL,
@@ -156,6 +158,12 @@ struct Object_Node
 	bool is_import = false;
 };
 
+struct Func_T_Node
+{
+	std::vector<std::pair<std::string, std::shared_ptr<Node>>> params;
+	std::shared_ptr<Node> return_type;
+};
+
 struct Func_Call_Node
 {
 	std::shared_ptr<Node> name;
@@ -188,8 +196,8 @@ struct Iterator_Node
 
 struct Type_Node
 {
-	std::string name;
-	std::unordered_map<std::string, std::shared_ptr<Node>> interface;
+	std::shared_ptr<Node> allowed_type;
+	std::shared_ptr<Node> value_type;
 };
 
 struct Inferred_Type_Node
@@ -272,6 +280,7 @@ struct Node
 	Func_Ctx_Node			FUNC_CTX;
 	Switch_Node				SWITCH;
 	Iterator_Node			ITER;
+	Func_T_Node				FUNC_T;
 
 	void print();
 	std::string repr();

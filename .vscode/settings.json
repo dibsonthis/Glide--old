@@ -84,5 +84,6 @@
     "unordered_map": "cpp",
     "*.txt": "c",
     "*.gl": "c"
-  }
+  },
+  "C_Cpp.errorSquiggles": "Disabled"
 }

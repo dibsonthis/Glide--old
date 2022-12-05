@@ -1,5 +1,5 @@
-f = [a b] => {
-    print[a " - " b " - " _catch]
+add = [a::any b::any] => {
+    a + b
 }
 
-f[1 4 6 7]
+add[5.5 ""]

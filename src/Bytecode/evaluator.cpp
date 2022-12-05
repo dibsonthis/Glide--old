@@ -696,6 +696,20 @@ void Bytecode_Evaluator::eval_mul(std::shared_ptr<StackFrame>& frame)
     res->line = right->line;
     res->column = right->column;
 
+    if (left->type == SO_Type::EMPTY)
+    {
+        res = std::make_shared<StackObject>(*right);
+        frame->stack.push_back(res);
+        return;
+    }
+
+    if (right->type == SO_Type::EMPTY)
+    {
+        res = std::make_shared<StackObject>(*left);
+        frame->stack.push_back(res);
+        return;
+    }
+
     if (left->type == SO_Type::INT && right->type == SO_Type::INT)
     {
         res->type = SO_Type::INT;
@@ -797,6 +811,20 @@ void Bytecode_Evaluator::eval_div(std::shared_ptr<StackFrame>& frame)
     auto res = std::make_shared<StackObject>();
     res->line = right->line;
     res->column = right->column;
+
+    if (left->type == SO_Type::EMPTY)
+    {
+        res = std::make_shared<StackObject>(*right);
+        frame->stack.push_back(res);
+        return;
+    }
+
+    if (right->type == SO_Type::EMPTY)
+    {
+        res = std::make_shared<StackObject>(*left);
+        frame->stack.push_back(res);
+        return;
+    }
 
     if (left->type == SO_Type::INT && right->type == SO_Type::INT)
     {

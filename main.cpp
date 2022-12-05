@@ -7,6 +7,7 @@
 #include "src/Bytecode/generator.hpp"
 #include "src/Bytecode/evaluator.hpp"
 #include "src/Bytecode/Repl/repl.hpp"
+#include "src/Typecheck/Typecheck.hpp"
 
 int main(int argc, char** argv)
 {
@@ -29,6 +30,14 @@ int main(int argc, char** argv)
 
         Parser parser(lexer.file_name, lexer.nodes);
         parser.parse();
+
+        Typechecker typechecker(lexer.file_name, parser.nodes);
+        typechecker.run();
+
+        if (typechecker.errors.size() > 0)
+        {
+            return 0;
+        }
 
         Bytecode_Generator generator(parser.file_name, parser.nodes);
         auto instructions = generator.generate();
@@ -79,6 +88,14 @@ int main(int argc, char** argv)
 
     Parser parser(lexer.file_name, lexer.nodes);
     parser.parse();
+
+    Typechecker typechecker(lexer.file_name, parser.nodes);
+    typechecker.run();
+
+    if (typechecker.errors.size() > 0)
+    {
+        return 0;
+    }
 
     Bytecode_Generator generator(parser.file_name, parser.nodes);
     auto instructions = generator.generate();

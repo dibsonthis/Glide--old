@@ -40,7 +40,7 @@ std::string Node::repr()
         case (NodeType::COMMA_LIST):
         {
             std::string value = "( ";
-            for (std::shared_ptr<Node> child : LIST.nodes)
+            for (std::shared_ptr<Node> child : COMMA_LIST.nodes)
             {
                 value += child->repr() + " ";
             }
@@ -184,13 +184,11 @@ void Node::print()
         }
         case (NodeType::TYPE):
         {
-            std::cout << TYPE.name << " - { ";
-            for (auto child : TYPE.interface)
-            {
-                std::cout << child.first << ": " << child.second->TYPE.name;
-                std::cout << " ";
-            }
-            std::cout << "}";
+            std::cout << "Allowed type: ";
+            TYPE.allowed_type->print();
+            std::cout << "\n";
+            std::cout << "Value type: ";
+            TYPE.value_type->print();
             break;
         }
         case (NodeType::ERROR):

@@ -14,6 +14,8 @@
         "${fileDirname}\\src\\utils.cpp",
         "${fileDirname}\\src\\Parser.cpp",
 
+        "${fileDirname}\\src\\Typecheck\\Typecheck.cpp",
+
         "${fileDirname}\\src\\Bytecode\\generator.cpp",
         "${fileDirname}\\src\\Bytecode\\evaluator.cpp",
         "${fileDirname}\\src\\Bytecode\\StackObject.cpp",
@@ -48,6 +50,8 @@
         "${fileDirname}\\src\\utils.cpp",
         "${fileDirname}\\src\\Parser.cpp",
 
+        "${fileDirname}\\src\\Typecheck\\Typecheck.cpp",
+
         "${fileDirname}\\src\\Bytecode\\generator.cpp",
         "${fileDirname}\\src\\Bytecode\\evaluator.cpp",
         "${fileDirname}\\src\\Bytecode\\StackObject.cpp",
@@ -81,6 +85,8 @@
         "${fileDirname}\\src\\errors.cpp",
         "${fileDirname}\\src\\utils.cpp",
         "${fileDirname}\\src\\Parser.cpp",
+
+        "${fileDirname}\\src\\Typecheck\\Typecheck.cpp",
 
         "${fileDirname}\\src\\Bytecode\\generator.cpp",
         "${fileDirname}\\src\\Bytecode\\evaluator.cpp",
@@ -118,6 +124,8 @@
         "${fileDirname}/src/utils.cpp",
         "${fileDirname}/src/Parser.cpp",
 
+        "${fileDirname}/src/Typecheck/Typecheck.cpp",
+
         "${fileDirname}/src/Bytecode/generator.cpp",
         "${fileDirname}/src/Bytecode/evaluator.cpp",
         "${fileDirname}/src/Bytecode/StackObject.cpp",
@@ -150,6 +158,8 @@
         "${fileDirname}/src/utils.cpp",
         "${fileDirname}/src/Parser.cpp",
 
+        "${fileDirname}/src/Typecheck/Typecheck.cpp",
+
         "${fileDirname}/src/Bytecode/generator.cpp",
         "${fileDirname}/src/Bytecode/evaluator.cpp",
         "${fileDirname}/src/Bytecode/StackObject.cpp",
@@ -181,6 +191,8 @@
         "${fileDirname}/src/errors.cpp",
         "${fileDirname}/src/utils.cpp",
         "${fileDirname}/src/Parser.cpp",
+
+        "${fileDirname}/src/Typecheck/Typecheck.cpp",
 
         "${fileDirname}/src/Bytecode/generator.cpp",
         "${fileDirname}/src/Bytecode/evaluator.cpp",
