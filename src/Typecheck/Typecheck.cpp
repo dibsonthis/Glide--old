@@ -143,22 +143,59 @@ std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
 
     if (left->type == NodeType::LIST && right->type == NodeType::LIST)
     {
-        return right;
+        auto type = std::make_shared<Node>(NodeType::LIST);
+        for (auto elem : left->LIST.nodes)
+        {
+            type->LIST.nodes.push_back(elem);
+        }
+         for (auto elem : right->LIST.nodes)
+        {
+            type->LIST.nodes.push_back(elem);
+        }
+
+        type->LIST.nodes.erase(std::unique(type->LIST.nodes.begin(), type->LIST.nodes.end(), [this] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return match_types(type_a, type_b);}), type->LIST.nodes.end());
+        std::sort(type->LIST.nodes.begin(), type->LIST.nodes.end(), [] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return type_a->type < type_b->type;});
+        return type;
     }
 
     if (left->type == NodeType::LIST)
     {
-        return left;
+        auto type = std::make_shared<Node>(NodeType::LIST);
+
+        for (auto elem : left->LIST.nodes)
+        {
+            type->LIST.nodes.push_back(elem);
+        }
+        
+        type->LIST.nodes.push_back(right);
+        type->LIST.nodes.erase(std::unique(type->LIST.nodes.begin(), type->LIST.nodes.end(), [this] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return match_types(type_a, type_b);}), type->LIST.nodes.end());
+        std::sort(type->LIST.nodes.begin(), type->LIST.nodes.end(), [] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return type_a->type < type_b->type;});
+        return type;
     }
     
     if (right->type == NodeType::LIST)
     {
-        return right;
+        auto type = std::make_shared<Node>(NodeType::LIST);
+
+        for (auto elem : right->LIST.nodes)
+        {
+            type->LIST.nodes.push_back(elem);
+        }
+        
+        type->LIST.nodes.push_back(right);
+        type->LIST.nodes.erase(std::unique(type->LIST.nodes.begin(), type->LIST.nodes.end(), [this] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return match_types(type_a, type_b);}), type->LIST.nodes.end());
+        std::sort(type->LIST.nodes.begin(), type->LIST.nodes.end(), [] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return type_a->type < type_b->type;});
+        return type;
     }
 
     if (left->type == NodeType::OBJECT && right->type == NodeType::OBJECT)
     {
         return right;
+    }
+
+    if (left->type == NodeType::COMMA_LIST)
+    {
+
     }
 
     errors.push_back(make_error("Type", "Cannot perform '+' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right)));
@@ -438,24 +475,6 @@ std::shared_ptr<Node> Typechecker::get_type_dot(std::shared_ptr<Node> node)
         return type;
     }
 
-    // if (left->type == NodeType::COMMA_LIST && right->type == NodeType::INT)
-    // {
-    //     int list_length = left->COMMA_LIST.objects.size();
-    //     int index = right->INT.value;
-    //     if (index >= list_length || index < 0)
-    //     {
-    //         res = so_make_empty();
-    //         frame->stack.push_back(res);
-    //         return;
-    //     }
-    //     else
-    //     {
-    //         auto& val = left->COMMA_LIST.objects[index];
-    //         frame->stack.push_back(val);
-    //         return;
-    //     }
-    // }
-
     if (left->type == NodeType::LIST && right->type == NodeType::STRING)
     {
         if (right->STRING.value == "length")
@@ -467,23 +486,6 @@ std::shared_ptr<Node> Typechecker::get_type_dot(std::shared_ptr<Node> node)
         errors.push_back(make_error("Key", "Property '" + right->STRING.value + "' does not exist on type 'list'"));
         return std::make_shared<Node>(NodeType::ERROR);
     }
-
-    //  if (left->type == NodeType::COMMA_LIST && right->type == NodeType::STRING)
-    // {
-    //     // accessing list built-in methods
-    //     if (right->STRING.value == "length")
-    //     {
-    //         int length = left->COMMA_LIST.objects.size();
-    //         res->type = NodeType::INT;
-    //         res->INT.value = length;
-    //         frame->stack.push_back(res);
-    //         return;
-    //     }
-        
-    //     make_error("Property '" + right->STRING.value + "' does not exist on type 'comma_list'");
-    //     exit();
-    //     return;
-    // }
 
     if (left->type == NodeType::OBJECT && right->type == NodeType::STRING)
     {
@@ -881,7 +883,7 @@ bool Typechecker::typecheck(std::shared_ptr<Node> node)
 
                 if (match_types(provided_type, val_type))
                 {
-                    symbol_table[node->left->left->ID.value] = val_type;
+                    symbol_table[node->left->left->ID.value] = provided_type;
                     // remove type details from node
                     node->left = node->left->left;
                     return true;
@@ -915,13 +917,25 @@ bool Typechecker::typecheck(std::shared_ptr<Node> node)
             // found variable, check if type matches value type
             if (match_types(var_type, val_type))
             {
-                symbol_table[node->left->ID.value] = val_type;
                 return true;
             }
 
             errors.push_back(make_error("Type", "'" + node->left->ID.value + "' - Cannot assign value of type '" + node_type_to_string(val_type) + "' to variable of type '" + node_type_to_string(var_type) + "'"));
             return false;
         }
+    }
+    if (is_type(node, {NodeType::PLUS_EQ}))
+    {
+        auto plus_op = std::make_shared<Node>(NodeType::OP);
+        plus_op->left = node->left;
+        plus_op->right = node->right;
+        auto res = get_type_add(plus_op);
+
+        auto eq_op = std::make_shared<Node>(NodeType::EQUAL);
+        eq_op->left = node->left;
+        eq_op->right = res;
+
+        return typecheck(eq_op);
     }
     else
     {

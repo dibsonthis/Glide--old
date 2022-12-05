@@ -1,9 +1,7 @@
-x = @{
-    name: "John"
-    age: 49
-    address: @{
-        post: 4542
-    }
-}
+// x :: ([int], [int float]) = [1 2 3]
+// x += 5.9
+// print[x]
 
-T :: [float] = 1..100
+x :: (int, float) = 5.5
+x += 10
+print[x]

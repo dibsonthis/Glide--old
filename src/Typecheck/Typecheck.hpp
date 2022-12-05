@@ -2,16 +2,11 @@
 #include "../Node.hpp"
 #include "../utils.hpp"
 
-// struct Type
-// {
-//     Type() {}
-//     Type(std::string name, std::string value) : name(name), value(value) {}
-
-//     bool simple = true;
-//     std::string name = "";
-//     std::string value = "";
-//     std::unordered_map<std::string, Type> type;
-// };
+struct Type
+{
+    std::shared_ptr<Node> allowed_type;
+    std::shared_ptr<Node> type;
+};
 
 struct Typechecker 
 {
