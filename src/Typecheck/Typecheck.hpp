@@ -4,8 +4,11 @@
 
 struct Type
 {
+    Type() {}
+    Type(std::shared_ptr<Node> allowed_type, std::shared_ptr<Node> value_type) : allowed_type(allowed_type), value_type(value_type) {}
+    Type(std::shared_ptr<Node> allowed_type) : allowed_type(allowed_type) {}
     std::shared_ptr<Node> allowed_type;
-    std::shared_ptr<Node> type;
+    std::shared_ptr<Node> value_type;
 };
 
 struct Typechecker 
@@ -13,7 +16,7 @@ struct Typechecker
     std::string file_name;
     std::vector<std::string> errors;
     std::vector<std::shared_ptr<Node>> nodes;
-    std::unordered_map<std::string, std::shared_ptr<Node>> symbol_table;
+    std::unordered_map<std::string, Type> symbol_table;
     int line, column;
 
     Typechecker(std::string file_name, std::vector<std::shared_ptr<Node>> nodes) : file_name(file_name), nodes(nodes) {}

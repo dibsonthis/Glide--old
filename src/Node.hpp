@@ -196,8 +196,8 @@ struct Iterator_Node
 
 struct Type_Node
 {
-	std::string name;
-	std::unordered_map<std::string, std::shared_ptr<Node>> interface;
+	std::shared_ptr<Node> allowed_type;
+	std::shared_ptr<Node> value_type;
 };
 
 struct Inferred_Type_Node

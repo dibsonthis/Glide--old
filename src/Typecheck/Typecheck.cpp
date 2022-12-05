@@ -182,7 +182,7 @@ std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
             type->LIST.nodes.push_back(elem);
         }
         
-        type->LIST.nodes.push_back(right);
+        type->LIST.nodes.push_back(left);
         type->LIST.nodes.erase(std::unique(type->LIST.nodes.begin(), type->LIST.nodes.end(), [this] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return match_types(type_a, type_b);}), type->LIST.nodes.end());
         std::sort(type->LIST.nodes.begin(), type->LIST.nodes.end(), [] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return type_a->type < type_b->type;});
         return type;
@@ -576,7 +576,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         } 
         else 
         {
-            return symbol_table[node->ID.value];
+            return symbol_table[node->ID.value].value_type;
         }
     }
     if (is_type(node, {NodeType::INT, NodeType::FLOAT, NodeType::STRING, NodeType::BOOL}))
@@ -678,7 +678,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 
         for (auto param : func_type->FUNC_T.params)
         {
-            tc.symbol_table[param.first] = param.second;
+            tc.symbol_table[param.first] = Type(param.second);
         }
 
         for (auto node : tc.nodes)
@@ -715,7 +715,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
             return func_type;
         } 
 
-        func_type = symbol_table[name];
+        func_type = symbol_table[name].value_type;
 
         // typecheck the args
         // TODO: additional overflow args do not get typechecked, do we want to change this?
@@ -868,7 +868,9 @@ bool Typechecker::typecheck(std::shared_ptr<Node> node)
         {
             auto var_type = get_type(node->left->left);
 
-            if (is_type(var_type, {NodeType::ERROR}))
+            auto var = node->left->left;
+
+            if (symbol_table.find(var->ID.value) == symbol_table.end())
             {
                 // new variable, check that type provided matches value type
 
@@ -883,7 +885,7 @@ bool Typechecker::typecheck(std::shared_ptr<Node> node)
 
                 if (match_types(provided_type, val_type))
                 {
-                    symbol_table[node->left->left->ID.value] = provided_type;
+                    symbol_table[node->left->left->ID.value] = Type(provided_type, val_type);
                     // remove type details from node
                     node->left = node->left->left;
                     return true;
@@ -899,7 +901,6 @@ bool Typechecker::typecheck(std::shared_ptr<Node> node)
         }
         else
         {
-            auto var_type = get_type(node->left);
             auto val_type = get_type(node->right);
 
             if (is_type(val_type, {NodeType::ERROR}))
@@ -907,20 +908,23 @@ bool Typechecker::typecheck(std::shared_ptr<Node> node)
                 return false;
             }
 
-            if (is_type(var_type, {NodeType::ERROR}))
+            if (symbol_table.find(node->left->ID.value) == symbol_table.end())
             {
                 // new variable
-                symbol_table[node->left->ID.value] = val_type;
+                symbol_table[node->left->ID.value] = Type(val_type, val_type);
                 return true;
             }
+
+            auto var = symbol_table[node->left->ID.value];
 
             // found variable, check if type matches value type
-            if (match_types(var_type, val_type))
+            if (match_types(var.allowed_type, val_type))
             {
+                symbol_table[node->left->ID.value] = Type(var.allowed_type, val_type);
                 return true;
             }
 
-            errors.push_back(make_error("Type", "'" + node->left->ID.value + "' - Cannot assign value of type '" + node_type_to_string(val_type) + "' to variable of type '" + node_type_to_string(var_type) + "'"));
+            errors.push_back(make_error("Type", "'" + node->left->ID.value + "' - Cannot assign value of type '" + node_type_to_string(val_type) + "' to variable of type '" + node_type_to_string(var.allowed_type) + "'"));
             return false;
         }
     }

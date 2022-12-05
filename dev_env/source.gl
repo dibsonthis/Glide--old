@@ -2,6 +2,9 @@
 // x += 5.9
 // print[x]
 
-x :: (int, float) = 5.5
-x += 10
-print[x]
+// x :: (int, float) = 5.5
+// x += 10
+// print[x]
+
+x :: ([int], [float], [int float]) = [1 2 3]
+x += "5.5"
