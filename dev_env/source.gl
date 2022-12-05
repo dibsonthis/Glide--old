@@ -1,23 +1,19 @@
-// Type = @{
-//     name: string
-//     age: (int, float)
-//     nums: [int]
-// }
+Type = @{
+    name: string
+    age: (int, float)
+    nums: [int]
+}
 
-// x :: Type = @{
-//     name: "John"
-//     age: 44 + 5
-//     nums: [3 4 6]
-// }
+x :: Type = @{
+    name: "John"
+    age: 44 + 5
+    nums: [3 4 6]
+}
 
-f = [a::int b::int] :: int => {
+Number = (int, float)
+
+f = [a::int b] :: int => {
     a + b
 }
 
-// type of f:
-
-// {
-//     a: int
-//     b: int
-//     ret: int
-// }
+y :: string = f[1 2]

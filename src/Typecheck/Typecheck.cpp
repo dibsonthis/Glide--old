@@ -233,6 +233,9 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
             func_type->FUNC_T.return_type = ret_type;
 
             list_node = node->left->left;
+
+            // remove type
+            node->left = node->left->left;
         }
         else
         {
@@ -240,11 +243,14 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
             list_node = node->left;
         }
 
-        for (auto elem : list_node->LIST.nodes)
+        for (auto& elem : list_node->LIST.nodes)
         {
             if (is_type(elem, {NodeType::DOUBLE_COLON}))
             {
                 func_type->FUNC_T.params[elem->left->ID.value] = get_type(elem->right);
+                
+                // remove type
+                elem = elem->left;
             }
             else
             {
@@ -267,7 +273,70 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
             func_type->FUNC_T.params[elem.first] = elem.second;
         }
 
+        // check that the function actually returns the same type as the return type
+        Typechecker tc(file_name, node->right->BLOCK.nodes);
+
+        for (auto param : func_type->FUNC_T.params)
+        {
+            tc.symbol_table[param.first] = param.second;
+        }
+
+        for (auto node : tc.nodes)
+        {
+            tc.update_loc(node);
+            bool check = tc.typecheck(node);
+            if (tc.errors.size() > 0) {
+                for (auto error : tc.errors) {
+                    std::cout << error << "\n";
+                }
+                return std::make_shared<Node>(NodeType::ERROR);
+            }
+        }
+
+        auto type = tc.get_type(tc.nodes[tc.nodes.size()-1]);
+
+        if (!tc.match_types(type, func_type->FUNC_T.return_type))
+        {
+            errors.push_back(make_error("Type", "Lambda must return value of type '" + node_type_to_string(func_type->FUNC_T.return_type) + "' but instead returns '" + node_type_to_string(type) + "'"));
+            return std::make_shared<Node>(NodeType::ERROR);
+        }
+
         return func_type;
+    }
+    if (is_type(node, {NodeType::FUNC_CALL}))
+    {
+        auto name = node->FUNC_CALL.name->ID.value;
+        auto args = node->FUNC_CALL.args;
+
+        auto func_type = std::make_shared<Node>(NodeType::ANY);
+
+        if (symbol_table.find(name) == symbol_table.end()) 
+        {
+            return func_type;
+        } 
+
+        func_type = symbol_table[name];
+
+        std::vector<std::shared_ptr<Node>> param_types;
+
+        for (auto& elem : func_type->FUNC_T.params)
+        {
+            param_types.push_back(elem.second);
+        }
+
+        // typecheck the args
+        // TODO: additional overflow args do not get typechecked, do we want to change this?
+
+        for (int i = 0; i < param_types.size(); i++)
+        {
+            if (!match_types(param_types[i], args[i]))
+            {
+                errors.push_back(make_error("Type", "Function '" + name + "' - Cannot assign argument of type '" + node_type_to_string(args[i]) + "' to parameter of type '" + node_type_to_string(param_types[i]) + "'"));
+                return std::make_shared<Node>(NodeType::ERROR);
+            }
+        }
+
+        return func_type->FUNC_T.return_type;
     }
     if (is_type(node, {NodeType::OP}))
     {
@@ -544,6 +613,19 @@ bool Typechecker::key_compare (std::unordered_map<std::string, std::shared_ptr<N
 
 bool Typechecker::match_types(std::shared_ptr<Node> type_a, std::shared_ptr<Node> type_b)
 {
+    if (type_a->type == NodeType::COMMA_LIST && type_b->type == NodeType::COMMA_LIST)
+    {
+        for (int i = 0; i < type_a->COMMA_LIST.nodes.size(); i++)
+        {
+            if (!match_types(type_a->COMMA_LIST.nodes[i], type_b->COMMA_LIST.nodes[i]))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     if (type_a->type == NodeType::COMMA_LIST)
     {
         for (auto elem : type_a->COMMA_LIST.nodes)
@@ -611,11 +693,19 @@ bool Typechecker::typecheck(std::shared_ptr<Node> node)
                 // new variable, check that type provided matches value type
 
                 auto val_type = get_type(node->right);
+
+                if (is_type(val_type, {NodeType::ERROR}))
+                {
+                    return false;
+                }
+
                 auto provided_type = get_type(node->left->right);
 
                 if (match_types(provided_type, val_type))
                 {
                     symbol_table[node->left->left->ID.value] = val_type;
+                    // remove type details from node
+                    node->left = node->left->left;
                     return true;
                 }
 
@@ -631,6 +721,11 @@ bool Typechecker::typecheck(std::shared_ptr<Node> node)
         {
             auto var_type = get_type(node->left);
             auto val_type = get_type(node->right);
+
+            if (is_type(val_type, {NodeType::ERROR}))
+            {
+                return false;
+            }
 
             if (is_type(var_type, {NodeType::ERROR}))
             {
@@ -650,7 +745,7 @@ bool Typechecker::typecheck(std::shared_ptr<Node> node)
             return false;
         }
     }
-    if (is_type(node, {NodeType::OP}))
+    else
     {
         auto type = get_type(node);
         if (is_type(type, {NodeType::ERROR})) {
