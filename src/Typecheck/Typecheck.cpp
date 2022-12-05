@@ -62,57 +62,416 @@ std::string Typechecker::node_type_to_string(std::shared_ptr<Node> node)
     }
 }
 
-bool Typechecker::is_simple(std::string type)
+std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
 {
-    if (
-        type == "int" ||
-        type == "float" ||
-        type == "string" ||
-        type == "bool" ||
-        type == "list" ||
-        type == "comma_list" ||
-        type == "object" ||
-        type == "function" ||
-        type == "any"
-    ) return true;
+    auto left = get_type(node->left);
+    auto right = get_type(node->right);
 
-    return false;
+    if (left->type == NodeType::ANY)
+    {
+        return left;
+    }
+    if (right->type == NodeType::ANY)
+    {
+        return right;
+    }
+
+    if (left->type == NodeType::EMPTY)
+    {
+        return left;
+    }
+
+    if (right->type == NodeType::EMPTY)
+    {
+        return right;
+    }
+
+    if (left->type == NodeType::INT && right->type == NodeType::INT)
+    {
+        return right;
+    }
+
+    if (left->type == NodeType::INT && right->type == NodeType::FLOAT)
+    {
+        return right;
+    }
+
+    if (left->type == NodeType::FLOAT && right->type == NodeType::INT)
+    {
+        return left;
+    }
+
+    if (left->type == NodeType::FLOAT && right->type == NodeType::FLOAT)
+    {
+        return right;
+    }
+
+    if (left->type == NodeType::STRING && right->type == NodeType::STRING)
+    {
+        return right;
+    }
+
+    if (left->type == NodeType::STRING && right->type == NodeType::INT)
+    {
+        return left;
+    }
+
+    if (left->type == NodeType::INT && right->type == NodeType::STRING)
+    {
+        return right;
+    }
+
+    if (left->type == NodeType::STRING && right->type == NodeType::FLOAT)
+    {
+        return left;
+    }
+
+    if (left->type == NodeType::FLOAT && right->type == NodeType::STRING)
+    {
+        return right;
+    }
+
+    if (left->type == NodeType::STRING && right->type == NodeType::BOOL)
+    {
+        return left;
+    }
+
+    if (left->type == NodeType::BOOL && right->type == NodeType::STRING)
+    {
+        return right;
+    }
+
+    if (left->type == NodeType::LIST && right->type == NodeType::LIST)
+    {
+        return right;
+    }
+
+    if (left->type == NodeType::LIST)
+    {
+        return left;
+    }
+    
+    if (right->type == NodeType::LIST)
+    {
+        return right;
+    }
+
+    if (left->type == NodeType::OBJECT && right->type == NodeType::OBJECT)
+    {
+        return right;
+    }
+
+    errors.push_back(make_error("Type", "Cannot perform '+' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right)));
+    auto error = std::make_shared<Node>(NodeType::ERROR);
+    return error;
 }
 
-bool Typechecker::simple_check(std::string type, std::shared_ptr<Node> node)
+std::shared_ptr<Node> Typechecker::get_type_sub(std::shared_ptr<Node> node)
 {
-    if (type == "any")
+    auto left = get_type(node->left);
+    auto right = get_type(node->right);
+
+    if (left->type == NodeType::ANY)
     {
-        return true;
+        return left;
+    }
+    if (right->type == NodeType::ANY)
+    {
+        return right;
     }
 
-    if (node_type_to_string(node) == type) {
-        return true;
+    if (left->type == NodeType::EMPTY)
+    {
+        return left;
     }
 
-    return false;
+    if (right->type == NodeType::EMPTY)
+    {
+        return right;
+    }
+
+    if (left->type == NodeType::INT && right->type == NodeType::INT)
+    {
+        return right;
+    }
+
+    if (left->type == NodeType::INT && right->type == NodeType::FLOAT)
+    {
+        return right;
+    }
+
+    if (left->type == NodeType::FLOAT && right->type == NodeType::INT)
+    {
+        return left;
+    }
+
+    if (left->type == NodeType::FLOAT && right->type == NodeType::FLOAT)
+    {
+        return right;
+    }
+
+    errors.push_back(make_error("Type", "Cannot perform '-' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right)));
+    auto error = std::make_shared<Node>(NodeType::ERROR);
+    return error;
 }
 
-bool Typechecker::validate(std::shared_ptr<Node> type, std::shared_ptr<Node> value)
+std::shared_ptr<Node> Typechecker::get_type_mul(std::shared_ptr<Node> node)
 {
-    if (is_type(type, {NodeType::ID}))
+    auto left = get_type(node->left);
+    auto right = get_type(node->right);
+
+    if (left->type == NodeType::ANY)
     {
-        if (is_simple(type->ID.value))
-        {
-            auto check = simple_check(type->ID.value, value);
-            return check;
-        }
+        return left;
     }
-    if (is_type(type, {NodeType::COMMA_LIST}))
+    if (right->type == NodeType::ANY)
     {
-        for (auto elem: type->COMMA_LIST.nodes)
+        return right;
+    }
+
+    if (left->type == NodeType::EMPTY)
+    {
+        return left;
+    }
+    if (right->type == NodeType::EMPTY)
+    {
+        return right;
+    }
+
+    if (left->type == NodeType::INT && right->type == NodeType::INT)
+    {
+        return right;
+    }
+
+    if (left->type == NodeType::INT && right->type == NodeType::FLOAT)
+    {
+        return right;
+    }
+
+    if (left->type == NodeType::FLOAT && right->type == NodeType::INT)
+    {
+        return left;
+    }
+
+    if (left->type == NodeType::FLOAT && right->type == NodeType::FLOAT)
+    {
+        return right;
+    }
+
+    if (left->type == NodeType::INT && right->type == NodeType::STRING)
+    {
+        return right;
+    }
+
+    if (left->type == NodeType::STRING && right->type == NodeType::INT)
+    {
+        return left;
+    }
+
+    if (left->type == NodeType::LIST && right->type == NodeType::INT)
+    {
+        return left;
+    }
+
+    if (left->type == NodeType::INT && right->type == NodeType::LIST)
+    {
+        return right;
+    }
+
+    errors.push_back(make_error("Type", "Cannot perform '*' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right)));
+    auto error = std::make_shared<Node>(NodeType::ERROR);
+    return error;
+}
+
+std::shared_ptr<Node> Typechecker::get_type_div(std::shared_ptr<Node> node)
+{
+    auto left = get_type(node->left);
+    auto right = get_type(node->right);
+
+    if (left->type == NodeType::ANY)
+    {
+        return left;
+    }
+    if (right->type == NodeType::ANY)
+    {
+        return right;
+    }
+
+    if (left->type == NodeType::EMPTY)
+    {
+        return left;
+    }
+
+    if (right->type == NodeType::EMPTY)
+    {
+        return right;
+    }
+
+    if (left->type == NodeType::INT && right->type == NodeType::INT)
+    {
+        return right;
+    }
+
+    if (left->type == NodeType::INT && right->type == NodeType::FLOAT)
+    {
+        return right;
+    }
+
+    if (left->type == NodeType::FLOAT && right->type == NodeType::INT)
+    {
+        return left;
+    }
+
+    if (left->type == NodeType::FLOAT && right->type == NodeType::FLOAT)
+    {
+        return right;
+    }
+
+    errors.push_back(make_error("Type", "Cannot perform '/' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right)));
+    auto error = std::make_shared<Node>(NodeType::ERROR);
+    return error;
+}
+
+std::shared_ptr<Node> Typechecker::get_type_dot(std::shared_ptr<Node> node)
+{
+    auto left = get_type(node->left);
+    auto right = std::make_shared<Node>(NodeType::STRING);
+
+    if (is_type(node->right, {NodeType::ID}))
+    {
+        right->STRING.value = node->right->ID.value;
+    }
+    else
+    {
+        right->STRING.value = node->right->STRING.value;
+    }
+
+    if (left->type == NodeType::STRING && right->type == NodeType::STRING)
+    {
+        if (right->STRING.value == "to_chars")
         {
-            auto check = validate(elem, value);
-            if (check) {
-                return true;
-            }
+            auto type = std::make_shared<Node>(NodeType::LIST);
+            type->LIST.nodes.push_back(std::make_shared<Node>(NodeType::STRING));
+            return type;
         }
-        return false;
+
+        if (right->STRING.value == "length")
+        {
+            auto type = std::make_shared<Node>(NodeType::INT);
+            return type;
+        }
+
+        errors.push_back(make_error("Key", "Property '" + right->STRING.value + "' does not exist on type 'string'"));
+        return std::make_shared<Node>(NodeType::ERROR);
+    }
+
+    if (left->type == NodeType::LIST && right->type == NodeType::INT)
+    {
+        std::shared_ptr<Node> type;
+        if (left->LIST.nodes.size() == 0)
+        {
+            type->type = NodeType::ANY;
+            return type;
+        }
+        if (left->LIST.nodes.size() > 1)
+        {
+            type->type = NodeType::COMMA_LIST;
+            type->COMMA_LIST.nodes = left->LIST.nodes;
+            return type;
+        }
+
+        type = left->LIST.nodes[0];
+        return type;
+    }
+
+    // if (left->type == NodeType::COMMA_LIST && right->type == NodeType::INT)
+    // {
+    //     int list_length = left->COMMA_LIST.objects.size();
+    //     int index = right->INT.value;
+    //     if (index >= list_length || index < 0)
+    //     {
+    //         res = so_make_empty();
+    //         frame->stack.push_back(res);
+    //         return;
+    //     }
+    //     else
+    //     {
+    //         auto& val = left->COMMA_LIST.objects[index];
+    //         frame->stack.push_back(val);
+    //         return;
+    //     }
+    // }
+
+    if (left->type == NodeType::LIST && right->type == NodeType::STRING)
+    {
+        if (right->STRING.value == "length")
+        {
+            auto type = std::make_shared<Node>(NodeType::INT);
+            return type;
+        }
+        
+        errors.push_back(make_error("Key", "Property '" + right->STRING.value + "' does not exist on type 'list'"));
+        return std::make_shared<Node>(NodeType::ERROR);
+    }
+
+    //  if (left->type == NodeType::COMMA_LIST && right->type == NodeType::STRING)
+    // {
+    //     // accessing list built-in methods
+    //     if (right->STRING.value == "length")
+    //     {
+    //         int length = left->COMMA_LIST.objects.size();
+    //         res->type = NodeType::INT;
+    //         res->INT.value = length;
+    //         frame->stack.push_back(res);
+    //         return;
+    //     }
+        
+    //     make_error("Property '" + right->STRING.value + "' does not exist on type 'comma_list'");
+    //     exit();
+    //     return;
+    // }
+
+    if (left->type == NodeType::OBJECT && right->type == NodeType::STRING)
+    {
+        auto name = right->STRING.value;
+
+        if (name == "_keys")
+        {
+            auto type = std::make_shared<Node>(NodeType::LIST);
+            type->LIST.nodes.push_back(std::make_shared<Node>(NodeType::STRING));
+            return type;
+        }
+
+        if (name == "_values")
+        {
+            auto type = std::make_shared<Node>(NodeType::LIST);
+            type->LIST.nodes.push_back(std::make_shared<Node>(NodeType::ANY));
+            return type;
+        }
+
+        if (name == "_name")
+        {
+            auto type = std::make_shared<Node>(NodeType::STRING);
+            return type;
+        }
+
+        if (name == "_items")
+        {
+            auto type = std::make_shared<Node>(NodeType::LIST);
+            auto obj = std::make_shared<Node>(NodeType::OBJECT);
+            obj->OBJECT.properties["key"] = std::make_shared<Node>(NodeType::STRING);
+            obj->OBJECT.properties["value"] = std::make_shared<Node>(NodeType::ANY);
+            type->LIST.nodes.push_back(obj);
+            return type;
+        }
+
+        if (left->OBJECT.properties.find(name) == left->OBJECT.properties.end())
+        {
+            auto type = std::make_shared<Node>(NodeType::EMPTY);
+            return type;
+        }
+
+        return left->OBJECT.properties[name];
     }
 }
 
@@ -316,264 +675,27 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 
         return func_type->FUNC_T.return_type;
     }
+    if (is_type(node, {NodeType::DOT}))
+    {
+        return get_type_dot(node);
+    }
     if (is_type(node, {NodeType::OP}))
     {
-        auto left = get_type(node->left);
-        auto right = get_type(node->right);
-
         if (is_type(node, {NodeType::PLUS}))
         {
-            if (left->type == NodeType::ANY)
-            {
-                return left;
-            }
-            if (right->type == NodeType::ANY)
-            {
-                return right;
-            }
-
-            if (left->type == NodeType::EMPTY)
-            {
-                return left;
-            }
-
-            if (right->type == NodeType::EMPTY)
-            {
-                return right;
-            }
-
-            if (left->type == NodeType::INT && right->type == NodeType::INT)
-            {
-                return right;
-            }
-
-            if (left->type == NodeType::INT && right->type == NodeType::FLOAT)
-            {
-                return right;
-            }
-
-            if (left->type == NodeType::FLOAT && right->type == NodeType::INT)
-            {
-                return left;
-            }
-
-            if (left->type == NodeType::FLOAT && right->type == NodeType::FLOAT)
-            {
-               return right;
-            }
-
-            if (left->type == NodeType::STRING && right->type == NodeType::STRING)
-            {
-                return right;
-            }
-
-            if (left->type == NodeType::STRING && right->type == NodeType::INT)
-            {
-                return left;
-            }
-
-            if (left->type == NodeType::INT && right->type == NodeType::STRING)
-            {
-                return right;
-            }
-
-            if (left->type == NodeType::STRING && right->type == NodeType::FLOAT)
-            {
-                return left;
-            }
-
-            if (left->type == NodeType::FLOAT && right->type == NodeType::STRING)
-            {
-                return right;
-            }
-
-            if (left->type == NodeType::STRING && right->type == NodeType::BOOL)
-            {
-                return left;
-            }
-
-            if (left->type == NodeType::BOOL && right->type == NodeType::STRING)
-            {
-                return right;
-            }
-
-            if (left->type == NodeType::LIST && right->type == NodeType::LIST)
-            {
-                return right;
-            }
-
-            if (left->type == NodeType::LIST)
-            {
-                return left;
-            }
-            
-            if (right->type == NodeType::LIST)
-            {
-                return right;
-            }
-
-            if (left->type == NodeType::OBJECT && right->type == NodeType::OBJECT)
-            {
-                return right;
-            }
-
-            errors.push_back(make_error("Type", "Cannot perform '+' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right)));
-            auto error = std::make_shared<Node>(NodeType::ERROR);
-            return error;
+            return get_type_add(node);
         }
         if (is_type(node, {NodeType::MINUS}))
         {
-            if (left->type == NodeType::ANY)
-            {
-                return left;
-            }
-            if (right->type == NodeType::ANY)
-            {
-                return right;
-            }
-
-            if (left->type == NodeType::EMPTY)
-            {
-                return left;
-            }
-
-            if (right->type == NodeType::EMPTY)
-            {
-                return right;
-            }
-
-            if (left->type == NodeType::INT && right->type == NodeType::INT)
-            {
-                return right;
-            }
-
-            if (left->type == NodeType::INT && right->type == NodeType::FLOAT)
-            {
-                return right;
-            }
-
-            if (left->type == NodeType::FLOAT && right->type == NodeType::INT)
-            {
-                return left;
-            }
-
-            if (left->type == NodeType::FLOAT && right->type == NodeType::FLOAT)
-            {
-                return right;
-            }
-
-            errors.push_back(make_error("Type", "Cannot perform '-' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right)));
-            auto error = std::make_shared<Node>(NodeType::ERROR);
-            return error;
+            return get_type_sub(node);
         }
         if (is_type(node, {NodeType::STAR}))
         {
-            if (left->type == NodeType::ANY)
-            {
-                return left;
-            }
-            if (right->type == NodeType::ANY)
-            {
-                return right;
-            }
-
-            if (left->type == NodeType::EMPTY)
-            {
-                return left;
-            }
-            if (right->type == NodeType::EMPTY)
-            {
-                return right;
-            }
-
-            if (left->type == NodeType::INT && right->type == NodeType::INT)
-            {
-                return right;
-            }
-
-            if (left->type == NodeType::INT && right->type == NodeType::FLOAT)
-            {
-                return right;
-            }
-
-            if (left->type == NodeType::FLOAT && right->type == NodeType::INT)
-            {
-                return left;
-            }
-
-            if (left->type == NodeType::FLOAT && right->type == NodeType::FLOAT)
-            {
-                return right;
-            }
-
-            if (left->type == NodeType::INT && right->type == NodeType::STRING)
-            {
-                return right;
-            }
-
-            if (left->type == NodeType::STRING && right->type == NodeType::INT)
-            {
-                return left;
-            }
-
-            if (left->type == NodeType::LIST && right->type == NodeType::INT)
-            {
-                return left;
-            }
-
-            if (left->type == NodeType::INT && right->type == NodeType::LIST)
-            {
-                return right;
-            }
-
-            errors.push_back(make_error("Type", "Cannot perform '*' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right)));
-            auto error = std::make_shared<Node>(NodeType::ERROR);
-            return error;
+            return get_type_mul(node);
         }
-        if (is_type(node, {NodeType::STAR}))
+        if (is_type(node, {NodeType::SLASH}))
         {
-            if (left->type == NodeType::ANY)
-            {
-                return left;
-            }
-            if (right->type == NodeType::ANY)
-            {
-                return right;
-            }
-
-            if (left->type == NodeType::EMPTY)
-            {
-                return left;
-            }
-
-            if (right->type == NodeType::EMPTY)
-            {
-               return right;
-            }
-
-            if (left->type == NodeType::INT && right->type == NodeType::INT)
-            {
-                return right;
-            }
-
-            if (left->type == NodeType::INT && right->type == NodeType::FLOAT)
-            {
-                return right;
-            }
-
-            if (left->type == NodeType::FLOAT && right->type == NodeType::INT)
-            {
-                return left;
-            }
-
-            if (left->type == NodeType::FLOAT && right->type == NodeType::FLOAT)
-            {
-                return right;
-            }
-
-            errors.push_back(make_error("Type", "Cannot perform '/' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right)));
-            auto error = std::make_shared<Node>(NodeType::ERROR);
-            return error;
+            return get_type_div(node);
         }
     }
 

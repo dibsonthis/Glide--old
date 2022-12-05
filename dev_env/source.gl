@@ -1,7 +1,9 @@
-add = [a::any b::float] :: int => {
-    a + b
+x = @{
+    name: "John"
+    age: 49
+    address: @{
+        post: 4542
+    }
 }
 
-x :: int = add[5 10.1]
-
-print[x]
+T = x.address.post
