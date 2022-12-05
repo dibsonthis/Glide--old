@@ -1,19 +1,7 @@
-Type = @{
-    name: string
-    age: (int, float)
-    nums: [int]
-}
-
-x :: Type = @{
-    name: "John"
-    age: 44 + 5
-    nums: [3 4 6]
-}
-
-Number = (int, float)
-
-f = [a::int b] :: int => {
+add = [a::any b::float] :: int => {
     a + b
 }
 
-y :: string = f[1 2]
+x :: int = add[5 10.1]
+
+print[x]

@@ -247,30 +247,15 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         {
             if (is_type(elem, {NodeType::DOUBLE_COLON}))
             {
-                func_type->FUNC_T.params[elem->left->ID.value] = get_type(elem->right);
-                
+                func_type->FUNC_T.params.push_back(std::make_pair(elem->left->ID.value, get_type(elem->right)));
+
                 // remove type
                 elem = elem->left;
             }
             else
             {
-                func_type->FUNC_T.params[elem->ID.value] = std::make_shared<Node>(NodeType::ANY);
+                func_type->FUNC_T.params.push_back(std::make_pair(elem->ID.value, std::make_shared<Node>(NodeType::ANY)));
             }
-        }
-
-        std::vector<std::pair<std::string, std::shared_ptr<Node>>> ordered_keys;
-
-        for (auto& prop : func_type->FUNC_T.params)
-        {
-            ordered_keys.push_back(prop);
-        }
-
-        std::sort(ordered_keys.begin(), ordered_keys.end(), [] (std::pair<std::string, std::shared_ptr<Node>> const &lhs, std::pair<std::string, std::shared_ptr<Node>> const &rhs) {return lhs.first < rhs.first;});
-        func_type->FUNC_T.params.clear();
-
-        for (auto& elem : ordered_keys)
-        {
-            func_type->FUNC_T.params[elem.first] = elem.second;
         }
 
         // check that the function actually returns the same type as the return type
@@ -317,21 +302,14 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 
         func_type = symbol_table[name];
 
-        std::vector<std::shared_ptr<Node>> param_types;
-
-        for (auto& elem : func_type->FUNC_T.params)
-        {
-            param_types.push_back(elem.second);
-        }
-
         // typecheck the args
         // TODO: additional overflow args do not get typechecked, do we want to change this?
 
-        for (int i = 0; i < param_types.size(); i++)
+        for (int i = 0; i < func_type->FUNC_T.params.size(); i++)
         {
-            if (!match_types(param_types[i], args[i]))
+            if (!match_types(func_type->FUNC_T.params[i].second, args[i]))
             {
-                errors.push_back(make_error("Type", "Function '" + name + "' - Cannot assign argument of type '" + node_type_to_string(args[i]) + "' to parameter of type '" + node_type_to_string(param_types[i]) + "'"));
+                errors.push_back(make_error("Type", "Function '" + name + "' - Cannot assign argument of type '" + node_type_to_string(args[i]) + "' to parameter of type '" + node_type_to_string(func_type->FUNC_T.params[i].second) + "'"));
                 return std::make_shared<Node>(NodeType::ERROR);
             }
         }
