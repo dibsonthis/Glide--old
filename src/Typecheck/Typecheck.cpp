@@ -332,6 +332,60 @@ std::shared_ptr<Node> Typechecker::get_type_div(std::shared_ptr<Node> node)
     return error;
 }
 
+std::shared_ptr<Node> Typechecker::get_type_mod(std::shared_ptr<Node> node)
+{
+    auto left = get_type(node->left);
+    auto right = get_type(node->right);
+
+    if (left->type == NodeType::ANY)
+    {
+        return left;
+    }
+    if (right->type == NodeType::ANY)
+    {
+        return right;
+    }
+
+    if (left->type == NodeType::EMPTY)
+    {
+        return left;
+    }
+
+    if (right->type == NodeType::EMPTY)
+    {
+        return right;
+    }
+
+    if (left->type == NodeType::INT && right->type == NodeType::INT)
+    {
+        return right;
+    }
+
+    if (left->type == NodeType::INT && right->type == NodeType::FLOAT)
+    {
+        return right;
+    }
+
+    if (left->type == NodeType::FLOAT && right->type == NodeType::INT)
+    {
+        return left;
+    }
+
+    if (left->type == NodeType::FLOAT && right->type == NodeType::FLOAT)
+    {
+        return right;
+    }
+
+    errors.push_back(make_error("Type", "Cannot perform '/' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right)));
+    auto error = std::make_shared<Node>(NodeType::ERROR);
+    return error;
+}
+
+std::shared_ptr<Node> Typechecker::get_type_equality(std::shared_ptr<Node> node)
+{
+    return std::make_shared<Node>(NodeType::BOOL);
+}
+
 std::shared_ptr<Node> Typechecker::get_type_dot(std::shared_ptr<Node> node)
 {
     auto left = get_type(node->left);
@@ -694,6 +748,18 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
     if (is_type(node, {NodeType::SLASH}))
     {
         return get_type_div(node);
+    }
+    if (is_type(node, {NodeType::PERCENT}))
+    {
+        return get_type_mod(node);
+    }
+    if (is_type(node, {NodeType::EXCLAMATION, NodeType::L_ANGLE, NodeType::R_ANGLE, NodeType::LT_EQUAL, NodeType::GT_EQUAL, NodeType::EQ_EQ, NodeType::NOT_EQUAL, NodeType::AND, NodeType::OR}))
+    {
+        return get_type_equality(node);
+    }
+    if (is_type(node, {NodeType::POS, NodeType::NEG}))
+    {
+        return get_type(node->right);
     }
     if (is_type(node, {NodeType::DOUBLE_DOT}))
     {
