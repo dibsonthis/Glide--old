@@ -1,10 +1,5 @@
-// x :: ([int], [int float]) = [1 2 3]
-// x += 5.9
-// print[x]
+add = [a::any b::any] => {
+    a + b
+}
 
-// x :: (int, float) = 5.5
-// x += 10
-// print[x]
-
-x :: ([int], [float], [int float]) = [1 2 3]
-x += "5.5"
+add[5.5 ""]

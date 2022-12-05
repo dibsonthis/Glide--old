@@ -678,7 +678,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 
         for (auto param : func_type->FUNC_T.params)
         {
-            tc.symbol_table[param.first] = Type(param.second);
+            tc.symbol_table[param.first] = Type(param.second, param.second);
         }
 
         for (auto node : tc.nodes)
@@ -700,6 +700,8 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
             errors.push_back(make_error("Type", "Lambda must return value of type '" + node_type_to_string(func_type->FUNC_T.return_type) + "' but instead returns '" + node_type_to_string(type) + "'"));
             return std::make_shared<Node>(NodeType::ERROR);
         }
+
+        func_type->FUNC_T.return_type = type;
 
         return func_type;
     }
