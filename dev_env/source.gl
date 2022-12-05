@@ -6,4 +6,4 @@ x = @{
     }
 }
 
-T = x.address.post
+T :: [float] = 1..100

@@ -679,24 +679,36 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
     {
         return get_type_dot(node);
     }
-    if (is_type(node, {NodeType::OP}))
+    if (is_type(node, {NodeType::PLUS}))
     {
-        if (is_type(node, {NodeType::PLUS}))
+        return get_type_add(node);
+    }
+    if (is_type(node, {NodeType::MINUS}))
+    {
+        return get_type_sub(node);
+    }
+    if (is_type(node, {NodeType::STAR}))
+    {
+        return get_type_mul(node);
+    }
+    if (is_type(node, {NodeType::SLASH}))
+    {
+        return get_type_div(node);
+    }
+    if (is_type(node, {NodeType::DOUBLE_DOT}))
+    {
+        auto left = get_type(node->left);
+        auto right = get_type(node->right);
+
+        if (left->type != NodeType::INT && right->type != NodeType::INT)
         {
-            return get_type_add(node);
+            errors.push_back(make_error("Type", "Range only accepts integer values"));
+            return std::make_shared<Node>(NodeType::ERROR);
         }
-        if (is_type(node, {NodeType::MINUS}))
-        {
-            return get_type_sub(node);
-        }
-        if (is_type(node, {NodeType::STAR}))
-        {
-            return get_type_mul(node);
-        }
-        if (is_type(node, {NodeType::SLASH}))
-        {
-            return get_type_div(node);
-        }
+
+        auto type = std::make_shared<Node>(NodeType::LIST);
+        type->LIST.nodes.push_back(std::make_shared<Node>(NodeType::INT));
+        return type;
     }
 
     return std::make_shared<Node>(NodeType::ANY);
