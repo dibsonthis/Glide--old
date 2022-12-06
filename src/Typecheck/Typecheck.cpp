@@ -471,15 +471,12 @@ std::shared_ptr<Node> Typechecker::get_type_dot(std::shared_ptr<Node> node)
         return std::make_shared<Node>(NodeType::ERROR);
     }
 
-    auto right = std::make_shared<Node>(NodeType::STRING);
+    auto right = std::make_shared<Node>(*node->right);
 
     if (is_type(node->right, {NodeType::ID}))
     {
+        right->type = NodeType::STRING;
         right->STRING.value = node->right->ID.value;
-    }
-    else if (is_type(node->right, {NodeType::STRING}))
-    {
-        right->STRING.value = node->right->STRING.value;
     }
 
     if (left->type == NodeType::STRING && right->type == NodeType::STRING)
@@ -530,6 +527,20 @@ std::shared_ptr<Node> Typechecker::get_type_dot(std::shared_ptr<Node> node)
         
         errors.push_back(make_error("Key", "Property '" + right->STRING.value + "' does not exist on type 'list'"));
         return std::make_shared<Node>(NodeType::ERROR);
+    }
+
+    if (left->type == NodeType::LIST && right->type == NodeType::LIST)
+    {
+        auto type = std::make_shared<Node>(NodeType::COMMA_LIST);
+        type->COMMA_LIST.nodes.push_back(std::make_shared<Node>(NodeType::EMPTY));
+        for (auto node : left->LIST.nodes)
+        {
+            type->COMMA_LIST.nodes.push_back(node);
+        }
+
+        type->LIST.nodes.erase(std::unique(type->LIST.nodes.begin(), type->LIST.nodes.end(), [this] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return match_types(type_a, type_b);}), type->LIST.nodes.end());
+        std::sort(type->LIST.nodes.begin(), type->LIST.nodes.end(), [] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return type_a->type < type_b->type;});
+        return type;
     }
 
     if (left->type == NodeType::OBJECT && right->type == NodeType::STRING)
@@ -615,6 +626,11 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         if (name == "any")
         {
             return std::make_shared<Node>(NodeType::ANY);
+        }
+        // TODO: type builtins
+        if (name == "print" || name == "type" || name == "address" || name == "shape" || name == "to_string" || name == "to_int" || name == "to_float" || name == "to_list")
+        {
+            return std::make_shared<Node>(NodeType::FUNC_T);
         }
 
         if (symbol_table.find(node->ID.value) == symbol_table.end()) 
@@ -722,6 +738,11 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 
         // check that the function actually returns the same type as the return type
         Typechecker tc(file_name, node->right->BLOCK.nodes);
+
+        for (auto elem : symbol_table)
+        {
+            tc.symbol_table[elem.first] = elem.second;
+        }
 
         for (auto param : func_type->FUNC_T.params)
         {

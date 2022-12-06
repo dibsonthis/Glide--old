@@ -1,9 +1,6 @@
-// math = import["../../../dev_env/imports/std/math.gl"]
-
-// print[math.add_i[4 5.5]]
-
-add_i = [a::int b::int] :: int => {
-    a + b
+swap = [arr::[int] i::int j::int] :: [any] => {
+    val_i = arr.[i]
+    arr.[i] = arr.[j]
+    arr.[j] = val_i
+    ret arr
 }
-
-print[add_i[5.5 0]]
