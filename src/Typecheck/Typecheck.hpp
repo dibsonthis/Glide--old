@@ -1,5 +1,7 @@
 #pragma once
 #include "../Node.hpp"
+#include "../Lexer.hpp"
+#include "../Parser.hpp"
 #include "../utils.hpp"
 
 struct Type

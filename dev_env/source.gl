@@ -1,5 +1,9 @@
-add = [a::any b::any] => {
-    a + b
-}
+math = import["../../../dev_env/imports/std/math.gl"]
 
-add[5.5 ""]
+x :: (float, int) = math.add_i[4 5]
+
+y = @{
+    name: "John"
+} + @{
+    age: 45
+}

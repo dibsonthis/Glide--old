@@ -190,7 +190,17 @@ std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
 
     if (left->type == NodeType::OBJECT && right->type == NodeType::OBJECT)
     {
-        return right;
+        auto obj = std::make_shared<Node>(NodeType::OBJECT);
+        auto block = std::make_shared<Node>(NodeType::BLOCK);
+        for (auto prop : left->OBJECT.properties)
+        {
+            obj->OBJECT.properties[prop.first] = prop.second;
+        }
+        for (auto prop : right->OBJECT.properties)
+        {
+            obj->OBJECT.properties[prop.first] = prop.second;
+        }
+        return obj;
     }
 
     if (left->type == NodeType::COMMA_LIST)
@@ -426,13 +436,42 @@ std::shared_ptr<Node> Typechecker::get_type_equality(std::shared_ptr<Node> node)
 std::shared_ptr<Node> Typechecker::get_type_dot(std::shared_ptr<Node> node)
 {
     auto left = get_type(node->left);
+
+    if (node->right->type == NodeType::FUNC_CALL)
+    {
+        // find the function inside the object
+        if (left->OBJECT.properties.find(node->right->FUNC_CALL.name->ID.value) != left->OBJECT.properties.end())
+        {
+            auto func_type = left->OBJECT.properties[node->right->FUNC_CALL.name->ID.value];
+            auto name = node->right->FUNC_CALL.name->ID.value;
+            auto args = node->right->FUNC_CALL.args;
+
+            // typecheck the args
+            // TODO: additional overflow args do not get typechecked, do we want to change this?
+
+            for (int i = 0; i < func_type->FUNC_T.params.size(); i++)
+            {
+                if (!match_types(func_type->FUNC_T.params[i].second, args[i]))
+                {
+                    errors.push_back(make_error("Type", "Function '" + name + "' - Cannot assign argument of type '" + node_type_to_string(args[i]) + "' to parameter of type '" + node_type_to_string(func_type->FUNC_T.params[i].second) + "'"));
+                    return std::make_shared<Node>(NodeType::ERROR);
+                }
+            }
+
+            return func_type->FUNC_T.return_type;
+        }
+        
+        errors.push_back(make_error("Value", "Function '" + node->right->FUNC_CALL.name->ID.value + "' does not exist on object"));
+        return std::make_shared<Node>(NodeType::ERROR);
+    }
+
     auto right = std::make_shared<Node>(NodeType::STRING);
 
     if (is_type(node->right, {NodeType::ID}))
     {
         right->STRING.value = node->right->ID.value;
     }
-    else
+    else if (is_type(node->right, {NodeType::STRING}))
     {
         right->STRING.value = node->right->STRING.value;
     }
@@ -710,6 +749,40 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         auto name = node->FUNC_CALL.name->ID.value;
         auto args = node->FUNC_CALL.args;
 
+        if (name == "import")
+        {
+            if (args.size() != 1)
+            {
+                errors.push_back(make_error("Builtin", "function 'import' only accepts one parameter"));
+                return std::make_shared<Node>(NodeType::ERROR);
+            }
+
+            auto file_path = args[0]->STRING.value;
+
+            Lexer lexer(file_path);
+            lexer.tokenize();
+
+            Parser parser(lexer.file_name, lexer.nodes);
+            parser.parse();
+
+            Typechecker tc(lexer.file_name, parser.nodes);
+            tc.run();
+
+            if (tc.errors.size() > 0)
+            {
+                return std::make_shared<Node>(NodeType::ERROR);
+            }
+            
+            auto import_obj = std::make_shared<Node>(NodeType::OBJECT);
+
+            for (auto elem : tc.symbol_table)
+            {
+                import_obj->OBJECT.properties[elem.first] = elem.second.value_type;
+            }
+
+            return import_obj;
+        }
+
         auto func_type = std::make_shared<Node>(NodeType::ANY);
 
         if (symbol_table.find(name) == symbol_table.end()) 
@@ -963,6 +1036,10 @@ void Typechecker::run()
             for (auto error : errors) {
                 std::cout << error << "\n" << std::flush;
             }
+            break;
+        }
+        if (!check) {
+            errors.push_back("");
             break;
         }
     }
