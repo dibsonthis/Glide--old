@@ -1,9 +1,9 @@
-math = import["../../../dev_env/imports/std/math.gl"]
+// math = import["../../../dev_env/imports/std/math.gl"]
 
-x :: (float, int) = math.add_i[4 5]
+// print[math.add_i[4 5.5]]
 
-y = @{
-    name: "John"
-} + @{
-    age: 45
+add_i = [a::int b::int] :: int => {
+    a + b
 }
+
+print[add_i[5.5 0]]

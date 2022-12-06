@@ -451,7 +451,13 @@ std::shared_ptr<Node> Typechecker::get_type_dot(std::shared_ptr<Node> node)
 
             for (int i = 0; i < func_type->FUNC_T.params.size(); i++)
             {
-                if (!match_types(func_type->FUNC_T.params[i].second, args[i]))
+                auto arg = get_type(args[i]);
+                if (arg->type == NodeType::ERROR)
+                {
+                    return arg;
+                }
+
+                if (!match_types(func_type->FUNC_T.params[i].second, arg))
                 {
                     errors.push_back(make_error("Type", "Function '" + name + "' - Cannot assign argument of type '" + node_type_to_string(args[i]) + "' to parameter of type '" + node_type_to_string(func_type->FUNC_T.params[i].second) + "'"));
                     return std::make_shared<Node>(NodeType::ERROR);
@@ -568,6 +574,8 @@ std::shared_ptr<Node> Typechecker::get_type_dot(std::shared_ptr<Node> node)
 
         return left->OBJECT.properties[name];
     }
+
+    return std::make_shared<Node>(NodeType::ANY);
 }
 
 std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
@@ -783,10 +791,19 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
             return import_obj;
         }
 
-        auto func_type = std::make_shared<Node>(NodeType::ANY);
+        std::shared_ptr<Node> func_type = std::make_shared<Node>(NodeType::ANY);
 
         if (symbol_table.find(name) == symbol_table.end()) 
         {
+            for (int i = 0; i < args.size(); i++)
+            {
+                auto arg = get_type(args[i]);
+                if (arg->type == NodeType::ERROR)
+                {
+                    return arg;
+                }
+            }
+
             return func_type;
         } 
 
@@ -797,7 +814,13 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 
         for (int i = 0; i < func_type->FUNC_T.params.size(); i++)
         {
-            if (!match_types(func_type->FUNC_T.params[i].second, args[i]))
+            auto arg = get_type(args[i]);
+            if (arg->type == NodeType::ERROR)
+            {
+                return arg;
+            }
+
+            if (!match_types(func_type->FUNC_T.params[i].second, arg))
             {
                 errors.push_back(make_error("Type", "Function '" + name + "' - Cannot assign argument of type '" + node_type_to_string(args[i]) + "' to parameter of type '" + node_type_to_string(func_type->FUNC_T.params[i].second) + "'"));
                 return std::make_shared<Node>(NodeType::ERROR);
@@ -852,6 +875,17 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         auto type = std::make_shared<Node>(NodeType::LIST);
         type->LIST.nodes.push_back(std::make_shared<Node>(NodeType::INT));
         return type;
+    }
+    if (is_type(node, {NodeType::OP}))
+    {
+        auto left = get_type(node->left);
+        auto right = get_type(node->right);
+
+        if (left->type == NodeType::ERROR || right->type == NodeType::ERROR)
+        {
+            return std::make_shared<Node>(NodeType::ERROR);
+        }
+        return std::make_shared<Node>(NodeType::ANY);
     }
 
     return std::make_shared<Node>(NodeType::ANY);
