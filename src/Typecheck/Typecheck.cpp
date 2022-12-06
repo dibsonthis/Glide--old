@@ -200,12 +200,23 @@ std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
         {
             obj->OBJECT.properties[prop.first] = prop.second;
         }
+
+        std::vector<std::pair<std::string, std::shared_ptr<Node>>> ordered_keys;
+
+        for (auto& prop : obj->OBJECT.properties)
+        {
+            ordered_keys.push_back(prop);
+        }
+
+        std::sort(ordered_keys.begin(), ordered_keys.end(), [] (std::pair<std::string, std::shared_ptr<Node>> const &lhs, std::pair<std::string, std::shared_ptr<Node>> const &rhs) {return lhs.first < rhs.first;});
+        obj->OBJECT.properties.clear();
+
+        for (auto& elem : ordered_keys)
+        {
+            obj->OBJECT.properties[elem.first] = elem.second;
+        }
+
         return obj;
-    }
-
-    if (left->type == NodeType::COMMA_LIST)
-    {
-
     }
 
     errors.push_back(make_error("Type", "Cannot perform '+' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right)));

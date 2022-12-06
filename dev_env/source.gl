@@ -1,6 +1,22 @@
-swap = [arr::[int] i::int j::int] :: [any] => {
-    val_i = arr.[i]
-    arr.[i] = arr.[j]
-    arr.[j] = val_i
-    ret arr
+num = (int, float)
+num_arr = ([int], [float], [int float])
+
+Person = @{
+    name: string
+    age: num
+}
+
+sam :: Person = @{
+    name: "Sam"
+    age: 44
+}
+
+Employee = Person + @{
+    id: int
+}
+
+james :: Employee = @{
+    name: "James"
+    age: 32
+    id: 12
 }
