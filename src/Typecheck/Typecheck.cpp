@@ -59,6 +59,9 @@ std::string Typechecker::node_type_to_string(std::shared_ptr<Node> node)
         case NodeType::ERROR: {
             return "error";
         }
+        case NodeType::EMPTY: {
+            return "empty";
+        }
         default: {
             return "<no-repr>";
         }
@@ -653,6 +656,10 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         {
             return std::make_shared<Node>(NodeType::ANY);
         }
+        if (name == "null")
+        {
+            return std::make_shared<Node>(NodeType::EMPTY);
+        }
         // TODO: type builtins
         if (name == "print" || name == "type" || name == "address" || name == "shape" || name == "to_string" || name == "to_int" || name == "to_float" || name == "to_list")
         {
@@ -669,7 +676,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
             return symbol_table[node->ID.value].value_type;
         }
     }
-    if (is_type(node, {NodeType::INT, NodeType::FLOAT, NodeType::STRING, NodeType::BOOL}))
+    if (is_type(node, {NodeType::INT, NodeType::FLOAT, NodeType::STRING, NodeType::BOOL, NodeType::EMPTY, NodeType::ERROR}))
     {
         return node;
     }
@@ -784,7 +791,9 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         }
 
         auto branched_return_types = std::make_shared<Node>(NodeType::COMMA_LIST);
-        auto last_node = std::make_shared<Node>(NodeType::ERROR);
+        auto last_node = std::make_shared<Node>(NodeType::EMPTY);
+        int num_branch_statements = 0;
+        bool has_return = false;
 
         for (int i = 0; i < tc.nodes.size(); i++)
         {
@@ -802,12 +811,15 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 
             if (tc.nodes[i]->type == NodeType::KEYWORD && tc.nodes[i]->ID.value == "ret")
             {
+                has_return = true;
                 last_node = type;
                 break;
             }
 
             if (tc.nodes[i]->type == NodeType::IF_STATEMENT || tc.nodes[i]->type == NodeType::IF_BLOCK)
             {
+                num_branch_statements++;
+
                 if (type->type == NodeType::COMMA_LIST)
                 {
                     // need to flatten the if block to separate types
@@ -826,6 +838,18 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
             {
                 last_node = type;
             }
+        }
+
+        if (num_branch_statements == tc.nodes.size())
+        {
+            // if all statements are if/if blocks, then we add an empty type
+            branched_return_types->COMMA_LIST.nodes.push_back(std::make_shared<Node>(NodeType::EMPTY));
+        }
+
+        if ((tc.nodes[tc.nodes.size()-1]->type == NodeType::IF_STATEMENT || tc.nodes[tc.nodes.size()-1]->type == NodeType::IF_BLOCK) && !has_return)
+        {
+            // last element is an if statement/if block, and no return found, we add an empty type
+            branched_return_types->COMMA_LIST.nodes.push_back(std::make_shared<Node>(NodeType::EMPTY));
         }
 
         if (branched_return_types->COMMA_LIST.nodes.size() > 0)

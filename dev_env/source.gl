@@ -1,12 +1,9 @@
-format = [text::any] :: (string, int) => {
-    // ret "hello"
-    // if => {
-    //     text == "hello": { "goodbye" }
-    //     text == "goodbye": { "hello"}
-    //     text == "error": { x }
-    // }
+format = [text::any] :: (string, empty_type) => {
 
-    45
+    if => {
+        text == "hello": { "goodbye" }
+        text == "goodbye": { "hello"}
+    }
 }
 
 format[5] -> print
