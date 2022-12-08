@@ -814,6 +814,11 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
             std::sort(branched_return_types->COMMA_LIST.nodes.begin(), branched_return_types->COMMA_LIST.nodes.end(), [] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return type_a->type < type_b->type;});
 
             type = branched_return_types;
+
+            if (type->COMMA_LIST.nodes.size() == 1)
+            {
+                type = type->COMMA_LIST.nodes[0];
+            }
         }
 
         if (!tc.match_types(func_type->FUNC_T.return_type, type))

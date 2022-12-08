@@ -1,7 +1,10 @@
-format = [text::string] :: (string, int, []) => {
-    if [text == "a"] => {
-        4
+format = [text:: string] :: string => {
+    x = 450
+    if => {
+        text == "hello": { "goodbye" }
+        text == "goodbye": { "hello"}
+        text == "error": { x }
     }
-
-    ret []
 }
+
+format["error"] -> print
