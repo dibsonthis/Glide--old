@@ -1,11 +1,12 @@
-format = [text::string] :: (string, int) => {
+format = [text::any] :: (string, int) => {
     x = 450
     if => {
         text == "hello": { "goodbye" }
         text == "goodbye": { "hello"}
         text == "error": { x }
-        x == 4: { 56.8 }
     }
+
+    45
 }
 
-format["error"] -> print
+format[5] -> print
