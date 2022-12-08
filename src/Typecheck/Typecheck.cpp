@@ -800,6 +800,12 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
                 return type;
             }
 
+            if (tc.nodes[i]->type == NodeType::KEYWORD && tc.nodes[i]->ID.value == "ret")
+            {
+                last_node = type;
+                break;
+            }
+
             if (tc.nodes[i]->type == NodeType::IF_STATEMENT || tc.nodes[i]->type == NodeType::IF_BLOCK)
             {
                 if (type->type == NodeType::COMMA_LIST)

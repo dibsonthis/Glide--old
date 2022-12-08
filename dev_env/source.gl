@@ -1,10 +1,10 @@
 format = [text::any] :: (string, int) => {
-    x = 450
-    if => {
-        text == "hello": { "goodbye" }
-        text == "goodbye": { "hello"}
-        text == "error": { x }
-    }
+    // ret "hello"
+    // if => {
+    //     text == "hello": { "goodbye" }
+    //     text == "goodbye": { "hello"}
+    //     text == "error": { x }
+    // }
 
     45
 }
