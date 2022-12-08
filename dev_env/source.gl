@@ -1,9 +1,7 @@
-format = [text::any] :: (string, empty_type) => {
+format = [text::string] :: string => {
+    // if [text.to_chars.[0] == "a"] => {
+    //     100
+    // }
+    ret 200
 
-    if => {
-        text == "hello": { "goodbye" }
-        text == "goodbye": { "hello"}
-    }
-}
-
-format[5] -> print
+format["hello"] -> print

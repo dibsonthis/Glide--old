@@ -465,6 +465,11 @@ std::shared_ptr<Node> Typechecker::get_type_dot(std::shared_ptr<Node> node)
 {
     auto left = get_type(node->left);
 
+    if (left->type == NodeType::ERROR)
+    {
+        return left;
+    }
+
     if (node->right->type == NodeType::FUNC_CALL)
     {
         // find the function inside the object
