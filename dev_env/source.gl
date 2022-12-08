@@ -1,6 +1,9 @@
-add_f = [a::float b::float] :: float => {
-    a + b
-}
+// add_f = [a::float b::float] :: float => {
+//     a + b
+// }
 
-x :: add_f = add_f[5.5]
-y :: float = (6.6 -> x)
+// x :: add_f = add_f[5.5]
+// y :: float = (6.6 -> x)
+
+y = 12
+x = 4 + y

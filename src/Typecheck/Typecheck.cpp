@@ -103,46 +103,82 @@ std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
 
     if (left->type == NodeType::INT && right->type == NodeType::INT)
     {
+        // compile time calculation
+        node->type = NodeType::INT;
+        node->INT.value = left->INT.value + right->INT.value;
+
         return right;
     }
 
     if (left->type == NodeType::INT && right->type == NodeType::FLOAT)
     {
+        // compile time calculation
+        node->type = NodeType::FLOAT;
+        node->FLOAT.value = left->INT.value + right->FLOAT.value;
+
         return right;
     }
 
     if (left->type == NodeType::FLOAT && right->type == NodeType::INT)
     {
+        // compile time calculation
+        node->type = NodeType::FLOAT;
+        node->FLOAT.value = left->FLOAT.value + right->INT.value;
+
         return left;
     }
 
     if (left->type == NodeType::FLOAT && right->type == NodeType::FLOAT)
     {
+        // compile time calculation
+        node->type = NodeType::FLOAT;
+        node->FLOAT.value = left->FLOAT.value + right->FLOAT.value;
+
         return right;
     }
 
     if (left->type == NodeType::STRING && right->type == NodeType::STRING)
     {
+        // compile time calculation
+        node->type = NodeType::STRING;
+        node->STRING.value = left->STRING.value + right->STRING.value;
+
         return right;
     }
 
     if (left->type == NodeType::STRING && right->type == NodeType::INT)
     {
+        // compile time calculation
+        node->type = NodeType::STRING;
+        node->STRING.value = left->STRING.value + std::to_string(right->INT.value);
+
         return left;
     }
 
     if (left->type == NodeType::INT && right->type == NodeType::STRING)
     {
+        // compile time calculation
+        node->type = NodeType::STRING;
+        node->STRING.value = std::to_string(left->INT.value) + right->STRING.value;
+
         return right;
     }
 
     if (left->type == NodeType::STRING && right->type == NodeType::FLOAT)
     {
+        // compile time calculation
+        node->type = NodeType::STRING;
+        node->STRING.value = left->STRING.value + std::to_string(right->FLOAT.value);
+
         return left;
     }
 
     if (left->type == NodeType::FLOAT && right->type == NodeType::STRING)
     {
+        // compile time calculation
+        node->type = NodeType::STRING;
+        node->STRING.value = std::to_string(left->FLOAT.value) + right->STRING.value;
+
         return right;
     }
 
@@ -266,21 +302,37 @@ std::shared_ptr<Node> Typechecker::get_type_sub(std::shared_ptr<Node> node)
 
     if (left->type == NodeType::INT && right->type == NodeType::INT)
     {
+        // compile time calculation
+        node->type = NodeType::INT;
+        node->INT.value = left->INT.value - right->INT.value;
+
         return right;
     }
 
     if (left->type == NodeType::INT && right->type == NodeType::FLOAT)
     {
+        // compile time calculation
+        node->type = NodeType::FLOAT;
+        node->FLOAT.value = left->INT.value - right->FLOAT.value;
+
         return right;
     }
 
     if (left->type == NodeType::FLOAT && right->type == NodeType::INT)
     {
+        // compile time calculation
+        node->type = NodeType::FLOAT;
+        node->FLOAT.value = left->FLOAT.value - right->INT.value;
+
         return left;
     }
 
     if (left->type == NodeType::FLOAT && right->type == NodeType::FLOAT)
     {
+        // compile time calculation
+        node->type = NodeType::FLOAT;
+        node->FLOAT.value = left->FLOAT.value - right->FLOAT.value;
+
         return right;
     }
 
@@ -314,21 +366,37 @@ std::shared_ptr<Node> Typechecker::get_type_mul(std::shared_ptr<Node> node)
 
     if (left->type == NodeType::INT && right->type == NodeType::INT)
     {
+        // compile time calculation
+        node->type = NodeType::INT;
+        node->INT.value = left->INT.value * right->INT.value;
+
         return right;
     }
 
     if (left->type == NodeType::INT && right->type == NodeType::FLOAT)
     {
+        // compile time calculation
+        node->type = NodeType::FLOAT;
+        node->FLOAT.value = left->INT.value * right->FLOAT.value;
+
         return right;
     }
 
     if (left->type == NodeType::FLOAT && right->type == NodeType::INT)
     {
+        // compile time calculation
+        node->type = NodeType::FLOAT;
+        node->FLOAT.value = left->FLOAT.value * right->INT.value;
+
         return left;
     }
 
     if (left->type == NodeType::FLOAT && right->type == NodeType::FLOAT)
     {
+        // compile time calculation
+        node->type = NodeType::FLOAT;
+        node->FLOAT.value = left->FLOAT.value * right->FLOAT.value;
+
         return right;
     }
 
@@ -383,21 +451,35 @@ std::shared_ptr<Node> Typechecker::get_type_div(std::shared_ptr<Node> node)
 
     if (left->type == NodeType::INT && right->type == NodeType::INT)
     {
+        // compile time calculation
+        node->type = NodeType::FLOAT;
+        node->FLOAT.value = (double)left->INT.value / (double)right->INT.value;
+
         return right;
     }
 
     if (left->type == NodeType::INT && right->type == NodeType::FLOAT)
     {
+        // compile time calculation
+        node->type = NodeType::FLOAT;
+        node->FLOAT.value = (double)left->INT.value / right->FLOAT.value;
+
         return right;
     }
 
     if (left->type == NodeType::FLOAT && right->type == NodeType::INT)
     {
+        // compile time calculation
+        node->type = NodeType::FLOAT;
+        node->FLOAT.value = left->FLOAT.value / (double)right->INT.value;
         return left;
     }
 
     if (left->type == NodeType::FLOAT && right->type == NodeType::FLOAT)
     {
+        // compile time calculation
+        node->type = NodeType::FLOAT;
+        node->FLOAT.value = left->FLOAT.value / right->FLOAT.value;
         return right;
     }
 
@@ -488,6 +570,15 @@ std::shared_ptr<Node> Typechecker::get_type_dot(std::shared_ptr<Node> node)
             auto name = node->right->FUNC_CALL.name->ID.value;
             auto args = node->right->FUNC_CALL.args;
 
+            // inject the args into the type, which might have existing args (curried)
+
+            for (auto arg : args)
+            {
+                func_type->FUNC_T.args.push_back(arg);
+            }
+
+            args = func_type->FUNC_T.args;
+
             // typecheck the args
             // TODO: additional overflow args do not get typechecked, do we want to change this?
 
@@ -506,7 +597,12 @@ std::shared_ptr<Node> Typechecker::get_type_dot(std::shared_ptr<Node> node)
                 }
             }
 
-            return func_type->FUNC_T.return_type;
+            if (args.size() >= func_type->FUNC_T.params.size())
+            {
+                return func_type->FUNC_T.return_type;
+            }
+
+            return func_type;
         }
         
         errors.push_back(make_error("Value", "Function '" + node->right->FUNC_CALL.name->ID.value + "' does not exist on object"));
