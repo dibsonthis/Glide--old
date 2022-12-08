@@ -4,7 +4,7 @@ format = [text::string] :: (string, int) => {
         text == "hello": { "goodbye" }
         text == "goodbye": { "hello"}
         text == "error": { x }
-        h == 4: { y }
+        x == 4: { 56.8 }
     }
 }
 

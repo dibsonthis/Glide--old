@@ -783,11 +783,12 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         }
 
         auto branched_return_types = std::make_shared<Node>(NodeType::COMMA_LIST);
+        auto last_node = std::make_shared<Node>(NodeType::ERROR);
 
-        for (auto node : tc.nodes)
+        for (int i = 0; i < tc.nodes.size(); i++)
         {
-            update_loc(node);
-            auto type = tc.get_type(node);
+            update_loc(tc.nodes[i]);
+            auto type = tc.get_type(tc.nodes[i]);
             if (type->type == NodeType::ERROR)
             {
                 for (auto error : tc.errors) 
@@ -798,36 +799,39 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
                 return type;
             }
 
-            if (node->type == NodeType::IF_STATEMENT || node->type == NodeType::IF_BLOCK)
+            if (tc.nodes[i]->type == NodeType::IF_STATEMENT || tc.nodes[i]->type == NodeType::IF_BLOCK)
             {
                 branched_return_types->COMMA_LIST.nodes.push_back(type);
             }
-        }
 
-        auto type = tc.get_type(tc.nodes[tc.nodes.size()-1]);
+            if (i == tc.nodes.size()-1)
+            {
+                last_node = type;
+            }
+        }
 
         if (branched_return_types->COMMA_LIST.nodes.size() > 0)
         {
-            branched_return_types->COMMA_LIST.nodes.push_back(type);
+            branched_return_types->COMMA_LIST.nodes.push_back(last_node);
 
             branched_return_types->COMMA_LIST.nodes.erase(std::unique(branched_return_types->COMMA_LIST.nodes.begin(), branched_return_types->COMMA_LIST.nodes.end(), [this] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return match_types(type_a, type_b);}), branched_return_types->COMMA_LIST.nodes.end());
             std::sort(branched_return_types->COMMA_LIST.nodes.begin(), branched_return_types->COMMA_LIST.nodes.end(), [] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return type_a->type < type_b->type;});
 
-            type = branched_return_types;
+            last_node = branched_return_types;
 
-            if (type->COMMA_LIST.nodes.size() == 1)
+            if (last_node->COMMA_LIST.nodes.size() == 1)
             {
-                type = type->COMMA_LIST.nodes[0];
+                last_node = last_node->COMMA_LIST.nodes[0];
             }
         }
 
-        if (!tc.match_types(func_type->FUNC_T.return_type, type))
+        if (!tc.match_types(func_type->FUNC_T.return_type, last_node))
         {
-            errors.push_back(make_error("Type", "Lambda must return value of type '" + node_type_to_string(func_type->FUNC_T.return_type) + "' but instead returns '" + node_type_to_string(type) + "'"));
+            errors.push_back(make_error("Type", "Lambda must return value of type '" + node_type_to_string(func_type->FUNC_T.return_type) + "' but instead returns '" + node_type_to_string(last_node) + "'"));
             return std::make_shared<Node>(NodeType::ERROR);
         }
 
-        func_type->FUNC_T.return_type = type;
+        func_type->FUNC_T.return_type = last_node;
 
         return func_type;
     }
@@ -1082,11 +1086,6 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
             auto type = get_type(elem);
             if (type->type == NodeType::ERROR)
             {
-                for (auto error : errors) 
-                {
-                    std::cout << error << "\n" << std::flush;
-                }
-
                 return type;
             }
         }
