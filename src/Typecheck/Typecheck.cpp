@@ -107,7 +107,8 @@ std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
         node->type = NodeType::INT;
         node->INT.value = left->INT.value + right->INT.value;
 
-        return right;
+        auto type = node;
+        return type;
     }
 
     if (left->type == NodeType::INT && right->type == NodeType::FLOAT)
@@ -116,7 +117,8 @@ std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
         node->type = NodeType::FLOAT;
         node->FLOAT.value = left->INT.value + right->FLOAT.value;
 
-        return right;
+        auto type = node;
+        return type;
     }
 
     if (left->type == NodeType::FLOAT && right->type == NodeType::INT)
@@ -125,7 +127,8 @@ std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
         node->type = NodeType::FLOAT;
         node->FLOAT.value = left->FLOAT.value + right->INT.value;
 
-        return left;
+        auto type = node;
+        return type;
     }
 
     if (left->type == NodeType::FLOAT && right->type == NodeType::FLOAT)
@@ -134,7 +137,8 @@ std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
         node->type = NodeType::FLOAT;
         node->FLOAT.value = left->FLOAT.value + right->FLOAT.value;
 
-        return right;
+        auto type = node;
+        return type;
     }
 
     if (left->type == NodeType::STRING && right->type == NodeType::STRING)
@@ -143,7 +147,8 @@ std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
         node->type = NodeType::STRING;
         node->STRING.value = left->STRING.value + right->STRING.value;
 
-        return right;
+        auto type = node;
+        return type;
     }
 
     if (left->type == NodeType::STRING && right->type == NodeType::INT)
@@ -152,7 +157,8 @@ std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
         node->type = NodeType::STRING;
         node->STRING.value = left->STRING.value + std::to_string(right->INT.value);
 
-        return left;
+        auto type = node;
+        return type;
     }
 
     if (left->type == NodeType::INT && right->type == NodeType::STRING)
@@ -161,7 +167,8 @@ std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
         node->type = NodeType::STRING;
         node->STRING.value = std::to_string(left->INT.value) + right->STRING.value;
 
-        return right;
+        auto type = node;
+        return type;
     }
 
     if (left->type == NodeType::STRING && right->type == NodeType::FLOAT)
@@ -170,7 +177,8 @@ std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
         node->type = NodeType::STRING;
         node->STRING.value = left->STRING.value + std::to_string(right->FLOAT.value);
 
-        return left;
+        auto type = node;
+        return type;
     }
 
     if (left->type == NodeType::FLOAT && right->type == NodeType::STRING)
@@ -179,7 +187,8 @@ std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
         node->type = NodeType::STRING;
         node->STRING.value = std::to_string(left->FLOAT.value) + right->STRING.value;
 
-        return right;
+        auto type = node;
+        return type;
     }
 
     if (left->type == NodeType::STRING && right->type == NodeType::BOOL)
@@ -306,7 +315,8 @@ std::shared_ptr<Node> Typechecker::get_type_sub(std::shared_ptr<Node> node)
         node->type = NodeType::INT;
         node->INT.value = left->INT.value - right->INT.value;
 
-        return right;
+        auto type = node;
+        return type;
     }
 
     if (left->type == NodeType::INT && right->type == NodeType::FLOAT)
@@ -315,7 +325,8 @@ std::shared_ptr<Node> Typechecker::get_type_sub(std::shared_ptr<Node> node)
         node->type = NodeType::FLOAT;
         node->FLOAT.value = left->INT.value - right->FLOAT.value;
 
-        return right;
+        auto type = node;
+        return type;
     }
 
     if (left->type == NodeType::FLOAT && right->type == NodeType::INT)
@@ -324,7 +335,8 @@ std::shared_ptr<Node> Typechecker::get_type_sub(std::shared_ptr<Node> node)
         node->type = NodeType::FLOAT;
         node->FLOAT.value = left->FLOAT.value - right->INT.value;
 
-        return left;
+        auto type = node;
+        return type;
     }
 
     if (left->type == NodeType::FLOAT && right->type == NodeType::FLOAT)
@@ -333,7 +345,8 @@ std::shared_ptr<Node> Typechecker::get_type_sub(std::shared_ptr<Node> node)
         node->type = NodeType::FLOAT;
         node->FLOAT.value = left->FLOAT.value - right->FLOAT.value;
 
-        return right;
+        auto type = node;
+        return type;
     }
 
     errors.push_back(make_error("Type", "Cannot perform '-' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right)));
@@ -370,7 +383,8 @@ std::shared_ptr<Node> Typechecker::get_type_mul(std::shared_ptr<Node> node)
         node->type = NodeType::INT;
         node->INT.value = left->INT.value * right->INT.value;
 
-        return right;
+        auto type = node;
+        return type;
     }
 
     if (left->type == NodeType::INT && right->type == NodeType::FLOAT)
@@ -379,7 +393,8 @@ std::shared_ptr<Node> Typechecker::get_type_mul(std::shared_ptr<Node> node)
         node->type = NodeType::FLOAT;
         node->FLOAT.value = left->INT.value * right->FLOAT.value;
 
-        return right;
+        auto type = node;
+        return type;
     }
 
     if (left->type == NodeType::FLOAT && right->type == NodeType::INT)
@@ -388,7 +403,8 @@ std::shared_ptr<Node> Typechecker::get_type_mul(std::shared_ptr<Node> node)
         node->type = NodeType::FLOAT;
         node->FLOAT.value = left->FLOAT.value * right->INT.value;
 
-        return left;
+        auto type = node;
+        return type;
     }
 
     if (left->type == NodeType::FLOAT && right->type == NodeType::FLOAT)
@@ -397,7 +413,8 @@ std::shared_ptr<Node> Typechecker::get_type_mul(std::shared_ptr<Node> node)
         node->type = NodeType::FLOAT;
         node->FLOAT.value = left->FLOAT.value * right->FLOAT.value;
 
-        return right;
+        auto type = node;
+        return type;
     }
 
     if (left->type == NodeType::INT && right->type == NodeType::STRING)
@@ -455,7 +472,8 @@ std::shared_ptr<Node> Typechecker::get_type_div(std::shared_ptr<Node> node)
         node->type = NodeType::FLOAT;
         node->FLOAT.value = (double)left->INT.value / (double)right->INT.value;
 
-        return right;
+        auto type = node;
+        return type;
     }
 
     if (left->type == NodeType::INT && right->type == NodeType::FLOAT)
@@ -464,7 +482,8 @@ std::shared_ptr<Node> Typechecker::get_type_div(std::shared_ptr<Node> node)
         node->type = NodeType::FLOAT;
         node->FLOAT.value = (double)left->INT.value / right->FLOAT.value;
 
-        return right;
+        auto type = node;
+        return type;
     }
 
     if (left->type == NodeType::FLOAT && right->type == NodeType::INT)
@@ -472,7 +491,9 @@ std::shared_ptr<Node> Typechecker::get_type_div(std::shared_ptr<Node> node)
         // compile time calculation
         node->type = NodeType::FLOAT;
         node->FLOAT.value = left->FLOAT.value / (double)right->INT.value;
-        return left;
+        
+        auto type = node;
+        return type;
     }
 
     if (left->type == NodeType::FLOAT && right->type == NodeType::FLOAT)
@@ -480,7 +501,9 @@ std::shared_ptr<Node> Typechecker::get_type_div(std::shared_ptr<Node> node)
         // compile time calculation
         node->type = NodeType::FLOAT;
         node->FLOAT.value = left->FLOAT.value / right->FLOAT.value;
-        return right;
+        
+        auto type = node;
+        return type;
     }
 
     errors.push_back(make_error("Type", "Cannot perform '/' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right)));
