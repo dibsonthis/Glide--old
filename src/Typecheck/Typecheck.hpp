@@ -34,6 +34,7 @@ struct Typechecker
     std::shared_ptr<Node> get_type_mul(std::shared_ptr<Node> node);
     std::shared_ptr<Node> get_type_div(std::shared_ptr<Node> node);
     std::shared_ptr<Node> get_type_mod(std::shared_ptr<Node> node);
+    std::shared_ptr<Node> get_type_arrow(std::shared_ptr<Node> node);
     std::shared_ptr<Node> get_type_equality(std::shared_ptr<Node> node);
 
     bool match_types(std::shared_ptr<Node> type_a, std::shared_ptr<Node> type_b);

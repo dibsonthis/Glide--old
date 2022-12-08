@@ -161,6 +161,7 @@ struct Object_Node
 struct Func_T_Node
 {
 	std::vector<std::pair<std::string, std::shared_ptr<Node>>> params;
+	std::vector<std::shared_ptr<Node>> args;
 	std::shared_ptr<Node> return_type;
 };
 

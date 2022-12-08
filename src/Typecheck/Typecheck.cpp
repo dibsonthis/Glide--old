@@ -53,6 +53,15 @@ std::string Typechecker::node_type_to_string(std::shared_ptr<Node> node)
         case NodeType::LAMBDA: {
             return "function";
         }
+        case NodeType::FUNC_T: {
+            std::string repr = "[ ";
+            for (auto param : node->FUNC_T.params)
+            {
+                repr += node_type_to_string(param.second) + " ";
+            }
+            repr += "] => { " + node_type_to_string(node->FUNC_T.return_type) + " }";
+            return repr;
+        }
         case NodeType::ANY: {
             return "any";
         }
@@ -622,6 +631,95 @@ std::shared_ptr<Node> Typechecker::get_type_dot(std::shared_ptr<Node> node)
     return std::make_shared<Node>(NodeType::ANY);
 }
 
+std::shared_ptr<Node> Typechecker::get_type_arrow(std::shared_ptr<Node> node)
+{
+    auto left = get_type(node->left);
+    auto right = std::make_shared<Node>(NodeType::ERROR);
+
+    if (node->right->type == NodeType::FUNC_CALL)
+    {
+        right = std::make_shared<Node>(*node->right);
+    }
+    else
+    {
+        right = get_type(node->right);
+    }
+
+    if (left->type == NodeType::ANY)
+    {
+        return left;
+    }
+    if (right->type == NodeType::ANY)
+    {
+        return right;
+    }
+
+    // TODO: proper typing on op injection
+    if (right->type == NodeType::OP || right->type == NodeType::PARTIAL_OP)
+    {
+        return std::make_shared<Node>(NodeType::ANY);
+    }
+
+    if (right->type == NodeType::FUNC_T)
+    {
+        if (left->type == NodeType::COMMA_LIST)
+        {
+            for (auto elem : left->COMMA_LIST.nodes)
+            {
+                right->FUNC_T.args.push_back(elem);
+            }
+        }
+        else
+        {
+            right->FUNC_T.args.push_back(node->left);
+        }
+
+        if (right->FUNC_T.args.size() >= right->FUNC_T.params.size())
+        {
+            return right->FUNC_T.return_type;
+        }
+
+        return right;
+    }
+
+    if (right->type == NodeType::FUNC_CALL)
+    {
+        // get the function type, so we can inject it with args
+        auto func_name = right->FUNC_CALL.name;
+        auto func = get_type(func_name);
+
+        if (func->type == NodeType::ERROR)
+        {
+            return func;
+        }
+
+        for (auto arg : right->FUNC_CALL.args)
+        {
+            func->FUNC_T.args.push_back(arg);
+        }
+
+        if (left->type == NodeType::COMMA_LIST)
+        {
+            for (auto elem : left->COMMA_LIST.nodes)
+            {
+                right->FUNC_CALL.args.push_back(elem);
+                func->FUNC_T.args.push_back(elem);
+            }
+        }
+        else
+        {
+            right->FUNC_CALL.args.push_back(node->left);
+            func->FUNC_T.args.push_back(node->left);
+        }
+
+        return get_type(right);
+    }
+
+    errors.push_back(make_error("Type", "Cannot perform '->' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right)));
+    auto error = std::make_shared<Node>(NodeType::ERROR);
+    return error;
+}
+
 std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 {
     update_loc(node);
@@ -665,10 +763,54 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         {
             return std::make_shared<Node>(NodeType::EMPTY);
         }
-        // TODO: type builtins
-        if (name == "print" || name == "type" || name == "address" || name == "shape" || name == "to_string" || name == "to_int" || name == "to_float" || name == "to_list")
+        if (name == "print")
         {
-            return std::make_shared<Node>(NodeType::FUNC_T);
+            auto func = std::make_shared<Node>(NodeType::FUNC_T);
+            func->FUNC_T.return_type = std::make_shared<Node>(NodeType::EMPTY);
+            return func;
+        }
+        if (name == "type")
+        {
+            auto func = std::make_shared<Node>(NodeType::FUNC_T);
+            func->FUNC_T.return_type = std::make_shared<Node>(NodeType::OBJECT);
+            return func;
+        }
+        if (name == "address")
+        {
+            auto func = std::make_shared<Node>(NodeType::FUNC_T);
+            func->FUNC_T.return_type = std::make_shared<Node>(NodeType::INT);
+            return func;
+        }
+        if (name == "shape")
+        {
+            auto func = std::make_shared<Node>(NodeType::FUNC_T);
+            func->FUNC_T.return_type = std::make_shared<Node>(NodeType::OBJECT);
+            return func;
+        }
+        if (name == "to_string")
+        {
+            auto func = std::make_shared<Node>(NodeType::FUNC_T);
+            func->FUNC_T.return_type = std::make_shared<Node>(NodeType::STRING);
+            return func;
+        }
+        if (name == "to_int")
+        {
+            auto func = std::make_shared<Node>(NodeType::FUNC_T);
+            func->FUNC_T.return_type = std::make_shared<Node>(NodeType::INT);
+            return func;
+        }
+        if (name == "to_float")
+        {
+            auto func = std::make_shared<Node>(NodeType::FUNC_T);
+            func->FUNC_T.return_type = std::make_shared<Node>(NodeType::FLOAT);
+            return func;
+        }
+        if (name == "to_list")
+        {
+            auto func = std::make_shared<Node>(NodeType::FUNC_T);
+            func->FUNC_T.return_type = std::make_shared<Node>(NodeType::LIST);
+            func->FUNC_T.return_type->LIST.nodes.push_back(std::make_shared<Node>(NodeType::ANY));
+            return func;
         }
 
         if (symbol_table.find(node->ID.value) == symbol_table.end()) 
@@ -681,7 +823,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
             return symbol_table[node->ID.value].value_type;
         }
     }
-    if (is_type(node, {NodeType::INT, NodeType::FLOAT, NodeType::STRING, NodeType::BOOL, NodeType::EMPTY, NodeType::ERROR}))
+    if (is_type(node, {NodeType::INT, NodeType::FLOAT, NodeType::STRING, NodeType::BOOL, NodeType::EMPTY, NodeType::ERROR, NodeType::FUNC_T}))
     {
         return node;
     }
@@ -933,6 +1075,48 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 
         std::shared_ptr<Node> func_type = std::make_shared<Node>(NodeType::ANY);
 
+        if (name == "print")
+        {
+            func_type->type = NodeType::EMPTY;
+            return func_type;
+        }
+        if (name == "to_int")
+        {
+            func_type->type = NodeType::INT;
+            return func_type;
+        }
+        if (name == "to_string")
+        {
+            func_type->type = NodeType::STRING;
+            return func_type;
+        }
+        if (name == "to_float")
+        {
+            func_type->type = NodeType::FLOAT;
+            return func_type;
+        }
+        if (name == "to_list")
+        {
+            func_type->type = NodeType::LIST;
+            func_type->LIST.nodes.push_back(std::make_shared<Node>(NodeType::ANY));
+            return func_type;
+        }
+        if (name == "shape")
+        {
+            func_type->type = NodeType::OBJECT;
+            return func_type;
+        }
+        if (name == "address")
+        {
+            func_type->type = NodeType::INT;
+            return func_type;
+        }
+        if (name == "type")
+        {
+            func_type->type = NodeType::STRING;
+            return func_type;
+        }
+
         if (symbol_table.find(name) == symbol_table.end()) 
         {
             for (int i = 0; i < args.size(); i++)
@@ -949,11 +1133,24 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 
         func_type = symbol_table[name].value_type;
 
+        // inject the args into the type, which might have existing args (curried)
+
+        for (auto arg : args)
+        {
+            func_type->FUNC_T.args.push_back(arg);
+        }
+
+        args = func_type->FUNC_T.args;
+
         // typecheck the args
         // TODO: additional overflow args do not get typechecked, do we want to change this?
 
         for (int i = 0; i < func_type->FUNC_T.params.size(); i++)
         {
+            if (i >= args.size())
+            {
+                break;
+            }
             auto arg = get_type(args[i]);
             if (arg->type == NodeType::ERROR)
             {
@@ -967,7 +1164,12 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
             }
         }
 
-        return func_type->FUNC_T.return_type;
+        if (args.size() >= func_type->FUNC_T.params.size())
+        {
+            return func_type->FUNC_T.return_type;
+        }
+
+        return func_type;
     }
     if (is_type(node, {NodeType::DOT}))
     {
@@ -992,6 +1194,10 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
     if (is_type(node, {NodeType::PERCENT}))
     {
         return get_type_mod(node);
+    }
+    if (is_type(node, {NodeType::RIGHT_ARROW_SINGLE}))
+    {
+        return get_type_arrow(node);
     }
     if (is_type(node, {NodeType::EXCLAMATION, NodeType::L_ANGLE, NodeType::R_ANGLE, NodeType::LT_EQUAL, NodeType::GT_EQUAL, NodeType::EQ_EQ, NodeType::NOT_EQUAL, NodeType::AND, NodeType::OR}))
     {
@@ -1287,6 +1493,33 @@ bool Typechecker::match_types(std::shared_ptr<Node> type_a, std::shared_ptr<Node
     {
         return key_compare(type_a->OBJECT.properties, type_b->OBJECT.properties);
     }
+
+    if (type_a->type == NodeType::FUNC_T && type_b->type == NodeType::FUNC_T)
+    {
+        auto params_a = std::make_shared<Node>(NodeType::LIST);
+        auto params_b = std::make_shared<Node>(NodeType::LIST);;
+
+        for (auto param : type_a->FUNC_T.params)
+        {
+            params_a->LIST.nodes.push_back(param.second);
+        }
+        for (auto param : type_b->FUNC_T.params)
+        {
+            params_b->LIST.nodes.push_back(param.second);
+        }
+
+        if (!match_types(params_a, params_b))
+        {
+            return false;
+        }
+        if (!match_types(type_a->FUNC_T.return_type, type_b->FUNC_T.return_type))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     if (type_a->type == NodeType::ANY || type_b->type == NodeType::ANY)
     {
         return true;

@@ -1,15 +1,6 @@
-Color = @{
-    blue: any
-    red: any
-    green: any
+add_f = [a::float b::float] :: float => {
+    a + b
 }
 
-get_color_names = [] :: Color => {
-    @{
-        blue: "blue"
-
-        green: "green"
-    }
-}
-
-get_color_names[] -> print
+x :: add_f = add_f[5.5]
+y :: float = (6.6 -> x)
