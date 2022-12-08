@@ -39,5 +39,5 @@ struct Typechecker
     bool match_types(std::shared_ptr<Node> type_a, std::shared_ptr<Node> type_b);
     // bool typecheck(std::shared_ptr<Node> node);
     std::string make_error(std::string name, std::string message);
-    void run();
+    bool run();
 };

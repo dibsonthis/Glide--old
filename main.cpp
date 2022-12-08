@@ -32,9 +32,9 @@ int main(int argc, char** argv)
         parser.parse();
 
         Typechecker typechecker(lexer.file_name, parser.nodes);
-        typechecker.run();
+        bool check = typechecker.run();
 
-        if (typechecker.errors.size() > 0)
+        if (!check)
         {
             return 0;
         }

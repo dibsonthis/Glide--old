@@ -853,9 +853,9 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
             parser.parse();
 
             Typechecker tc(lexer.file_name, parser.nodes);
-            tc.run();
+            bool check = tc.run();
 
-            if (tc.errors.size() > 0)
+            if (!check)
             {
                 return std::make_shared<Node>(NodeType::ERROR);
             }
@@ -1229,7 +1229,7 @@ bool Typechecker::match_types(std::shared_ptr<Node> type_a, std::shared_ptr<Node
     return false;
 }
 
-void Typechecker::run()
+bool Typechecker::run()
 {
     for (auto node: nodes)
     {
@@ -1242,9 +1242,11 @@ void Typechecker::run()
                 std::cout << error << "\n" << std::flush;
             }
 
-            break;
+            return false;
         }
     }
+
+    return true;
 }
 
 std::string Typechecker::make_error(std::string name, std::string message)

@@ -1,9 +1,10 @@
-format = [text:: string] :: string => {
+format = [text::string] :: (string, int) => {
     x = 450
     if => {
         text == "hello": { "goodbye" }
         text == "goodbye": { "hello"}
         text == "error": { x }
+        h == 4: { y }
     }
 }
 
