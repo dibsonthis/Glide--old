@@ -1170,7 +1170,16 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         std::vector<std::shared_ptr<Node>> types;
         for (auto cond : node->right->BLOCK.nodes)
         {
-            auto left = get_type(cond->left);
+            auto left = std::make_shared<Node>(NodeType::ERROR);
+            if (cond->left->type == NodeType::ID && cond->left->ID.value == "default")
+            {
+                left->type = NodeType::STRING;
+            }
+            else
+            {
+                left = get_type(cond->left);
+            }
+
             if (left->type == NodeType::ERROR)
             {
                 return left;

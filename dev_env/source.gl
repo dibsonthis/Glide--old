@@ -1,7 +1,15 @@
-format = [text::string] :: string => {
-    // if [text.to_chars.[0] == "a"] => {
-    //     100
-    // }
-    ret 200
+Color = @{
+    blue: any
+    red: any
+    green: any
+}
 
-format["hello"] -> print
+get_color_names = [] :: Color => {
+    @{
+        blue: "blue"
+
+        green: "green"
+    }
+}
+
+get_color_names[] -> print

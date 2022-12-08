@@ -21,8 +21,9 @@ struct StackFrame
         {"list", so_make_string("list")},
         {"list", so_make_string("list")},
         {"comma_list", so_make_string("comma_list")},
-        {"empty_type", so_make_string("empty")},
+        {"null", so_make_string("empty")},
         {"function", so_make_string("function")},
+        {"any", so_make_string("any")},
     };
     std::vector<std::shared_ptr<StackObject>> stack;
 };
