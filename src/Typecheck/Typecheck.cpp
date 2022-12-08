@@ -56,6 +56,9 @@ std::string Typechecker::node_type_to_string(std::shared_ptr<Node> node)
         case NodeType::ANY: {
             return "any";
         }
+        case NodeType::ERROR: {
+            return "error";
+        }
         default: {
             return "<no-repr>";
         }
@@ -602,6 +605,7 @@ std::shared_ptr<Node> Typechecker::get_type_dot(std::shared_ptr<Node> node)
 
 std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 {
+    update_loc(node);
     if (is_type(node, {NodeType::ID}))
     {
         auto name = node->ID.value;
@@ -646,6 +650,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 
         if (symbol_table.find(node->ID.value) == symbol_table.end()) 
         {
+            errors.push_back(make_error("Reference", "Variable '" + node->ID.value + "' is undefined"));
             return std::make_shared<Node>(NodeType::ERROR);
         } 
         else 
@@ -762,13 +767,16 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 
         for (auto node : tc.nodes)
         {
-            tc.update_loc(node);
-            bool check = tc.typecheck(node);
-            if (tc.errors.size() > 0) {
-                for (auto error : tc.errors) {
-                    std::cout << error << "\n";
+            update_loc(node);
+            auto type = tc.get_type(node);
+            if (type->type == NodeType::ERROR)
+            {
+                for (auto error : tc.errors) 
+                {
+                    std::cout << error << "\n" << std::flush;
                 }
-                return std::make_shared<Node>(NodeType::ERROR);
+
+                return type;
             }
         }
 
@@ -854,7 +862,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 
             if (!match_types(func_type->FUNC_T.params[i].second, arg))
             {
-                errors.push_back(make_error("Type", "Function '" + name + "' - Cannot assign argument of type '" + node_type_to_string(args[i]) + "' to parameter of type '" + node_type_to_string(func_type->FUNC_T.params[i].second) + "'"));
+                errors.push_back(make_error("Type", "Function '" + name + "' - Cannot assign argument of type '" + node_type_to_string(arg) + "' to parameter of type '" + node_type_to_string(func_type->FUNC_T.params[i].second) + "'"));
                 return std::make_shared<Node>(NodeType::ERROR);
             }
         }
@@ -908,6 +916,108 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         type->LIST.nodes.push_back(std::make_shared<Node>(NodeType::INT));
         return type;
     }
+    if (is_type(node, {NodeType::EQUAL}))
+    {
+        if (is_type(node->left, {NodeType::DOUBLE_COLON}))
+        {
+            auto var = node->left->left;
+
+            if (var->type == NodeType::ID)
+            {
+                // we want to search for the ID in symbol table first
+                if (symbol_table.find(var->ID.value) != symbol_table.end())
+                {
+                    errors.push_back(make_error("Type", "'" + var->ID.value + "' - Cannot reassign type"));
+                    return std::make_shared<Node>(NodeType::ERROR);
+                }
+            }
+
+            auto val_type = get_type(node->right);
+
+            if (is_type(val_type, {NodeType::ERROR}))
+            {
+                return val_type;
+            }
+
+            auto provided_type = get_type(node->left->right);
+
+            if (match_types(provided_type, val_type))
+            {
+                symbol_table[node->left->left->ID.value] = Type(provided_type, val_type);
+                // remove type details from node
+                node->left = node->left->left;
+                return std::make_shared<Node>(NodeType::EMPTY);
+            }
+
+            errors.push_back(make_error("Type", "'" + var->ID.value + "' - Cannot assign value of type '" + node_type_to_string(val_type) + "' to variable of type '" + node_type_to_string(provided_type) + "'"));
+            return std::make_shared<Node>(NodeType::ERROR);
+        }
+        else
+        {
+            auto var = node->left;
+            auto val_type = get_type(node->right);
+
+            if (is_type(val_type, {NodeType::ERROR}))
+            {
+                return val_type;
+            }
+
+            if (symbol_table.find(var->ID.value) == symbol_table.end())
+            {
+                // new variable
+                symbol_table[var->ID.value] = Type(val_type, val_type);
+                return std::make_shared<Node>(NodeType::EMPTY);
+            }
+
+            auto var_type = symbol_table[var->ID.value];
+
+            // found variable, check if type matches value type
+            if (match_types(var_type.allowed_type, val_type))
+            {
+                symbol_table[var->ID.value] = Type(var_type.allowed_type, val_type);
+                return std::make_shared<Node>(NodeType::EMPTY);;
+            }
+
+            errors.push_back(make_error("Type", "'" + var->ID.value + "' - Cannot assign value of type '" + node_type_to_string(val_type) + "' to variable of type '" + node_type_to_string(var_type.allowed_type) + "'"));
+            return std::make_shared<Node>(NodeType::ERROR);
+        }
+    }
+    if (is_type(node, {NodeType::PLUS_EQ}))
+    {
+        auto plus_op = std::make_shared<Node>(NodeType::OP);
+        plus_op->left = node->left;
+        plus_op->right = node->right;
+        auto res = get_type_add(plus_op);
+
+        if (res->type == NodeType::ERROR)
+        {
+            return res;
+        }
+
+        auto eq_op = std::make_shared<Node>(NodeType::EQUAL);
+        eq_op->left = node->left;
+        eq_op->right = res;
+
+        return get_type(eq_op);
+    }
+    if (is_type(node, {NodeType::MINUS_EQ}))
+    {
+        auto minus_op = std::make_shared<Node>(NodeType::OP);
+        minus_op->left = node->left;
+        minus_op->right = node->right;
+        auto res = get_type_sub(minus_op);
+
+        if (res->type == NodeType::ERROR)
+        {
+            return res;
+        }
+
+        auto eq_op = std::make_shared<Node>(NodeType::EQUAL);
+        eq_op->left = node->left;
+        eq_op->right = res;
+
+        return get_type(eq_op);
+    }
     if (is_type(node, {NodeType::OP}))
     {
         auto left = get_type(node->left);
@@ -919,7 +1029,14 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         }
         return std::make_shared<Node>(NodeType::ANY);
     }
-
+    if (is_type(node, {NodeType::KEYWORD}))
+    {
+        if (node->ID.value == "ret")
+        {
+            return get_type(node->right);
+        }
+    }
+    
     return std::make_shared<Node>(NodeType::ANY);
 }
 
@@ -997,115 +1114,19 @@ bool Typechecker::match_types(std::shared_ptr<Node> type_a, std::shared_ptr<Node
     return false;
 }
 
-bool Typechecker::typecheck(std::shared_ptr<Node> node)
-{
-    if (is_type(node, {NodeType::INT, NodeType::FLOAT, NodeType::BOOL, NodeType::STRING}))
-    {
-        return true;
-    }
-    if (is_type(node, {NodeType::EQUAL}))
-    {
-        if (is_type(node->left, {NodeType::DOUBLE_COLON}))
-        {
-            auto var_type = get_type(node->left->left);
-
-            auto var = node->left->left;
-
-            if (symbol_table.find(var->ID.value) == symbol_table.end())
-            {
-                // new variable, check that type provided matches value type
-
-                auto val_type = get_type(node->right);
-
-                if (is_type(val_type, {NodeType::ERROR}))
-                {
-                    return false;
-                }
-
-                auto provided_type = get_type(node->left->right);
-
-                if (match_types(provided_type, val_type))
-                {
-                    symbol_table[node->left->left->ID.value] = Type(provided_type, val_type);
-                    // remove type details from node
-                    node->left = node->left->left;
-                    return true;
-                }
-
-                errors.push_back(make_error("Type", "'" + node->left->left->ID.value + "' - Cannot assign value of type '" + node_type_to_string(val_type) + "' to variable of type '" + node_type_to_string(provided_type) + "'"));
-                return false;
-            }
-
-            // found variable, error because cannot change a variable's type
-            errors.push_back(make_error("Type", "'" + node->left->left->ID.value + "' - Cannot reassign type"));
-            return false;
-        }
-        else
-        {
-            auto val_type = get_type(node->right);
-
-            if (is_type(val_type, {NodeType::ERROR}))
-            {
-                return false;
-            }
-
-            if (symbol_table.find(node->left->ID.value) == symbol_table.end())
-            {
-                // new variable
-                symbol_table[node->left->ID.value] = Type(val_type, val_type);
-                return true;
-            }
-
-            auto var = symbol_table[node->left->ID.value];
-
-            // found variable, check if type matches value type
-            if (match_types(var.allowed_type, val_type))
-            {
-                symbol_table[node->left->ID.value] = Type(var.allowed_type, val_type);
-                return true;
-            }
-
-            errors.push_back(make_error("Type", "'" + node->left->ID.value + "' - Cannot assign value of type '" + node_type_to_string(val_type) + "' to variable of type '" + node_type_to_string(var.allowed_type) + "'"));
-            return false;
-        }
-    }
-    if (is_type(node, {NodeType::PLUS_EQ}))
-    {
-        auto plus_op = std::make_shared<Node>(NodeType::OP);
-        plus_op->left = node->left;
-        plus_op->right = node->right;
-        auto res = get_type_add(plus_op);
-
-        auto eq_op = std::make_shared<Node>(NodeType::EQUAL);
-        eq_op->left = node->left;
-        eq_op->right = res;
-
-        return typecheck(eq_op);
-    }
-    else
-    {
-        auto type = get_type(node);
-        if (is_type(type, {NodeType::ERROR})) {
-            return false;
-        }
-        return true; 
-    }
-}
-
 void Typechecker::run()
 {
     for (auto node: nodes)
     {
         update_loc(node);
-        bool check = typecheck(node);
-        if (errors.size() > 0) {
-            for (auto error : errors) {
+        auto type = get_type(node);
+        if (type->type == NodeType::ERROR)
+        {
+            for (auto error : errors) 
+            {
                 std::cout << error << "\n" << std::flush;
             }
-            break;
-        }
-        if (!check) {
-            errors.push_back("");
+
             break;
         }
     }

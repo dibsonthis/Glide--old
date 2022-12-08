@@ -1,22 +1,9 @@
-num = (int, float)
-num_arr = ([int], [float], [int float])
-
-Person = @{
-    name: string
-    age: num
+add = [a::int b::int] :: int => {
+    a + b
 }
 
-sam :: Person = @{
-    name: "Sam"
-    age: 44
-}
+a = 12
+b = 44
+add[a b]
 
-Employee = Person + @{
-    id: int
-}
-
-james :: Employee = @{
-    name: "James"
-    age: 32
-    id: 12
-}
+x + 4

@@ -6,7 +6,7 @@
 #include "generator.hpp"
 #include "../Lexer.hpp"
 #include "../Parser.hpp"
-#include "../Typecheck/Typecheck.hpp""
+#include "../Typecheck/Typecheck.hpp"
 
 struct StackFrame
 {
