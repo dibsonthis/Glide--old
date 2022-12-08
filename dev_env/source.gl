@@ -1,9 +1,7 @@
-add = [a::int b::int] :: int => {
-    a + b
+format = [text::string] :: (string, int, []) => {
+    if [text == "a"] => {
+        4
+    }
+
+    ret []
 }
-
-a = 12
-b = 44
-add[a b]
-
-x + 4
