@@ -1,5 +1,3 @@
-map = [func _list::[any]] => {
-    [any]
+add = [a::int b::int] :: int => {
+    a + b
 }
-
-x = 1..10 -> map[*2]

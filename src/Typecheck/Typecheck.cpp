@@ -700,6 +700,30 @@ std::shared_ptr<Node> Typechecker::get_type_arrow(std::shared_ptr<Node> node)
             right->FUNC_T.args.push_back(node->left);
         }
 
+        for (int i = 0; i < right->FUNC_T.params.size(); i++)
+        {
+            if (i >= right->FUNC_T.args.size())
+            {
+                break;
+            }
+            auto arg = get_type(right->FUNC_T.args[i]);
+            if (arg->type == NodeType::ERROR)
+            {
+                return arg;
+            }
+
+            if (!match_types(right->FUNC_T.params[i].second, arg))
+            {
+                errors.push_back(make_error("Type", "Function '" + right->FUNC_T.name + "' - Cannot assign argument of type '" + node_type_to_string(arg) + "' to parameter of type '" + node_type_to_string(right->FUNC_T.params[i].second) + "'"));
+                return std::make_shared<Node>(NodeType::ERROR);
+            }
+        }
+
+        if (right->FUNC_T.return_type == nullptr)
+        {
+            right->FUNC_T.return_type = std::make_shared<Node>(NodeType::EMPTY);
+        }
+
         if (right->FUNC_T.args.size() >= right->FUNC_T.params.size())
         {
             right->FUNC_T.args.clear();
@@ -914,6 +938,10 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         {
             list->LIST.nodes.push_back(get_type(elem));
         }
+        if (list->LIST.nodes.size() == 0)
+        {
+            list->LIST.nodes.push_back(std::make_shared<Node>(NodeType::ANY));
+        }
         // reduce list to sorted unique types
         std::sort(list->LIST.nodes.begin(), list->LIST.nodes.end(), [] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return type_a->type < type_b->type;});
         list->LIST.nodes.erase(std::unique(list->LIST.nodes.begin(), list->LIST.nodes.end(), [this] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return match_types(type_a, type_b);}), list->LIST.nodes.end());
@@ -922,6 +950,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
     if (is_type(node, {NodeType::LAMBDA}))
     {
         auto func_type = std::make_shared<Node>(NodeType::FUNC_T);
+        func_type->FUNC_T.name = "lambda";
         std::shared_ptr<Node> list_node;
 
         // check if return type present
@@ -1108,6 +1137,8 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
             {
                 if (elem.second.value_type->type == NodeType::FUNC_T)
                 {
+                    elem.second.allowed_type->FUNC_T.name = elem.first;
+                    elem.second.value_type->FUNC_T.name = elem.first;
                     // clear args that may have been put in during typechecking
                     elem.second.allowed_type->FUNC_T.args.clear();
                     elem.second.value_type->FUNC_T.args.clear();
