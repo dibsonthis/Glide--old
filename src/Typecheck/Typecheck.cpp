@@ -1012,7 +1012,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 
         for (int i = 0; i < tc.nodes.size(); i++)
         {
-            update_loc(tc.nodes[i]);
+            tc.update_loc(tc.nodes[i]);
             auto type = tc.get_type(tc.nodes[i]);
             if (type->type == NodeType::ERROR)
             {
