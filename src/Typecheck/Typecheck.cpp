@@ -1663,5 +1663,5 @@ bool Typechecker::run()
 
 std::string Typechecker::make_error(std::string name, std::string message)
 {
-    return name + " Error (" + std::to_string(line) + ", " + std::to_string(column) + "): " + message;
+    return name + " Error in '" + file_name + "' (" + std::to_string(line) + ", " + std::to_string(column) + "): " + message;
 }
