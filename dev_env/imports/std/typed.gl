@@ -1,0 +1,5 @@
+map = [func _list::[any]] => {
+    [any]
+}
+
+x = 1..10 -> map[*2]

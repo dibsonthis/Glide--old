@@ -502,6 +502,11 @@ std::shared_ptr<Node> Typechecker::get_type_dot(std::shared_ptr<Node> node)
 
             for (int i = 0; i < func_type->FUNC_T.params.size(); i++)
             {
+                if (i >= args.size())
+                {
+                    break;
+                }
+
                 auto arg = get_type(args[i]);
                 if (arg->type == NodeType::ERROR)
                 {
@@ -517,6 +522,7 @@ std::shared_ptr<Node> Typechecker::get_type_dot(std::shared_ptr<Node> node)
 
             if (args.size() >= func_type->FUNC_T.params.size())
             {
+                func_type->FUNC_T.args.clear();
                 return func_type->FUNC_T.return_type;
             }
 
@@ -647,11 +653,13 @@ std::shared_ptr<Node> Typechecker::get_type_dot(std::shared_ptr<Node> node)
 
 std::shared_ptr<Node> Typechecker::get_type_arrow(std::shared_ptr<Node> node)
 {
-    if (node->left->ID.value == "digits_list")
-    {
-        std::cout << "here";
-    }
     auto left = get_type(node->left);
+
+    if (left->type == NodeType::ERROR)
+    {
+        return left;
+    }
+
     auto right = std::make_shared<Node>(NodeType::ERROR);
 
     if (node->right->type == NodeType::FUNC_CALL)
@@ -694,6 +702,7 @@ std::shared_ptr<Node> Typechecker::get_type_arrow(std::shared_ptr<Node> node)
 
         if (right->FUNC_T.args.size() >= right->FUNC_T.params.size())
         {
+            right->FUNC_T.args.clear();
             return right->FUNC_T.return_type;
         }
 
@@ -1097,6 +1106,12 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 
             for (auto elem : tc.symbol_table)
             {
+                if (elem.second.value_type->type == NodeType::FUNC_T)
+                {
+                    // clear args that may have been put in during typechecking
+                    elem.second.allowed_type->FUNC_T.args.clear();
+                    elem.second.value_type->FUNC_T.args.clear();
+                }
                 import_obj->OBJECT.properties[elem.first] = elem.second.value_type;
             }
 
@@ -1201,6 +1216,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 
         if (args.size() >= func_type->FUNC_T.params.size())
         {
+            func_type->FUNC_T.args.clear();
             return func_type->FUNC_T.return_type;
         }
 

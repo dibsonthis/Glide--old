@@ -8,7 +8,7 @@ whitespace = " \n\t\r"
 
 // -------- List ---------- //
 
-map = [func _list] => {
+map = [func _list::[any]] => {
 
     if [type[_list] != list] => {
         ret empty

@@ -1,4 +1,3 @@
-//std = import["../../../dev_env/imports/std/std.gl"]
+std = import["../../../dev_env/imports/std/typed.gl"]
 
-x = 5
-y :: float = #x
+x::[any] = (1..100 -> std.map[[x] => { x * 2 }])
