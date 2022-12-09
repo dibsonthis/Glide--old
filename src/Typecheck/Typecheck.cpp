@@ -69,7 +69,7 @@ std::string Typechecker::node_type_to_string(std::shared_ptr<Node> node)
             return "error";
         }
         case NodeType::EMPTY: {
-            return "empty";
+            return "null";
         }
         default: {
             return "<no-repr>";
@@ -647,6 +647,10 @@ std::shared_ptr<Node> Typechecker::get_type_dot(std::shared_ptr<Node> node)
 
 std::shared_ptr<Node> Typechecker::get_type_arrow(std::shared_ptr<Node> node)
 {
+    if (node->left->ID.value == "digits_list")
+    {
+        std::cout << "here";
+    }
     auto left = get_type(node->left);
     auto right = std::make_shared<Node>(NodeType::ERROR);
 
@@ -722,8 +726,8 @@ std::shared_ptr<Node> Typechecker::get_type_arrow(std::shared_ptr<Node> node)
         }
         else
         {
-            right->FUNC_CALL.args.push_back(node->left);
-            func->FUNC_T.args.push_back(node->left);
+            right->FUNC_CALL.args.push_back(left);
+            func->FUNC_T.args.push_back(left);
         }
 
         return get_type(right);
@@ -761,6 +765,10 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         {
             return std::make_shared<Node>(NodeType::LIST);
         }
+        if (name == "comma_list")
+        {
+            return std::make_shared<Node>(NodeType::COMMA_LIST);
+        }
         if (name == "object")
         {
             return std::make_shared<Node>(NodeType::OBJECT);
@@ -769,11 +777,19 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         {
             return std::make_shared<Node>(NodeType::LAMBDA);
         }
+        if (name == "this")
+        {
+            return std::make_shared<Node>(NodeType::ANY);
+        }
         if (name == "any")
         {
             return std::make_shared<Node>(NodeType::ANY);
         }
         if (name == "null")
+        {
+            return std::make_shared<Node>(NodeType::EMPTY);
+        }
+        if (name == "empty")
         {
             return std::make_shared<Node>(NodeType::EMPTY);
         }
@@ -1178,6 +1194,11 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
             }
         }
 
+        if (func_type->FUNC_T.return_type == nullptr)
+        {
+            func_type->FUNC_T.return_type = std::make_shared<Node>(NodeType::EMPTY);
+        }
+
         if (args.size() >= func_type->FUNC_T.params.size())
         {
             return func_type->FUNC_T.return_type;
@@ -1353,6 +1374,11 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
     {
         if (node->ID.value == "ret")
         {
+            if (node->right == nullptr)
+            {
+                return std::make_shared<Node>(NodeType::EMPTY);
+            }
+            
             return get_type(node->right);
         }
     }

@@ -1,5 +1,1 @@
-add = [a::int b::int] :: int => {
-    a + b + 2
-}
-
-add[5 10]
+std = import["../../../dev_env/imports/std/std.gl"]
