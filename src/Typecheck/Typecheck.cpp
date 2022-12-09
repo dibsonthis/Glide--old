@@ -777,10 +777,6 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         {
             return std::make_shared<Node>(NodeType::LAMBDA);
         }
-        if (name == "this")
-        {
-            return std::make_shared<Node>(NodeType::ANY);
-        }
         if (name == "any")
         {
             return std::make_shared<Node>(NodeType::ANY);
@@ -841,6 +837,10 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
             func->FUNC_T.return_type = std::make_shared<Node>(NodeType::LIST);
             func->FUNC_T.return_type->LIST.nodes.push_back(std::make_shared<Node>(NodeType::ANY));
             return func;
+        }
+        if (name == "this" || name == "_catch")
+        {
+            return std::make_shared<Node>(NodeType::ANY);
         }
 
         if (symbol_table.find(node->ID.value) == symbol_table.end()) 
@@ -1358,6 +1358,10 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         eq_op->right = res;
 
         return get_type(eq_op);
+    }
+    if (is_type(node, {NodeType::COPY}))
+    {
+        return get_type(node->right);
     }
     if (is_type(node, {NodeType::OP}))
     {

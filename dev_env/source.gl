@@ -1,1 +1,4 @@
-std = import["../../../dev_env/imports/std/std.gl"]
+//std = import["../../../dev_env/imports/std/std.gl"]
+
+x = 5
+y :: float = #x
