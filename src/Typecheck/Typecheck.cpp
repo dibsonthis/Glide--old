@@ -950,7 +950,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
     if (is_type(node, {NodeType::LAMBDA}))
     {
         auto func_type = std::make_shared<Node>(NodeType::FUNC_T);
-        func_type->FUNC_T.name = "lambda";
+        func_type->FUNC_T.name = (node->ID.value != "" ? node->ID.value : "Lambda");
         std::shared_ptr<Node> list_node;
 
         // check if return type present
@@ -1094,7 +1094,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 
         if (!tc.match_types(func_type->FUNC_T.return_type, last_node))
         {
-            errors.push_back(make_error("Type", "Lambda must return value of type '" + node_type_to_string(func_type->FUNC_T.return_type) + "' but instead returns '" + node_type_to_string(last_node) + "'"));
+            errors.push_back(tc.make_error("Type", "Function '" + func_type->FUNC_T.name + "' must return value of type '" + node_type_to_string(func_type->FUNC_T.return_type) + "' but instead returns '" + node_type_to_string(last_node) + "'"));
             return std::make_shared<Node>(NodeType::ERROR);
         }
 
@@ -1306,6 +1306,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
     }
     if (is_type(node, {NodeType::EQUAL}))
     {
+
         if (is_type(node->left, {NodeType::DOUBLE_COLON}))
         {
             auto var = node->left->left;
@@ -1318,6 +1319,12 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
                     errors.push_back(make_error("Type", "'" + var->ID.value + "' - Cannot reassign type"));
                     return std::make_shared<Node>(NodeType::ERROR);
                 }
+            }
+
+            // assign name if right is lambda
+            if (node->right->type == NodeType::LAMBDA)
+            {
+                node->right->ID.value = var->ID.value;
             }
 
             auto val_type = get_type(node->right);
@@ -1343,6 +1350,13 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         else
         {
             auto var = node->left;
+
+            // assign name if right is lambda
+            if (node->right->type == NodeType::LAMBDA)
+            {
+                node->right->ID.value = var->ID.value;
+            }
+
             auto val_type = get_type(node->right);
 
             if (is_type(val_type, {NodeType::ERROR}))
@@ -1362,6 +1376,10 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
             // found variable, check if type matches value type
             if (match_types(var_type.allowed_type, val_type))
             {
+                if (val_type->type == NodeType::FUNC_T)
+                {
+                    val_type->FUNC_T.name = var->ID.value;
+                }
                 symbol_table[var->ID.value] = Type(var_type.allowed_type, val_type);
                 return std::make_shared<Node>(NodeType::EMPTY);;
             }

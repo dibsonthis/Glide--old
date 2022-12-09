@@ -1,3 +1,2 @@
+x = 12
 std = import["../../../dev_env/imports/std/typed.gl"]
-
-4.4 -> std.add[5]

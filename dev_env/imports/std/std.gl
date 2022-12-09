@@ -8,11 +8,7 @@ whitespace = " \n\t\r"
 
 // -------- List ---------- //
 
-map = [func _list::[any]] => {
-
-    if [type[_list] != list] => {
-        ret empty
-    }
+map = [func _list::[any]] :: [any] => {
 
 	copy = #_list
 
@@ -44,7 +40,7 @@ map = [func _list::[any]] => {
             ret copy
         }
 
-        ret []
+        ret empty
     }
 
     _for [copy index] => {
