@@ -1,2 +1,1 @@
-x = 12
-std = import["../../../dev_env/imports/std/typed.gl"]
+x :: ("hi", "bye") = "hi"

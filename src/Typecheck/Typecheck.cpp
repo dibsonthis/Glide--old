@@ -1306,7 +1306,6 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
     }
     if (is_type(node, {NodeType::EQUAL}))
     {
-
         if (is_type(node->left, {NodeType::DOUBLE_COLON}))
         {
             auto var = node->left->left;
