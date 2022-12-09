@@ -26,6 +26,8 @@ struct Typechecker
     bool key_compare (std::unordered_map<std::string, std::shared_ptr<Node>> const &lhs, std::unordered_map<std::string, std::shared_ptr<Node>> const &rhs);
     std::string node_type_to_string(std::shared_ptr<Node> node);
 
+    void sort_and_unique(std::vector<std::shared_ptr<Node>>& nodes);
+
     void update_loc(std::shared_ptr<Node> node);
     std::shared_ptr<Node> get_type(std::shared_ptr<Node> node);
     std::shared_ptr<Node> get_type_dot(std::shared_ptr<Node> node);
@@ -38,7 +40,6 @@ struct Typechecker
     std::shared_ptr<Node> get_type_equality(std::shared_ptr<Node> node);
 
     bool match_types(std::shared_ptr<Node> type_a, std::shared_ptr<Node> type_b);
-    // bool typecheck(std::shared_ptr<Node> node);
     std::string make_error(std::string name, std::string message);
     bool run();
 };

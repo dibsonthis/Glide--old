@@ -198,6 +198,7 @@ struct Iterator_Node
 
 struct Type_Node
 {
+	bool is_literal = true;
 	std::shared_ptr<Node> allowed_type;
 	std::shared_ptr<Node> value_type;
 };

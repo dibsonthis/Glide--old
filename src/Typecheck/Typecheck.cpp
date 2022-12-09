@@ -1,5 +1,57 @@
 #include "Typecheck.hpp"
 
+void Typechecker::sort_and_unique(std::vector<std::shared_ptr<Node>>& nodes)
+{
+    std::sort(nodes.begin(), nodes.end(), [] (std::shared_ptr<Node>& a, std::shared_ptr<Node>& b) 
+    {
+        int left;
+        int right;
+
+        if (a->TYPE.is_literal)
+        {
+            if (a->type == NodeType::INT)
+            {
+                left = a->INT.value;
+            }
+            else if (a->type == NodeType::FLOAT)
+            {
+                left = a->FLOAT.value;
+            }
+            else if (a->type == NodeType::STRING)
+            {
+                left = a->STRING.value.length();
+            }
+        }
+        else
+        {
+            left = int(a->type);
+        }
+
+        if (b->TYPE.is_literal)
+        {
+            if (b->type == NodeType::INT)
+            {
+                right = b->INT.value;
+            }
+            else if (b->type == NodeType::FLOAT)
+            {
+                right = b->FLOAT.value;
+            }
+            else if (b->type == NodeType::STRING)
+            {
+                right = b->STRING.value.length();
+            }
+        } 
+        else
+        {
+            right = int(b->type);
+        }
+        
+        return left < right;
+    });
+    nodes.erase(std::unique(nodes.begin(), nodes.end(), [this] (std::shared_ptr<Node>& a, std::shared_ptr<Node>& b) {return match_types(a, b);}), nodes.end());
+}
+
 void Typechecker::update_loc(std::shared_ptr<Node> node)
 {
     line = node->line;
@@ -12,15 +64,27 @@ std::string Typechecker::node_type_to_string(std::shared_ptr<Node> node)
 
     switch(type) {
         case NodeType::INT: {
+            if (node->TYPE.is_literal)
+            {
+                return std::to_string(node->INT.value);
+            }
             return "int";
         }
         case NodeType::FLOAT: {
+            if (node->TYPE.is_literal)
+            {
+                return std::to_string(node->FLOAT.value);
+            }
             return "float";
         }
         case NodeType::BOOL: {
             return "bool";
         }
         case NodeType::STRING: {
+            if (node->TYPE.is_literal)
+            {
+                return node->STRING.value;
+            }
             return "string";
         }
         case NodeType::LIST: {
@@ -780,35 +844,51 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 
         if (name == "int")
         {
-            return std::make_shared<Node>(NodeType::INT);
+            auto type = std::make_shared<Node>(NodeType::INT);
+            type->TYPE.is_literal = false;
+            return type;
         }
         if (name == "float")
         {
-            return std::make_shared<Node>(NodeType::FLOAT);
+            auto type = std::make_shared<Node>(NodeType::FLOAT);
+            type->TYPE.is_literal = false;
+            return type;
         }
         if (name == "bool")
         {
-            return std::make_shared<Node>(NodeType::BOOL);
+            auto type = std::make_shared<Node>(NodeType::BOOL);
+            type->TYPE.is_literal = false;
+            return type;
         }
         if (name == "string")
         {
-            return std::make_shared<Node>(NodeType::STRING);
+            auto type = std::make_shared<Node>(NodeType::STRING);
+            type->TYPE.is_literal = false;
+            return type;
         }
         if (name == "list")
         {
-            return std::make_shared<Node>(NodeType::LIST);
+            auto type = std::make_shared<Node>(NodeType::LIST);
+            type->TYPE.is_literal = false;
+            return type;
         }
         if (name == "comma_list")
         {
-            return std::make_shared<Node>(NodeType::COMMA_LIST);
+            auto type = std::make_shared<Node>(NodeType::COMMA_LIST);
+            type->TYPE.is_literal = false;
+            return type;
         }
         if (name == "object")
         {
-            return std::make_shared<Node>(NodeType::OBJECT);
+            auto type = std::make_shared<Node>(NodeType::OBJECT);
+            type->TYPE.is_literal = false;
+            return type;
         }
         if (name == "function")
         {
-            return std::make_shared<Node>(NodeType::LAMBDA);
+            auto type = std::make_shared<Node>(NodeType::LAMBDA);
+            type->TYPE.is_literal = false;
+            return type;
         }
         if (name == "any")
         {
@@ -1334,6 +1414,17 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
             }
 
             auto provided_type = get_type(node->left->right);
+            
+            if (provided_type->type == NodeType::COMMA_LIST)
+            {   
+                std::sort(provided_type->COMMA_LIST.nodes.begin(), provided_type->COMMA_LIST.nodes.end(), [] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return type_a->type < type_b->type;});
+                provided_type->COMMA_LIST.nodes.erase(std::unique(provided_type->COMMA_LIST.nodes.begin(), provided_type->COMMA_LIST.nodes.end(), [this] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return match_types(type_a, type_b);}), provided_type->COMMA_LIST.nodes.end());
+
+                if (provided_type->COMMA_LIST.nodes.size() == 1)
+                {
+                    provided_type = provided_type->COMMA_LIST.nodes[0];
+                }
+            }
 
             if (match_types(provided_type, val_type))
             {
@@ -1577,6 +1668,9 @@ bool Typechecker::match_types(std::shared_ptr<Node> type_a, std::shared_ptr<Node
     }
     if (type_a->type == NodeType::LIST && type_b->type == NodeType::LIST)
     {
+        sort_and_unique(type_a->LIST.nodes);
+        sort_and_unique(type_b->LIST.nodes);
+
         if (type_a->LIST.nodes.size() > 0 && type_a->LIST.nodes[0]->type == NodeType::ANY)
         {
             return true;
@@ -1632,8 +1726,27 @@ bool Typechecker::match_types(std::shared_ptr<Node> type_a, std::shared_ptr<Node
     {
         return true;
     }
+
     if (type_a->type == type_b->type)
     {
+        if (type_a->TYPE.is_literal)
+        {
+            if (type_a->type == NodeType::INT && (type_a->INT.value == type_b->INT.value))
+            {
+                return true;
+            }
+            if (type_a->type == NodeType::FLOAT && (type_a->FLOAT.value == type_b->FLOAT.value))
+            {
+                return true;
+            }
+            if (type_a->type == NodeType::STRING && (type_a->STRING.value == type_b->STRING.value))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         return true;
     }
 
