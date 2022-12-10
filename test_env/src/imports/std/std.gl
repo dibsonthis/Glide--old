@@ -916,8 +916,8 @@ clear = [file_path] => {
 // -------- Generic Dependant: String ---------- //
 
 is_digit = [c] => {
-	digits = digits.to_chars
-	if [digits -> contains[c]] => {
+	digits_list = digits.to_chars
+	if [digits_list -> contains[c]] => {
 		ret true
 	}
 

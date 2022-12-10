@@ -1,5 +1,13 @@
-add = [a::any b::any] => {
-    a + b
+f = [x :: int] :: float => {
+    x / 2
 }
 
-add[5.5 ""]
+g = [x :: float] :: string => {
+    "res = " + x
+}
+
+h = [x :: string] :: [string] => {
+    [x]
+}
+
+5 -> f -> g -> h -> print

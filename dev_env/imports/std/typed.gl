@@ -1,0 +1,7 @@
+add = [a::int b::int] :: int => {
+    4
+}
+
+add2 = [a::int b::int] :: int => {
+    4.4
+}

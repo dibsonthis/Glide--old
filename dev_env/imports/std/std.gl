@@ -8,11 +8,7 @@ whitespace = " \n\t\r"
 
 // -------- List ---------- //
 
-map = [func _list] => {
-
-    if [type[_list] != list] => {
-        ret empty
-    }
+map = [func _list::[any]] :: [any] => {
 
 	copy = #_list
 
@@ -44,7 +40,7 @@ map = [func _list] => {
             ret copy
         }
 
-        ret []
+        ret empty
     }
 
     _for [copy index] => {
@@ -291,6 +287,7 @@ pop_f = [_list] => {
 	if [_list.length == 0] => {
 		obj = @{
 			rest: []
+            front: empty
 		}
 		ret obj
 	}
@@ -311,6 +308,7 @@ pop_b = [_list] => {
 	if [_list.length == 0] => {
 		obj = @{
 			rest: []
+            back: empty
 		}
 		ret obj
 	}
@@ -916,8 +914,8 @@ clear = [file_path] => {
 // -------- Generic Dependant: String ---------- //
 
 is_digit = [c] => {
-	digits = digits.to_chars
-	if [digits -> contains[c]] => {
+	digits_list = digits.to_chars
+	if [digits_list -> contains[c]] => {
 		ret true
 	}
 

@@ -1,5 +1,9 @@
 use["../../../dev_env/imports/std/std.gl"]
 
+add_i = [a::int b::int] :: int => {
+    a + b
+}
+
 fib = [n] => {
 
     if [type[n] != "int"] => {

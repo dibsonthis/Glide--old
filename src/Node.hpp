@@ -160,7 +160,9 @@ struct Object_Node
 
 struct Func_T_Node
 {
+	std::string name;
 	std::vector<std::pair<std::string, std::shared_ptr<Node>>> params;
+	std::vector<std::shared_ptr<Node>> args;
 	std::shared_ptr<Node> return_type;
 };
 
@@ -196,6 +198,7 @@ struct Iterator_Node
 
 struct Type_Node
 {
+	bool is_literal = true;
 	std::shared_ptr<Node> allowed_type;
 	std::shared_ptr<Node> value_type;
 };
