@@ -1,3 +1,9 @@
-add = [a::int b::int] :: [4 2 2 4.4] => {
-    [2 4]
+ID = (1, 2, 3, 4)
+
+get_name = [id::ID] => {
+    print["success"]
 }
+
+x = 1 + 20
+
+get_name[x]
