@@ -1386,21 +1386,25 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         if (name == "print")
         {
             func_type->type = NodeType::EMPTY;
+            func_type->TYPE.is_literal = false;
             return func_type;
         }
         if (name == "to_int")
         {
             func_type->type = NodeType::INT;
+            func_type->TYPE.is_literal = false;
             return func_type;
         }
         if (name == "to_string")
         {
             func_type->type = NodeType::STRING;
+            func_type->TYPE.is_literal = false;
             return func_type;
         }
         if (name == "to_float")
         {
             func_type->type = NodeType::FLOAT;
+            func_type->TYPE.is_literal = false;
             return func_type;
         }
         if (name == "to_list")
@@ -1417,11 +1421,13 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         if (name == "address")
         {
             func_type->type = NodeType::INT;
+            func_type->TYPE.is_literal = false;
             return func_type;
         }
         if (name == "type")
         {
             func_type->type = NodeType::STRING;
+            func_type->TYPE.is_literal = false;
             return func_type;
         }
 
