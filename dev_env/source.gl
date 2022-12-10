@@ -7,3 +7,6 @@ get_name = [id::ID] => {
 x = 1 + 20
 
 get_name[x]
+
+x = 2
+x = 5

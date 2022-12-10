@@ -1603,6 +1603,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 
             if (symbol_table.find(var->ID.value) == symbol_table.end())
             {
+                val_type->TYPE.is_literal = false;
                 // new variable
                 symbol_table[var->ID.value] = Type(val_type, val_type);
                 return std::make_shared<Node>(NodeType::EMPTY);
