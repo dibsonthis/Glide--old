@@ -171,9 +171,9 @@ std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
         {
             auto type = std::make_shared<Node>(NodeType::INT);
             type->INT.value = left->INT.value + right->INT.value;
-            type->TYPE.is_literal = true;
             return type;
         }
+        left->TYPE.is_literal = false;
         return left;
     }
 
@@ -183,9 +183,9 @@ std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
         {
             auto type = std::make_shared<Node>(NodeType::FLOAT);
             type->FLOAT.value = left->INT.value + right->FLOAT.value;
-            type->TYPE.is_literal = true;
             return type;
         }
+        right->TYPE.is_literal = false;
         return right;
     }
 
@@ -195,9 +195,9 @@ std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
         {
             auto type = std::make_shared<Node>(NodeType::FLOAT);
             type->FLOAT.value = left->FLOAT.value + right->INT.value;
-            type->TYPE.is_literal = true;
             return type;
         }
+        left->TYPE.is_literal = false;
         return left;
     }
 
@@ -207,9 +207,9 @@ std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
         {
             auto type = std::make_shared<Node>(NodeType::FLOAT);
             type->FLOAT.value = left->FLOAT.value + right->FLOAT.value;
-            type->TYPE.is_literal = true;
             return type;
         }
+        left->TYPE.is_literal = false;
         return left;
     }
 
@@ -219,9 +219,9 @@ std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
         {
             auto type = std::make_shared<Node>(NodeType::STRING);
             type->STRING.value = left->STRING.value + right->STRING.value;
-            type->TYPE.is_literal = true;
             return type;
         }
+        left->TYPE.is_literal = false;
         return left;
     }
 
@@ -231,9 +231,9 @@ std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
         {
             auto type = std::make_shared<Node>(NodeType::STRING);
             type->STRING.value = left->STRING.value + std::to_string(right->INT.value);
-            type->TYPE.is_literal = true;
             return type;
         }
+        left->TYPE.is_literal = false;
         return left;
     }
 
@@ -243,9 +243,9 @@ std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
         {
             auto type = std::make_shared<Node>(NodeType::STRING);
             type->STRING.value = std::to_string(left->INT.value) + right->STRING.value;
-            type->TYPE.is_literal = true;
             return type;
         }
+        right->TYPE.is_literal = false;
         return right;
     }
 
@@ -255,9 +255,9 @@ std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
         {
             auto type = std::make_shared<Node>(NodeType::STRING);
             type->STRING.value = left->STRING.value + std::to_string(right->FLOAT.value);
-            type->TYPE.is_literal = true;
             return type;
         }
+        left->TYPE.is_literal = false;
         return left;
     }
 
@@ -267,19 +267,21 @@ std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
         {
             auto type = std::make_shared<Node>(NodeType::STRING);
             type->STRING.value = std::to_string(left->FLOAT.value) + right->STRING.value;
-            type->TYPE.is_literal = true;
             return type;
         }
+        left->TYPE.is_literal = false;
         return left;
     }
 
     if (left->type == NodeType::STRING && right->type == NodeType::BOOL)
     {
+        left->TYPE.is_literal = false;
         return left;
     }
 
     if (left->type == NodeType::BOOL && right->type == NodeType::STRING)
     {
+        right->TYPE.is_literal = false;
         return right;
     }
 
@@ -393,9 +395,9 @@ std::shared_ptr<Node> Typechecker::get_type_sub(std::shared_ptr<Node> node)
         {
             auto type = std::make_shared<Node>(NodeType::INT);
             type->INT.value = left->INT.value - right->INT.value;
-            type->TYPE.is_literal = true;
             return type;
         }
+        left->TYPE.is_literal = false;
         return left;
     }
 
@@ -405,9 +407,9 @@ std::shared_ptr<Node> Typechecker::get_type_sub(std::shared_ptr<Node> node)
         {
             auto type = std::make_shared<Node>(NodeType::FLOAT);
             type->FLOAT.value = left->INT.value - right->FLOAT.value;
-            type->TYPE.is_literal = true;
             return type;
         }
+        right->TYPE.is_literal = false;
         return right;
     }
 
@@ -417,9 +419,9 @@ std::shared_ptr<Node> Typechecker::get_type_sub(std::shared_ptr<Node> node)
         {
             auto type = std::make_shared<Node>(NodeType::FLOAT);
             type->FLOAT.value = left->FLOAT.value - right->INT.value;
-            type->TYPE.is_literal = true;
             return type;
         }
+        left->TYPE.is_literal = false;
         return left;
     }
 
@@ -429,9 +431,9 @@ std::shared_ptr<Node> Typechecker::get_type_sub(std::shared_ptr<Node> node)
         {
             auto type = std::make_shared<Node>(NodeType::FLOAT);
             type->FLOAT.value = left->FLOAT.value - right->FLOAT.value;
-            type->TYPE.is_literal = true;
             return type;
         }
+        left->TYPE.is_literal = false;
         return left;
     }
 
@@ -469,9 +471,9 @@ std::shared_ptr<Node> Typechecker::get_type_mul(std::shared_ptr<Node> node)
         {
             auto type = std::make_shared<Node>(NodeType::INT);
             type->INT.value = left->INT.value * right->INT.value;
-            type->TYPE.is_literal = true;
             return type;
         }
+        left->TYPE.is_literal = false;
         return left;
     }
 
@@ -481,9 +483,9 @@ std::shared_ptr<Node> Typechecker::get_type_mul(std::shared_ptr<Node> node)
         {
             auto type = std::make_shared<Node>(NodeType::FLOAT);
             type->FLOAT.value = left->INT.value * right->FLOAT.value;
-            type->TYPE.is_literal = true;
             return type;
         }
+        right->TYPE.is_literal = false;
         return right;
     }
 
@@ -493,9 +495,9 @@ std::shared_ptr<Node> Typechecker::get_type_mul(std::shared_ptr<Node> node)
         {
             auto type = std::make_shared<Node>(NodeType::FLOAT);
             type->FLOAT.value = left->FLOAT.value * right->INT.value;
-            type->TYPE.is_literal = true;
             return type;
         }
+        left->TYPE.is_literal = false;
         return left;
     }
 
@@ -505,29 +507,33 @@ std::shared_ptr<Node> Typechecker::get_type_mul(std::shared_ptr<Node> node)
         {
             auto type = std::make_shared<Node>(NodeType::FLOAT);
             type->FLOAT.value = left->FLOAT.value * right->FLOAT.value;
-            type->TYPE.is_literal = true;
             return type;
         }
+        left->TYPE.is_literal = false;
         return left;
     }
 
     if (left->type == NodeType::INT && right->type == NodeType::STRING)
     {
+        right->TYPE.is_literal = false;
         return right;
     }
 
     if (left->type == NodeType::STRING && right->type == NodeType::INT)
     {
+        left->TYPE.is_literal = false;
         return left;
     }
 
     if (left->type == NodeType::LIST && right->type == NodeType::INT)
     {
+        left->TYPE.is_literal = false;
         return left;
     }
 
     if (left->type == NodeType::INT && right->type == NodeType::LIST)
     {
+        right->TYPE.is_literal = false;
         return right;
     }
 
@@ -566,10 +572,11 @@ std::shared_ptr<Node> Typechecker::get_type_div(std::shared_ptr<Node> node)
         {
             auto type = std::make_shared<Node>(NodeType::FLOAT);
             type->FLOAT.value = left->INT.value / right->INT.value;
-            type->TYPE.is_literal = true;
             return type;
         }
-        return std::make_shared<Node>(NodeType::FLOAT);
+        auto type = std::make_shared<Node>(NodeType::FLOAT);
+        type->TYPE.is_literal = false;
+        return type;
     }
 
     if (left->type == NodeType::INT && right->type == NodeType::FLOAT)
@@ -578,9 +585,9 @@ std::shared_ptr<Node> Typechecker::get_type_div(std::shared_ptr<Node> node)
         {
             auto type = std::make_shared<Node>(NodeType::FLOAT);
             type->FLOAT.value = (double)left->INT.value / right->FLOAT.value;
-            type->TYPE.is_literal = true;
             return type;
         }
+        right->TYPE.is_literal = false;
         return right;
     }
 
@@ -590,9 +597,9 @@ std::shared_ptr<Node> Typechecker::get_type_div(std::shared_ptr<Node> node)
         {
             auto type = std::make_shared<Node>(NodeType::FLOAT);
             type->FLOAT.value = left->FLOAT.value / (double)right->INT.value;
-            type->TYPE.is_literal = true;
             return type;
         }
+        left->TYPE.is_literal = false;
         return left;
     }
 
@@ -602,9 +609,9 @@ std::shared_ptr<Node> Typechecker::get_type_div(std::shared_ptr<Node> node)
         {
             auto type = std::make_shared<Node>(NodeType::FLOAT);
             type->FLOAT.value = left->FLOAT.value / right->FLOAT.value;
-            type->TYPE.is_literal = true;
             return type;
         }
+        left->TYPE.is_literal = false;
         return left;
     }
 
@@ -639,21 +646,25 @@ std::shared_ptr<Node> Typechecker::get_type_mod(std::shared_ptr<Node> node)
 
     if (left->type == NodeType::INT && right->type == NodeType::INT)
     {
+        right->TYPE.is_literal = false;
         return right;
     }
 
     if (left->type == NodeType::INT && right->type == NodeType::FLOAT)
     {
+        right->TYPE.is_literal = false;
         return right;
     }
 
     if (left->type == NodeType::FLOAT && right->type == NodeType::INT)
     {
+        left->TYPE.is_literal = false;
         return left;
     }
 
     if (left->type == NodeType::FLOAT && right->type == NodeType::FLOAT)
     {
+        left->TYPE.is_literal = false;
         return right;
     }
 
