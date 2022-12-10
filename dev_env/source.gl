@@ -1,12 +1,13 @@
-ID = (1, 2, 3, 4)
-
-get_name = [id::ID] => {
-    print["success"]
+f = [x :: int] :: float => {
+    x / 2
 }
 
-x = 1 + 20
+g = [x :: float] :: string => {
+    "res = " + x
+}
 
-get_name[x]
+h = [x :: string] :: [string] => {
+    [x]
+}
 
-x = 2
-x = 5
+5 -> f -> g -> h -> print

@@ -295,8 +295,7 @@ std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
             type->LIST.nodes.push_back(elem);
         }
 
-        std::sort(type->LIST.nodes.begin(), type->LIST.nodes.end(), [] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return type_a->type < type_b->type;});
-        type->LIST.nodes.erase(std::unique(type->LIST.nodes.begin(), type->LIST.nodes.end(), [this] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return match_types(type_a, type_b);}), type->LIST.nodes.end());
+        sort_and_unique(type->LIST.nodes);
         return type;
     }
 
@@ -309,9 +308,7 @@ std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
             type->LIST.nodes.push_back(elem);
         }
         
-        type->LIST.nodes.push_back(right);
-        type->LIST.nodes.erase(std::unique(type->LIST.nodes.begin(), type->LIST.nodes.end(), [this] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return match_types(type_a, type_b);}), type->LIST.nodes.end());
-        std::sort(type->LIST.nodes.begin(), type->LIST.nodes.end(), [] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return type_a->type < type_b->type;});
+        sort_and_unique(type->LIST.nodes);
         return type;
     }
     
@@ -326,8 +323,7 @@ std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
         
         type->LIST.nodes.push_back(left);
 
-        std::sort(type->LIST.nodes.begin(), type->LIST.nodes.end(), [] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return type_a->type < type_b->type;});
-        type->LIST.nodes.erase(std::unique(type->LIST.nodes.begin(), type->LIST.nodes.end(), [this] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return match_types(type_a, type_b);}), type->LIST.nodes.end());
+        sort_and_unique(type->LIST.nodes);
         return type;
     }
 
@@ -811,8 +807,7 @@ std::shared_ptr<Node> Typechecker::get_type_dot(std::shared_ptr<Node> node)
             type->COMMA_LIST.nodes.push_back(node);
         }
 
-        std::sort(type->LIST.nodes.begin(), type->LIST.nodes.end(), [] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return type_a->type < type_b->type;});
-        type->LIST.nodes.erase(std::unique(type->LIST.nodes.begin(), type->LIST.nodes.end(), [this] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return match_types(type_a, type_b);}), type->LIST.nodes.end());
+        sort_and_unique(type->LIST.nodes);
         return type;
     }
 
@@ -903,12 +898,12 @@ std::shared_ptr<Node> Typechecker::get_type_arrow(std::shared_ptr<Node> node)
         {
             for (auto elem : left->COMMA_LIST.nodes)
             {
-                right->FUNC_T.args.push_back(elem);
+                right->FUNC_T.args.push_back(get_type(elem));
             }
         }
         else
         {
-            right->FUNC_T.args.push_back(node->left);
+            right->FUNC_T.args.push_back(get_type(node->left));
         }
 
         for (int i = 0; i < right->FUNC_T.params.size(); i++)
@@ -1175,8 +1170,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
             list->LIST.nodes.push_back(std::make_shared<Node>(NodeType::ANY));
         }
         // reduce list to sorted unique types
-        std::sort(list->LIST.nodes.begin(), list->LIST.nodes.end(), [] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return type_a->type < type_b->type;});
-        list->LIST.nodes.erase(std::unique(list->LIST.nodes.begin(), list->LIST.nodes.end(), [this] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return match_types(type_a, type_b);}), list->LIST.nodes.end());
+        sort_and_unique(list->LIST.nodes);
         return list;
     }
     if (is_type(node, {NodeType::LAMBDA}))
@@ -1192,8 +1186,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 
             if (ret_type->type == NodeType::COMMA_LIST)
             {
-                std::sort(ret_type->COMMA_LIST.nodes.begin(), ret_type->COMMA_LIST.nodes.end(), [] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return type_a->type < type_b->type;});
-                ret_type->COMMA_LIST.nodes.erase(std::unique(ret_type->COMMA_LIST.nodes.begin(), ret_type->COMMA_LIST.nodes.end(), [this] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return match_types(type_a, type_b);}), ret_type->COMMA_LIST.nodes.end());
+                sort_and_unique(ret_type->COMMA_LIST.nodes);
             }
 
             func_type->FUNC_T.return_type = ret_type;
@@ -1313,8 +1306,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
                 branched_return_types->COMMA_LIST.nodes.push_back(last_node);
             }
 
-            std::sort(branched_return_types->COMMA_LIST.nodes.begin(), branched_return_types->COMMA_LIST.nodes.end(), [] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return type_a->type < type_b->type;});
-            branched_return_types->COMMA_LIST.nodes.erase(std::unique(branched_return_types->COMMA_LIST.nodes.begin(), branched_return_types->COMMA_LIST.nodes.end(), [this] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return match_types(type_a, type_b);}), branched_return_types->COMMA_LIST.nodes.end());
+            sort_and_unique(branched_return_types->COMMA_LIST.nodes);
 
             last_node = branched_return_types;
 
@@ -1575,8 +1567,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
             
             if (provided_type->type == NodeType::COMMA_LIST)
             {   
-                std::sort(provided_type->COMMA_LIST.nodes.begin(), provided_type->COMMA_LIST.nodes.end(), [] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return type_a->type < type_b->type;});
-                provided_type->COMMA_LIST.nodes.erase(std::unique(provided_type->COMMA_LIST.nodes.begin(), provided_type->COMMA_LIST.nodes.end(), [this] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return match_types(type_a, type_b);}), provided_type->COMMA_LIST.nodes.end());
+                sort_and_unique(provided_type->COMMA_LIST.nodes);
 
                 if (provided_type->COMMA_LIST.nodes.size() == 1)
                 {
@@ -1758,8 +1749,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
             types.push_back(right);
         }
 
-        std::sort(types.begin(), types.end(), [] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return type_a->type < type_b->type;});
-        types.erase(std::unique(types.begin(), types.end(), [this] (std::shared_ptr<Node>& type_a, std::shared_ptr<Node>& type_b) {return match_types(type_a, type_b);}), types.end());
+        sort_and_unique(types);
 
         auto final_type = std::make_shared<Node>(NodeType::ERROR);
         
