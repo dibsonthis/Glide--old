@@ -1053,6 +1053,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         {
             auto func = std::make_shared<Node>(NodeType::FUNC_T);
             func->FUNC_T.return_type = std::make_shared<Node>(NodeType::EMPTY);
+            func->FUNC_T.return_type->TYPE.is_literal = false;
             return func;
         }
         if (name == "type")
@@ -1065,6 +1066,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         {
             auto func = std::make_shared<Node>(NodeType::FUNC_T);
             func->FUNC_T.return_type = std::make_shared<Node>(NodeType::INT);
+            func->FUNC_T.return_type->TYPE.is_literal = false;
             return func;
         }
         if (name == "shape")
@@ -1077,18 +1079,21 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         {
             auto func = std::make_shared<Node>(NodeType::FUNC_T);
             func->FUNC_T.return_type = std::make_shared<Node>(NodeType::STRING);
+            func->FUNC_T.return_type->TYPE.is_literal = false;
             return func;
         }
         if (name == "to_int")
         {
             auto func = std::make_shared<Node>(NodeType::FUNC_T);
             func->FUNC_T.return_type = std::make_shared<Node>(NodeType::INT);
+            func->FUNC_T.return_type->TYPE.is_literal = false;
             return func;
         }
         if (name == "to_float")
         {
             auto func = std::make_shared<Node>(NodeType::FUNC_T);
             func->FUNC_T.return_type = std::make_shared<Node>(NodeType::FLOAT);
+            func->FUNC_T.return_type->TYPE.is_literal = false;
             return func;
         }
         if (name == "to_list")
