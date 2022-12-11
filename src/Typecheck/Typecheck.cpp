@@ -1608,7 +1608,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
                 {
                     int line = this->line;
                     int column = this->column;
-                    
+
                     errors.push_back(make_error("Type", "'" + var->ID.value + "' - Cannot reassign type", line, column));
                     return std::make_shared<Node>(NodeType::ERROR);
                 }
@@ -1959,6 +1959,10 @@ bool Typechecker::match_types(std::shared_ptr<Node> type_a, std::shared_ptr<Node
                 return true;
             }
             if (type_a->type == NodeType::STRING && (type_a->STRING.value == type_b->STRING.value))
+            {
+                return true;
+            }
+            if (is_type(type_a, {NodeType::EMPTY, NodeType::ANY}))
             {
                 return true;
             }

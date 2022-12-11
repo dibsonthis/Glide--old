@@ -1,2 +1,5 @@
-typed = import["../../../dev_env/imports/std/typed.gl"]
-
+swap = [i j _l::[int]] => {
+            tmp = _l.[i]
+            _l.[i] = _l.[j]
+            _l.[j] = tmp
+        }
