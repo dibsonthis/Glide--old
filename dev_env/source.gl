@@ -1,5 +1,7 @@
-swap = [i j _l::[int]] => {
-            tmp = _l.[i]
-            _l.[i] = _l.[j]
-            _l.[j] = tmp
-        }
+//t = import["../../../dev_env/imports/std/typed.gl"]
+
+f = [x::[[any]]] => {
+
+}
+
+[[1 2 3 4 5] [6 7 8 9 10]] -> f

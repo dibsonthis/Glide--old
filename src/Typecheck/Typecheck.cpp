@@ -1212,6 +1212,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         auto list = std::make_shared<Node>(NodeType::LIST);
         for (auto elem : node->LIST.nodes)
         {
+            elem->TYPE.is_literal = false;
             list->LIST.nodes.push_back(get_type(elem));
         }
         if (list->LIST.nodes.size() == 0)
@@ -1277,6 +1278,11 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         for (auto param : func_type->FUNC_T.params)
         {
             tc.symbol_table[param.first] = Type(param.second, param.second);
+        }
+
+        if (tc.nodes.size() == 0)
+        {
+            tc.nodes.push_back(std::make_shared<Node>(NodeType::EMPTY));
         }
 
         auto branched_return_types = std::make_shared<Node>(NodeType::COMMA_LIST);
@@ -1367,8 +1373,8 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 
         if (!tc.match_types(func_type->FUNC_T.return_type, last_node))
         {
-            int line = tc.line;
-            int column = tc.column;
+            int line = this->line;
+            int column = this->column;
 
             errors.push_back(tc.make_error("Type", "Function '" + func_type->FUNC_T.name + "' must return value of type '" + node_type_to_string(func_type->FUNC_T.return_type) + "' but instead returns '" + node_type_to_string(last_node) + "'", line, column));
             return std::make_shared<Node>(NodeType::ERROR);
@@ -1948,6 +1954,11 @@ bool Typechecker::match_types(std::shared_ptr<Node> type_a, std::shared_ptr<Node
 
     if (type_a->type == type_b->type)
     {
+        if (type_b->type == NodeType::ANY)
+        {
+            return true;
+        }
+
         if (type_a->TYPE.is_literal)
         {
             if (type_a->type == NodeType::INT && (type_a->INT.value == type_b->INT.value))
