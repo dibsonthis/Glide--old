@@ -31,6 +31,12 @@ void Lexer::advance()
 	{
 		current_char = '\0';
 	}
+	else if (current_char == '\n')
+	{
+		line++;
+		column = 0;
+		advance(); // consume '\n'
+	}
 	else
 	{
 		current_char = source[index];
@@ -147,13 +153,6 @@ void Lexer::build_string()
 			return;
 		}
 
-		if (current_char == '\n')
-		{
-			line++;
-			column = 0;
-			advance(); // consume '\n'
-		}
-
 		str += current_char;
 		advance();
 	}
@@ -206,11 +205,6 @@ void Lexer::handle_line_comment()
 		advance();
 	}
 
-	line++;
-	column = 0;
-
-	advance(); // consume '\n'
-
 	return;
 }
 
@@ -221,11 +215,6 @@ void Lexer::handle_block_comment()
 
 	while (!(current_char == '*' && peek() == '/'))
 	{
-		if (current_char == '\n')
-		{
-			line++;
-			column = 0;
-		}
 		if (current_char == '\0')
 		{
 			error_and_continue("Warning: No end to block comment, end of file reached.");
@@ -296,13 +285,7 @@ void Lexer::tokenize()
 
 	while (current_char != '\0')
 	{
-		if (current_char == '\n')
-		{
-			column = 0;
-			line++;
-			advance();
-		}
-		else if (current_char == ' ' || current_char == '\t')
+		if (current_char == ' ' || current_char == '\t')
 		{
 			advance();
 		}
