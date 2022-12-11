@@ -360,7 +360,10 @@ std::shared_ptr<Node> Typechecker::get_type_add(std::shared_ptr<Node> node)
         return obj;
     }
 
-    errors.push_back(make_error("Type", "Cannot perform '+' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right)));
+    int line = this->line;
+    int column = this->column;
+
+    errors.push_back(make_error("Type", "Cannot perform '+' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right), line, column));
     auto error = std::make_shared<Node>(NodeType::ERROR);
     return error;
 }
@@ -437,7 +440,10 @@ std::shared_ptr<Node> Typechecker::get_type_sub(std::shared_ptr<Node> node)
         return left;
     }
 
-    errors.push_back(make_error("Type", "Cannot perform '-' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right)));
+    int line = this->line;
+    int column = this->column;
+
+    errors.push_back(make_error("Type", "Cannot perform '-' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right), line, column));
     auto error = std::make_shared<Node>(NodeType::ERROR);
     return error;
 }
@@ -539,7 +545,10 @@ std::shared_ptr<Node> Typechecker::get_type_mul(std::shared_ptr<Node> node)
         return type;
     }
 
-    errors.push_back(make_error("Type", "Cannot perform '*' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right)));
+    int line = this->line;
+    int column = this->column;
+
+    errors.push_back(make_error("Type", "Cannot perform '*' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right), line, column));
     auto error = std::make_shared<Node>(NodeType::ERROR);
     return error;
 }
@@ -617,7 +626,10 @@ std::shared_ptr<Node> Typechecker::get_type_div(std::shared_ptr<Node> node)
         return left;
     }
 
-    errors.push_back(make_error("Type", "Cannot perform '/' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right)));
+    int line = this->line;
+    int column = this->column;
+
+    errors.push_back(make_error("Type", "Cannot perform '/' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right), line, column));
     auto error = std::make_shared<Node>(NodeType::ERROR);
     return error;
 }
@@ -670,7 +682,10 @@ std::shared_ptr<Node> Typechecker::get_type_mod(std::shared_ptr<Node> node)
         return right;
     }
 
-    errors.push_back(make_error("Type", "Cannot perform '/' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right)));
+    int line = this->line;
+    int column = this->column;
+
+    errors.push_back(make_error("Type", "Cannot perform '/' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right), line, column));
     auto error = std::make_shared<Node>(NodeType::ERROR);
     return error;
 }
@@ -735,7 +750,10 @@ std::shared_ptr<Node> Typechecker::get_type_dot(std::shared_ptr<Node> node)
 
                 if (!match_types(func_type->FUNC_T.params[i].second, arg))
                 {
-                    errors.push_back(make_error("Type", "Function '" + name + "' - Cannot assign argument of type '" + node_type_to_string(args[i]) + "' to parameter of type '" + node_type_to_string(func_type->FUNC_T.params[i].second) + "'"));
+                    int line = this->line;
+                    int column = this->column;
+
+                    errors.push_back(make_error("Type", "Function '" + name + "' - Cannot assign argument of type '" + node_type_to_string(args[i]) + "' to parameter of type '" + node_type_to_string(func_type->FUNC_T.params[i].second) + "'", line, column));
                     return std::make_shared<Node>(NodeType::ERROR);
                 }
             }
@@ -748,8 +766,11 @@ std::shared_ptr<Node> Typechecker::get_type_dot(std::shared_ptr<Node> node)
 
             return func_type;
         }
+
+        int line = this->line;
+        int column = this->column;
         
-        errors.push_back(make_error("Value", "Function '" + node->right->FUNC_CALL.name->ID.value + "' does not exist on object"));
+        errors.push_back(make_error("Value", "Function '" + node->right->FUNC_CALL.name->ID.value + "' does not exist on object", line, column));
         return std::make_shared<Node>(NodeType::ERROR);
     }
 
@@ -776,11 +797,14 @@ std::shared_ptr<Node> Typechecker::get_type_dot(std::shared_ptr<Node> node)
             return type;
         }
 
-        errors.push_back(make_error("Key", "Property '" + right->STRING.value + "' does not exist on type 'string'"));
+        int line = this->line;
+        int column = this->column;
+
+        errors.push_back(make_error("Key", "Property '" + right->STRING.value + "' does not exist on type 'string'", line, column));
         return std::make_shared<Node>(NodeType::ERROR);
     }
 
-    if (left->type == NodeType::LIST && right->type == NodeType::LIST && right->LIST.nodes.size() == 1 && right->LIST.nodes[0]->type == NodeType::INT)
+    if (left->type == NodeType::LIST && right->type == NodeType::LIST && right->LIST.nodes.size() == 1 && get_type(right->LIST.nodes[0])->type == NodeType::INT)
     {
         std::shared_ptr<Node> type;
         if (left->LIST.nodes.size() == 0)
@@ -806,8 +830,11 @@ std::shared_ptr<Node> Typechecker::get_type_dot(std::shared_ptr<Node> node)
             auto type = std::make_shared<Node>(NodeType::INT);
             return type;
         }
+
+        int line = this->line;
+        int column = this->column;
         
-        errors.push_back(make_error("Key", "Property '" + right->STRING.value + "' does not exist on type 'list'"));
+        errors.push_back(make_error("Key", "Property '" + right->STRING.value + "' does not exist on type 'list'", line, column));
         return std::make_shared<Node>(NodeType::ERROR);
     }
 
@@ -933,7 +960,10 @@ std::shared_ptr<Node> Typechecker::get_type_arrow(std::shared_ptr<Node> node)
 
             if (!match_types(right->FUNC_T.params[i].second, arg))
             {
-                errors.push_back(make_error("Type", "Function '" + right->FUNC_T.name + "' - Cannot assign argument of type '" + node_type_to_string(arg) + "' to parameter of type '" + node_type_to_string(right->FUNC_T.params[i].second) + "'"));
+                int line = this->line;
+                int column = this->column;
+
+                errors.push_back(make_error("Type", "Function '" + right->FUNC_T.name + "' - Cannot assign argument of type '" + node_type_to_string(arg) + "' to parameter of type '" + node_type_to_string(right->FUNC_T.params[i].second) + "'", line, column));
                 return std::make_shared<Node>(NodeType::ERROR);
             }
         }
@@ -985,7 +1015,10 @@ std::shared_ptr<Node> Typechecker::get_type_arrow(std::shared_ptr<Node> node)
         return get_type(right);
     }
 
-    errors.push_back(make_error("Type", "Cannot perform '->' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right)));
+    int line = this->line;
+    int column = this->column;
+
+    errors.push_back(make_error("Type", "Cannot perform '->' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right), line, column));
     auto error = std::make_shared<Node>(NodeType::ERROR);
     return error;
 }
@@ -1118,7 +1151,10 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 
         if (symbol_table.find(node->ID.value) == symbol_table.end()) 
         {
-            errors.push_back(make_error("Reference", "Variable '" + node->ID.value + "' is undefined"));
+            int line = this->line;
+            int column = this->column;
+
+            errors.push_back(make_error("Reference", "Variable '" + node->ID.value + "' is undefined", line, column));
             return std::make_shared<Node>(NodeType::ERROR);
         } 
         else 
@@ -1331,7 +1367,10 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 
         if (!tc.match_types(func_type->FUNC_T.return_type, last_node))
         {
-            errors.push_back(tc.make_error("Type", "Function '" + func_type->FUNC_T.name + "' must return value of type '" + node_type_to_string(func_type->FUNC_T.return_type) + "' but instead returns '" + node_type_to_string(last_node) + "'"));
+            int line = tc.line;
+            int column = tc.column;
+
+            errors.push_back(tc.make_error("Type", "Function '" + func_type->FUNC_T.name + "' must return value of type '" + node_type_to_string(func_type->FUNC_T.return_type) + "' but instead returns '" + node_type_to_string(last_node) + "'", line, column));
             return std::make_shared<Node>(NodeType::ERROR);
         }
 
@@ -1348,7 +1387,10 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         {
             if (args.size() != 1)
             {
-                errors.push_back(make_error("Builtin", "function 'import' only accepts one parameter"));
+                int line = this->line;
+                int column = this->column;
+
+                errors.push_back(make_error("Builtin", "function 'import' only accepts one parameter", line, column));
                 return std::make_shared<Node>(NodeType::ERROR);
             }
 
@@ -1478,7 +1520,10 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 
             if (!match_types(func_type->FUNC_T.params[i].second, arg))
             {
-                errors.push_back(make_error("Type", "Function '" + name + "' - Cannot assign argument of type '" + node_type_to_string(arg) + "' to parameter of type '" + node_type_to_string(func_type->FUNC_T.params[i].second) + "'"));
+                int line = this->line;
+                int column = this->column;
+
+                errors.push_back(make_error("Type", "Function '" + name + "' - Cannot assign argument of type '" + node_type_to_string(arg) + "' to parameter of type '" + node_type_to_string(func_type->FUNC_T.params[i].second) + "'", line, column));
                 return std::make_shared<Node>(NodeType::ERROR);
             }
         }
@@ -1539,7 +1584,10 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 
         if (left->type != NodeType::INT && right->type != NodeType::INT)
         {
-            errors.push_back(make_error("Type", "Range only accepts integer values"));
+            int line = this->line;
+            int column = this->column;
+
+            errors.push_back(make_error("Type", "Range only accepts integer values", line, column));
             return std::make_shared<Node>(NodeType::ERROR);
         }
 
@@ -1558,7 +1606,10 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
                 // we want to search for the ID in symbol table first
                 if (symbol_table.find(var->ID.value) != symbol_table.end())
                 {
-                    errors.push_back(make_error("Type", "'" + var->ID.value + "' - Cannot reassign type"));
+                    int line = this->line;
+                    int column = this->column;
+                    
+                    errors.push_back(make_error("Type", "'" + var->ID.value + "' - Cannot reassign type", line, column));
                     return std::make_shared<Node>(NodeType::ERROR);
                 }
             }
@@ -1596,7 +1647,10 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
                 return std::make_shared<Node>(NodeType::EMPTY);
             }
 
-            errors.push_back(make_error("Type", "'" + var->ID.value + "' - Cannot assign value of type '" + node_type_to_string(val_type) + "' to variable of type '" + node_type_to_string(provided_type) + "'"));
+            int line = this->line;
+            int column = this->column;
+
+            errors.push_back(make_error("Type", "'" + var->ID.value + "' - Cannot assign value of type '" + node_type_to_string(val_type) + "' to variable of type '" + node_type_to_string(provided_type) + "'", line, column));
             return std::make_shared<Node>(NodeType::ERROR);
         }
         else
@@ -1637,7 +1691,10 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
                 return std::make_shared<Node>(NodeType::EMPTY);;
             }
 
-            errors.push_back(make_error("Type", "'" + var->ID.value + "' - Cannot assign value of type '" + node_type_to_string(val_type) + "' to variable of type '" + node_type_to_string(var_type.allowed_type) + "'"));
+            int line = this->line;
+            int column = this->column;
+
+            errors.push_back(this->make_error("Type", "'" + var->ID.value + "' - Cannot assign value of type '" + node_type_to_string(val_type) + "' to variable of type '" + node_type_to_string(var_type.allowed_type) + "'", line, column));
             return std::make_shared<Node>(NodeType::ERROR);
         }
     }
@@ -1768,7 +1825,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         
         if (types.size() == 0)
         {
-            errors.push_back(make_error("Syntax", "If blocks must contain at least one condition"));
+            errors.push_back(make_error("Syntax", "If blocks must contain at least one condition", line, column));
             return final_type;
         }
         if (types.size() > 1)
@@ -1935,7 +1992,7 @@ bool Typechecker::run()
     return true;
 }
 
-std::string Typechecker::make_error(std::string name, std::string message)
+std::string Typechecker::make_error(std::string name, std::string message, int line, int column)
 {
     return name + " Error in '" + file_name + "' (" + std::to_string(line) + ", " + std::to_string(column) + "): " + message;
 }

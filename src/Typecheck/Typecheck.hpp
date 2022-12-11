@@ -40,6 +40,6 @@ struct Typechecker
     std::shared_ptr<Node> get_type_equality(std::shared_ptr<Node> node);
 
     bool match_types(std::shared_ptr<Node> type_a, std::shared_ptr<Node> type_b);
-    std::string make_error(std::string name, std::string message);
+    std::string make_error(std::string name, std::string message, int line, int column);
     bool run();
 };
