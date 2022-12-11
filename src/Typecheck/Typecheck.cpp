@@ -527,14 +527,16 @@ std::shared_ptr<Node> Typechecker::get_type_mul(std::shared_ptr<Node> node)
 
     if (left->type == NodeType::LIST && right->type == NodeType::INT)
     {
-        left->TYPE.is_literal = false;
-        return left;
+        auto type = std::make_shared<Node>(NodeType::LIST);
+        type->LIST.nodes.push_back(left);
+        return type;
     }
 
     if (left->type == NodeType::INT && right->type == NodeType::LIST)
     {
-        right->TYPE.is_literal = false;
-        return right;
+        auto type = std::make_shared<Node>(NodeType::LIST);
+        type->LIST.nodes.push_back(right);
+        return type;
     }
 
     errors.push_back(make_error("Type", "Cannot perform '*' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right)));
@@ -778,7 +780,7 @@ std::shared_ptr<Node> Typechecker::get_type_dot(std::shared_ptr<Node> node)
         return std::make_shared<Node>(NodeType::ERROR);
     }
 
-    if (left->type == NodeType::LIST && right->type == NodeType::INT)
+    if (left->type == NodeType::LIST && right->type == NodeType::LIST && right->LIST.nodes.size() == 1 && right->LIST.nodes[0]->type == NodeType::INT)
     {
         std::shared_ptr<Node> type;
         if (left->LIST.nodes.size() == 0)

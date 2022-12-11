@@ -1,13 +1,30 @@
-f = [x :: int] :: float => {
-    x / 2
-}
+reduce = [func _list::[any]] => {
 
-g = [x :: float] :: string => {
-    "res = " + x
-}
+	if [_list.length == 0] => {
+		ret 0
+	}
 
-h = [x :: string] :: [string] => {
-    [x]
-}
+	if [_list.length == 1] => {
+		ret _list.[0]
+	}
 
-5 -> f -> g -> h -> print
+	if [_list.length == 2] => {
+        if [type[func] == function] => {
+            ret func[(_list.[0] _list.[1])]
+        }
+		ret (_list.[0], _list.[1]) -> func
+	}
+
+	x = _list.[0]
+    if [type[func] == function] => {
+        for [1..(_list.length) index] => {
+            x = func[(x _list.[index + 1])]
+        }
+        ret x
+    }
+
+	_for [1..(_list.length) index] => {
+		x = (x, _list.[index + 1]) -> func
+	}
+	ret x
+}
