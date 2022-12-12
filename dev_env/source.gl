@@ -1,5 +1,8 @@
 test = import["../../../dev_env/imports/std/typed.gl"]
 
-x = 12
-test.assert[x < 7 "x must be greater than 7"]
-print[x]
+// x = 12
+// test.assert[x < 7 "x must be greater than 7"]
+// print[x]
+
+dir_list = dir["../../../dev_env/imports/std/std.gl"]
+print[dir_list]

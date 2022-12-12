@@ -2151,6 +2151,44 @@ void Bytecode_Evaluator::eval_remove_iter(std::shared_ptr<StackFrame>& frame)
 
 void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std::shared_ptr<StackFrame>& frame)
 {
+    if (function->FUNCTION.name == "dir")
+    {
+        auto args = function->FUNCTION.arguments;
+        if (args.size() != 1)
+        {
+            make_error("Builtin function 'dir' expects 1 argument but " 
+            + std::to_string(args.size()) + " were provided");
+            exit();
+            return;
+        }
+
+        std::string dir_path = args[0]->STRING.value;
+
+        if (!std::filesystem::is_directory(dir_path))
+        {
+            frame->stack.push_back(so_make_list());
+            return;
+        }
+
+        auto dir_list = so_make_list();
+
+        for (const auto & entry : std::filesystem::directory_iterator(dir_path))
+        {
+            auto path = entry.path().string();
+            auto name = entry.path().filename().string();
+            bool is_dir = std::filesystem::is_directory(path);
+
+            auto obj = so_make_object();
+            obj->OBJECT.properties["name"] = so_make_string(name);
+            obj->OBJECT.properties["path"] = so_make_string(path);
+            obj->OBJECT.properties["is_file"] = so_make_bool(is_dir);
+            dir_list->LIST.objects.push_back(obj);
+        }
+
+        frame->stack.push_back(dir_list);
+        return;
+    }
+
     if (function->FUNCTION.name == "print")
     {
         for (auto arg : function->FUNCTION.arguments)

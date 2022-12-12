@@ -3,6 +3,7 @@
 #include <sstream>
 #include <fstream>
 #include <cmath>
+#include <filesystem>
 #include "generator.hpp"
 #include "../Lexer.hpp"
 #include "../Parser.hpp"
