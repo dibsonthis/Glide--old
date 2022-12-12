@@ -37,6 +37,7 @@ struct Bytecode_Evaluator
     std::string file_name;
     std::unordered_map<std::string, std::shared_ptr<StackObject>> import_cache;
     bool repl = false;
+    int line, column;
     
     void forward();
     void backward();
@@ -90,6 +91,8 @@ struct Bytecode_Evaluator
     std::shared_ptr<StackObject>& eval_lookup(std::string name, std::shared_ptr<StackFrame>& frame);
 
     void make_error(std::string message);
+    void make_custom_error(std::string type, std::string message);
+    void update_loc(Bytecode op);
     void exit();
 
     Bytecode_Evaluator(std::vector<Bytecode> instructions) : instructions(instructions), index(0) 

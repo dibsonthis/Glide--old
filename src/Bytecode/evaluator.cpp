@@ -68,6 +68,9 @@ void Bytecode_Evaluator::evaluate(std::shared_ptr<StackFrame>& frame)
 
 void Bytecode_Evaluator::eval_instruction(std::shared_ptr<StackFrame>& frame)
 {
+    line = current_op.line;
+    column = current_op.column;
+
     if (current_op.type == OpType::LOAD)
     {
         eval_load(current_op, frame);
@@ -2477,6 +2480,23 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         return;
     }
 
+    if (function->FUNCTION.name == "error")
+    {
+        auto args = function->FUNCTION.arguments;
+        if (args.size() != 2)
+        {
+            make_error("Builtin function 'error' expects 2 arguments but " 
+            + std::to_string(args.size()) + " were provided");
+            exit();
+            return;
+        }
+
+        make_custom_error(args[0]->STRING.value, args[1]->STRING.value);
+        exit();
+        return;
+    }
+
+
     if (function->FUNCTION.name == "var")
     {
         auto args = function->FUNCTION.arguments;
@@ -3254,7 +3274,13 @@ void Bytecode_Evaluator::eval_jump_if_false(Bytecode op, std::shared_ptr<StackFr
 
 void Bytecode_Evaluator::make_error(std::string message)
 {
-    auto error = "\nError in '" + file_name + "' [" + std::to_string(current_op.line) + ":" + std::to_string(current_op.column) + "] - " + message + "\n";
+    auto error = "\nError in '" + file_name + "' (" + std::to_string(line) + ", " + std::to_string(column) + ") - " + message + "\n";
+    errors.push_back(error);
+}
+
+void Bytecode_Evaluator::make_custom_error(std::string type, std::string message)
+{
+    auto error = type + " Error in '" + file_name + "' (" + std::to_string(line) + ", " + std::to_string(column) + ") - " + message + "\n";
     errors.push_back(error);
 }
 

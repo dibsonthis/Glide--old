@@ -1,7 +1,8 @@
 //t = import["../../../dev_env/imports/std/typed.gl"]
 
-f = [x::[[any]]] => {
-
+x = 12
+if [x < 15] => {
+    error["Some Name" "Some message"]
 }
 
-[[1 2 3 4 5] [6 7 8 9 10]] -> f
+print[x]

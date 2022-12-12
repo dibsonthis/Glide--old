@@ -70,10 +70,10 @@ struct Bytecode
     void print();
 
     Bytecode() {}
-    Bytecode(OpType type) : type(type) {}
-    Bytecode(OpType type, std::shared_ptr<Node> node) : type(type), node(node) {}
-    Bytecode(OpType type, std::shared_ptr<StackObject> data) : type(type), data(data) {}
-    Bytecode(OpType type, int index) : type(type), index(index) {}
+    Bytecode(OpType type, int line, int column) : type(type), line(line), column(column) {}
+    Bytecode(OpType type, std::shared_ptr<Node> node, int line, int column) : type(type), node(node), line(line), column(column) {}
+    Bytecode(OpType type, std::shared_ptr<StackObject> data, int line, int column) : type(type), data(data), line(line), column(column) {}
+    Bytecode(OpType type, int index, int line, int column) : type(type), index(index), line(line), column(column) {}
 };
 
 struct Bytecode_Generator
@@ -83,6 +83,8 @@ struct Bytecode_Generator
     std::vector<Bytecode> instructions;
     std::vector<std::shared_ptr<Node>> nodes;
     int instruction_counter = 0;
+
+    int line, column;
 
     Bytecode_Generator(std::string file_name, std::vector<std::shared_ptr<Node>> nodes) 
         : file_name(file_name), nodes(nodes) {}

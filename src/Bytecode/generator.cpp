@@ -159,14 +159,14 @@ std::vector<Bytecode> Bytecode_Generator::gen_equal(std::shared_ptr<Node> node)
         }
 
         instructions = gen_bytecode(right);
-        auto op = Bytecode(OpType::STORE_AT);
+        auto op = Bytecode(OpType::STORE_AT, line, column);
         op.line = node->left->line;
         op.column = node->left->column;
         add_instruction(op);
         return instructions;
     }
     auto data = node_to_stack_object(node->left);
-    Bytecode store = Bytecode(OpType::STORE, data);
+    Bytecode store = Bytecode(OpType::STORE, data, line, column);
     add_instruction(Bytecode(store));
     return instructions;
 }
@@ -177,7 +177,7 @@ std::vector<Bytecode> Bytecode_Generator::gen_op_equal(std::shared_ptr<Node> nod
     {
         instructions = gen_bytecode(node->left);
         instructions = gen_bytecode(node->right);
-        auto op = Bytecode(type);
+        auto op = Bytecode(type, line, column);
         add_instruction(op);
 
         auto left = node->left->left;
@@ -198,7 +198,7 @@ std::vector<Bytecode> Bytecode_Generator::gen_op_equal(std::shared_ptr<Node> nod
 
         instructions = gen_bytecode(right);
 
-        auto store = Bytecode(OpType::STORE_AT);
+        auto store = Bytecode(OpType::STORE_AT, line, column);
         store.line = node->left->line;
         store.column = node->left->column;
         add_instruction(store);
@@ -207,11 +207,11 @@ std::vector<Bytecode> Bytecode_Generator::gen_op_equal(std::shared_ptr<Node> nod
 
     instructions = gen_bytecode(node->left);
     instructions = gen_bytecode(node->right);
-    auto op = Bytecode(type);
+    auto op = Bytecode(type, line, column);
     add_instruction(op);
 
     auto data = node_to_stack_object(node->left);
-    Bytecode store = Bytecode(OpType::STORE, data);
+    Bytecode store = Bytecode(OpType::STORE, data, line, column);
     add_instruction(store);
     return instructions;
 }
@@ -222,17 +222,17 @@ std::vector<Bytecode> Bytecode_Generator::gen_arrow(std::shared_ptr<Node> node)
     {
         instructions = gen_bytecode(node->left);
         auto data = node_to_stack_object(node->right->left);
-        Bytecode store = Bytecode(OpType::STORE, data);
+        Bytecode store = Bytecode(OpType::STORE, data, line, column);
         add_instruction(Bytecode(store));
-        add_instruction(Bytecode(OpType::LOAD, data));
+        add_instruction(Bytecode(OpType::LOAD, data, line, column));
         return instructions;
     }
 
     instructions = gen_bytecode(node->left);
     instructions = gen_bytecode(node->right);
-    auto arrow = Bytecode(OpType::ARROW);
-    arrow.line = node->line;
-    arrow.column = node->column;
+    auto arrow = Bytecode(OpType::ARROW, line, column);
+    arrow.line = line;
+    arrow.column = column;
     add_instruction(arrow);
     return instructions;
 }
@@ -263,9 +263,9 @@ std::vector<Bytecode> Bytecode_Generator::gen_dot(std::shared_ptr<Node> node)
 
         instructions = gen_bytecode(dot->left);
         auto name = so_make_string(dot->right->FUNC_CALL.name->ID.value);
-        add_instruction(Bytecode(OpType::LOAD_CONST, name));
-        add_instruction(Bytecode(OpType::DOT));
-        add_instruction(Bytecode(OpType::CALL_FUNCTION, dot->right->FUNC_CALL.args.size()));
+        add_instruction(Bytecode(OpType::LOAD_CONST, name, line, column));
+        add_instruction(Bytecode(OpType::DOT, line, column));
+        add_instruction(Bytecode(OpType::CALL_FUNCTION, dot->right->FUNC_CALL.args.size(), line, column));
         return instructions;
     }
     else
@@ -276,9 +276,9 @@ std::vector<Bytecode> Bytecode_Generator::gen_dot(std::shared_ptr<Node> node)
     }
 
     instructions = gen_bytecode(dot->right);
-    auto dot_op = Bytecode(OpType::DOT);
-    dot_op.line = node->line;
-    dot_op.column = node->column;
+    auto dot_op = Bytecode(OpType::DOT, line, column);
+    dot_op.line = line;
+    dot_op.column = column;
     add_instruction(dot_op);
     return instructions;
 }
@@ -287,9 +287,9 @@ std::vector<Bytecode> Bytecode_Generator::gen_op(std::shared_ptr<Node> node, OpT
 {
     instructions = gen_bytecode(node->left);
     instructions = gen_bytecode(node->right);
-    auto op = Bytecode(type);
-    op.line = node->line;
-    op.column = node->column;
+    auto op = Bytecode(type, line, column);
+    op.line = line;
+    op.column = column;
     add_instruction(op);
     return instructions;
 }
@@ -297,9 +297,9 @@ std::vector<Bytecode> Bytecode_Generator::gen_op(std::shared_ptr<Node> node, OpT
 std::vector<Bytecode> Bytecode_Generator::gen_un_op(std::shared_ptr<Node> node, OpType type)
 {
     instructions = gen_bytecode(node->right);
-    auto op = Bytecode(type);
-    op.line = node->line;
-    op.column = node->column;
+    auto op = Bytecode(type, line, column);
+    op.line = line;
+    op.column = column;
     add_instruction(op);
     return instructions;
 }
@@ -307,9 +307,9 @@ std::vector<Bytecode> Bytecode_Generator::gen_un_op(std::shared_ptr<Node> node, 
 std::vector<Bytecode> Bytecode_Generator::gen_copy(std::shared_ptr<Node> node)
 {
     instructions = gen_bytecode(node->right);
-    auto op = Bytecode(OpType::COPY);
-    op.line = node->line;
-    op.column = node->column;
+    auto op = Bytecode(OpType::COPY, line, column);
+    op.line = line;
+    op.column = column;
     add_instruction(op);
     return instructions;
 }
@@ -322,9 +322,9 @@ std::vector<Bytecode> Bytecode_Generator::gen_build_list(std::shared_ptr<Node> n
     }
 
     auto list_length_node = node->LIST.nodes.size();
-    auto build_list = Bytecode(OpType::BUILD_LIST, list_length_node);
-    build_list.line = node->line;
-    build_list.column = node->column;
+    auto build_list = Bytecode(OpType::BUILD_LIST, list_length_node, line, column);
+    build_list.line = line;
+    build_list.column = column;
     add_instruction(build_list);
     return instructions;
 }
@@ -337,16 +337,16 @@ std::vector<Bytecode> Bytecode_Generator::gen_build_comma_list(std::shared_ptr<N
     }
 
     auto list_length_node = node->COMMA_LIST.nodes.size();
-    auto build_list = Bytecode(OpType::BUILD_COMMA_LIST, list_length_node);
-    build_list.line = node->line;
-    build_list.column = node->column;
+    auto build_list = Bytecode(OpType::BUILD_COMMA_LIST, list_length_node, line, column);
+    build_list.line = line;
+    build_list.column = column;
     add_instruction(build_list);
     return instructions;
 }
 
 std::vector<Bytecode> Bytecode_Generator::gen_build_object(std::shared_ptr<Node> node)
 {
-    add_instruction(Bytecode(OpType::FRAME_IN));
+    add_instruction(Bytecode(OpType::FRAME_IN, line, column));
     std::reverse(node->right->BLOCK.nodes.begin(), node->right->BLOCK.nodes.end());
     for (auto property : node->right->BLOCK.nodes)
     {
@@ -364,22 +364,22 @@ std::vector<Bytecode> Bytecode_Generator::gen_build_object(std::shared_ptr<Node>
     }
 
     auto obj_length_node = node->right->BLOCK.nodes.size();
-    auto build_object = Bytecode(OpType::BUILD_OBJECT, obj_length_node);
-    build_object.line = node->line;
-    build_object.column = node->column;
+    auto build_object = Bytecode(OpType::BUILD_OBJECT, obj_length_node, line, column);
+    build_object.line = line;
+    build_object.column = column;
     add_instruction(build_object);
-    add_instruction(Bytecode(OpType::FRAME_OUT));
+    add_instruction(Bytecode(OpType::FRAME_OUT, line, column));
     return instructions;
 }
 
 std::vector<Bytecode> Bytecode_Generator::gen_block(std::shared_ptr<Node> node)
 {
-    add_instruction(Bytecode(OpType::FRAME_IN));
+    add_instruction(Bytecode(OpType::FRAME_IN, line, column));
     for (auto element_node : node->BLOCK.nodes)
     {
         instructions = gen_bytecode(element_node);
     }
-    add_instruction(Bytecode(OpType::FRAME_OUT));
+    add_instruction(Bytecode(OpType::FRAME_OUT, line, column));
     return instructions;
 }
 
@@ -402,8 +402,8 @@ std::vector<Bytecode> Bytecode_Generator::gen_build_function(std::shared_ptr<Nod
     auto generator = Bytecode_Generator(file_name, function_statements);
     data->FUNCTION.instructions = generator.generate();
 
-    generator.instructions.insert(generator.instructions.end() -1, Bytecode(OpType::LOAD_TOS_OR_EMPTY));
-    generator.instructions.insert(generator.instructions.end() -1, Bytecode(OpType::RETURN));
+    generator.instructions.insert(generator.instructions.end() -1, Bytecode(OpType::LOAD_TOS_OR_EMPTY, line, column));
+    generator.instructions.insert(generator.instructions.end() -1, Bytecode(OpType::RETURN, line, column));
 
     data->FUNCTION.instructions = generator.instructions;
 
@@ -411,9 +411,9 @@ std::vector<Bytecode> Bytecode_Generator::gen_build_function(std::shared_ptr<Nod
     // generator.print_instructions();
     // std::cout << "\nEnd Function Bytecode:\n\n";
 
-    auto build_function = Bytecode(OpType::BUILD_FUNCTION, data);
-    build_function.column = node->column;
-    build_function.line = node->line;
+    auto build_function = Bytecode(OpType::BUILD_FUNCTION, data, line, column);
+    build_function.column = column;
+    build_function.line = line;
 
     if (is_type(node, {NodeType::LAMBDA}))
     {
@@ -458,17 +458,18 @@ std::vector<Bytecode> Bytecode_Generator::gen_function_call(std::shared_ptr<Node
         || function_name->STRING.value == "append"
         || function_name->STRING.value == "frame"
         || function_name->STRING.value == "clear_args"
+        || function_name->STRING.value == "error"
         )
     {
-        add_instruction(Bytecode(OpType::LOAD_BUILTIN, function_name));
+        add_instruction(Bytecode(OpType::LOAD_BUILTIN, function_name, line, column));
     }
     else
     {
-        add_instruction(Bytecode(OpType::LOAD, function_name));
+        add_instruction(Bytecode(OpType::LOAD, function_name, line, column));
     }
 
     int args_length = node->FUNC_CALL.args.size();
-    add_instruction(Bytecode(OpType::CALL_FUNCTION, args_length));
+    add_instruction(Bytecode(OpType::CALL_FUNCTION, args_length, line, column));
     return instructions;
 }
 
@@ -541,9 +542,9 @@ std::vector<Bytecode> Bytecode_Generator::gen_builtin_for_loop(std::shared_ptr<N
 
     instruction_block->BLOCK.instructions = gen.instructions;
 
-    add_instruction(Bytecode(OpType::LOAD_CONST, instruction_block));
+    add_instruction(Bytecode(OpType::LOAD_CONST, instruction_block, line, column));
 
-    add_instruction(Bytecode(OpType::BUILD_LOOP, args_length));
+    add_instruction(Bytecode(OpType::BUILD_LOOP, args_length, line, column));
     
     return instructions;
 }
@@ -596,8 +597,8 @@ std::vector<Bytecode> Bytecode_Generator::gen_for_loop(std::shared_ptr<Node> nod
 
     auto args_length_node = std::make_shared<Node>(*node->left);
 
-    add_instruction(Bytecode(OpType::BUILD_ITER, args_length));
-    add_instruction(Bytecode(OpType::LOOP_START));
+    add_instruction(Bytecode(OpType::BUILD_ITER, args_length, line, column));
+    add_instruction(Bytecode(OpType::LOOP_START, line, column));
 
     int loop_start_index = instruction_counter - 1;
 
@@ -606,12 +607,12 @@ std::vector<Bytecode> Bytecode_Generator::gen_for_loop(std::shared_ptr<Node> nod
         instructions = gen_bytecode(element_node);
     }
 
-    add_instruction(Bytecode(OpType::JUMP_TO, loop_start_index));
+    add_instruction(Bytecode(OpType::JUMP_TO, loop_start_index, line, column));
 
     int loop_end_index = instruction_counter - 1;
     instructions[loop_start_index].index = loop_end_index;
 
-    add_instruction(Bytecode(OpType::REMOVE_ITER));
+    add_instruction(Bytecode(OpType::REMOVE_ITER, line, column));
 
     // We iterate through the instructions between start and end indices, and if we encounter
     // a break that doesn't have an exit index, we update it with the current
@@ -642,7 +643,7 @@ std::vector<Bytecode> Bytecode_Generator::gen_while_loop(std::shared_ptr<Node> n
         return instructions;
     }
 
-    Bytecode while_start_op = Bytecode(OpType::WHILE_START);
+    Bytecode while_start_op = Bytecode(OpType::WHILE_START, line, column);
     add_instruction(while_start_op);
 
     int while_start_index = instruction_counter;
@@ -650,7 +651,7 @@ std::vector<Bytecode> Bytecode_Generator::gen_while_loop(std::shared_ptr<Node> n
     auto condition = left.args[0];
     instructions = gen_bytecode(condition);
 
-    Bytecode jump_if_false = Bytecode(OpType::JUMP_IF_FALSE);
+    Bytecode jump_if_false = Bytecode(OpType::JUMP_IF_FALSE, line, column);
     int jump_if_false_current_index = instruction_counter;
     add_instruction(jump_if_false);
 
@@ -659,7 +660,7 @@ std::vector<Bytecode> Bytecode_Generator::gen_while_loop(std::shared_ptr<Node> n
         instructions = gen_bytecode(element_node);
     }
 
-    add_instruction(Bytecode(OpType::JUMP_TO, while_start_index));
+    add_instruction(Bytecode(OpType::JUMP_TO, while_start_index, line, column));
 
     int loop_end_index = instruction_counter;
 
@@ -694,7 +695,7 @@ std::vector<Bytecode> Bytecode_Generator::gen_if_statement(std::shared_ptr<Node>
     auto condition = node->left->FUNC_CALL.args[0];
 
     instructions = gen_bytecode(condition);
-    auto jump_if_false = Bytecode(OpType::JUMP_IF_FALSE);
+    auto jump_if_false = Bytecode(OpType::JUMP_IF_FALSE, line, column);
     add_instruction(jump_if_false);
 
     int jump_if_false_current_index = instruction_counter - 1;
@@ -739,7 +740,7 @@ std::vector<Bytecode> Bytecode_Generator::gen_if_block(std::shared_ptr<Node> nod
             }
 
             instructions = gen_bytecode(conditional);
-            add_instruction(Bytecode(OpType::JUMP_IF_FALSE));
+            add_instruction(Bytecode(OpType::JUMP_IF_FALSE, line, column));
             jump_if_false_indices.push_back(instruction_counter - 1);
 
             for (auto statement : block->BLOCK.nodes)
@@ -747,7 +748,7 @@ std::vector<Bytecode> Bytecode_Generator::gen_if_block(std::shared_ptr<Node> nod
                 instructions = gen_bytecode(statement);
             }
 
-            add_instruction(Bytecode(OpType::JUMP_TO));
+            add_instruction(Bytecode(OpType::JUMP_TO, line, column));
             jump_to_indices.push_back(instruction_counter - 1);
 
             if (i == cases.size() - 1)
@@ -775,6 +776,9 @@ std::vector<Bytecode> Bytecode_Generator::gen_if_block(std::shared_ptr<Node> nod
 
 std::vector<Bytecode> Bytecode_Generator::gen_bytecode(std::shared_ptr<Node> node)
 {
+    line = node->line;
+    column = node->column;
+
     if (is_type(node, {NodeType::ID}))
     {
         auto data = node_to_stack_object(node);
@@ -804,21 +808,22 @@ std::vector<Bytecode> Bytecode_Generator::gen_bytecode(std::shared_ptr<Node> nod
             || node->ID.value == "append"
             || node->ID.value == "frame"
             || node->ID.value == "clear_args"
+            || node->ID.value == "error"
             )
         {
-            load = Bytecode(OpType::LOAD_BUILTIN, data);
+            load = Bytecode(OpType::LOAD_BUILTIN, data, line, column);
         }
         else if (node->ID.value == "empty")
         {
-            load = Bytecode(OpType::LOAD_CONST, so_make_empty());
+            load = Bytecode(OpType::LOAD_CONST, so_make_empty(), line, column);
         }
         else
         {
-            load = Bytecode(OpType::LOAD, data);
+            load = Bytecode(OpType::LOAD, data, line, column);
         }
 
-        load.column = node->column;
-        load.line = node->line;
+        load.column = column;
+        load.line = line;
 
         add_instruction(load);
         return instructions;
@@ -828,9 +833,9 @@ std::vector<Bytecode> Bytecode_Generator::gen_bytecode(std::shared_ptr<Node> nod
     NodeType::STRING, NodeType::EMPTY}))
     {
         auto data = node_to_stack_object(node);
-        Bytecode load = Bytecode(OpType::LOAD_CONST, data);
-        load.column = node->column;
-        load.line = node->line;
+        Bytecode load = Bytecode(OpType::LOAD_CONST, data, line, column);
+        load.column = column;
+        load.line = line;
 
         add_instruction(load);
         return instructions;
@@ -839,21 +844,21 @@ std::vector<Bytecode> Bytecode_Generator::gen_bytecode(std::shared_ptr<Node> nod
     {
         instructions = gen_bytecode(node->left);
         instructions = gen_bytecode(node->right);
-        Bytecode build_partial_op = Bytecode(OpType::BUILD_PARTIAL_OP);
-        build_partial_op.column = node->column;
-        build_partial_op.line = node->line;
+        Bytecode build_partial_op = Bytecode(OpType::BUILD_PARTIAL_OP, line, column);
+        build_partial_op.column = column;
+        build_partial_op.line = line;
 
         auto op = node_to_stack_object(node);
 
-        add_instruction(Bytecode(OpType::LOAD_CONST, op));
+        add_instruction(Bytecode(OpType::LOAD_CONST, op, line, column));
         add_instruction(build_partial_op);
         return instructions;
     }
     if (is_type(node, {NodeType::KEYWORD}) && node->ID.value == "break")
     {
-        auto _break = Bytecode(OpType::BREAK, so_make_empty());
-        _break.column = node->column;
-        _break.line = node->line;
+        auto _break = Bytecode(OpType::BREAK, so_make_empty(), line, column);
+        _break.column = column;
+        _break.line = line;
 
         add_instruction(_break);
         return instructions;
@@ -861,9 +866,9 @@ std::vector<Bytecode> Bytecode_Generator::gen_bytecode(std::shared_ptr<Node> nod
     if (is_type(node, {NodeType::KEYWORD}) && node->ID.value == "ret")
     {
         instructions = gen_bytecode(node->right);
-        auto _return = Bytecode(OpType::RETURN);
-        _return.column = node->column;
-        _return.line = node->line;
+        auto _return = Bytecode(OpType::RETURN, line, column);
+        _return.column = column;
+        _return.line = line;
 
         add_instruction(_return);
         return instructions;
@@ -1017,7 +1022,7 @@ std::vector<Bytecode> Bytecode_Generator::gen_bytecode(std::shared_ptr<Node> nod
 
 std::vector<Bytecode> Bytecode_Generator::generate()
 {
-    add_instruction(Bytecode(OpType::START));
+    add_instruction(Bytecode(OpType::START, line, column));
 
     for (int i = 1; i < nodes.size() - 1; i++)
     {
@@ -1034,7 +1039,7 @@ std::vector<Bytecode> Bytecode_Generator::generate()
         }
     }
 
-    add_instruction(Bytecode(OpType::EXIT));
+    add_instruction(Bytecode(OpType::EXIT, line, column));
     return instructions;
 }
 
