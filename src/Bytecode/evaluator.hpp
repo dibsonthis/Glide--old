@@ -94,8 +94,8 @@ struct Bytecode_Evaluator
     void eval_builtin(std::shared_ptr<StackObject> function, std::shared_ptr<StackFrame>& frame);
     std::shared_ptr<StackObject>& eval_lookup(std::string name, std::shared_ptr<StackFrame>& frame);
 
-    void make_error(std::string message);
-    void make_custom_error(std::string type, std::string message, std::shared_ptr<StackFrame>& frame);
+    void make_error(std::shared_ptr<StackFrame>& frame, std::string message);
+    void make_custom_error(std::shared_ptr<StackFrame>& frame, std::string type, std::string message);
     void update_loc(Bytecode op);
     void exit();
 

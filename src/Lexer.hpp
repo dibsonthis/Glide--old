@@ -5,6 +5,7 @@
 #include <streambuf>
 #include <unordered_map>
 #include <iostream>
+#include <filesystem>
 #include <memory>
 
 #include "Node.hpp"
@@ -47,7 +48,7 @@ public:
 		if (is_file)
 		{
 			load_source(src);
-			file_name = src;
+			file_name = std::filesystem::path(src).stem().string();;
 		}
 		else
 		{

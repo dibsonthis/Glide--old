@@ -1,5 +1,4 @@
-assert = [condition::bool message::string] => {
-    if [!condition] => {
-        error["Assert" message]
-    }
+set = [] => {
+    x = [] => { var_out["res" true 2] }
+    x[]
 }

@@ -298,7 +298,7 @@ void Bytecode_Evaluator::eval_load(Bytecode op, std::shared_ptr<StackFrame>& fra
 
     if (var->type == SO_Type::STRING && var->STRING.value == "__undefined_var__")
     {
-        make_error("Variable '" + name + "' is undefined");
+        make_error(frame, "Variable '" + name + "' is undefined");
         exit();
         return;
     }
@@ -326,6 +326,7 @@ void Bytecode_Evaluator::eval_load_builtin(Bytecode op, std::shared_ptr<StackFra
     auto function = so_make_function();
     function->FUNCTION.name = name;
     function->FUNCTION.builtin = true;
+    function->FUNCTION.file_name = frame->name;
     frame->stack.push_back(function);
     return;
 
@@ -379,7 +380,7 @@ void Bytecode_Evaluator::eval_store(Bytecode op, std::shared_ptr<StackFrame>& fr
 {
     if (frame->stack.size() == 0)
     {
-        make_error("Right hand side of '=' must have a value");
+        make_error(frame, "Right hand side of '=' must have a value");
         exit();
         return;
     }
@@ -405,7 +406,7 @@ void Bytecode_Evaluator::eval_store_at(std::shared_ptr<StackFrame>& frame)
 {
     if (frame->stack.size() == 0)
     {
-        make_error("Right hand side of '=' must have a value");
+        make_error(frame, "Right hand side of '=' must have a value");
         exit();
         return;
     }
@@ -455,7 +456,7 @@ void Bytecode_Evaluator::eval_add(std::shared_ptr<StackFrame>& frame)
 {
     if (frame->stack.size() < 2)
     {
-        make_error("Malfunctioned operation '+'");
+        make_error(frame, "Malfunctioned operation '+'");
         exit();
         return;
     }
@@ -612,7 +613,7 @@ void Bytecode_Evaluator::eval_add(std::shared_ptr<StackFrame>& frame)
         return;
     }
 
-    make_error("Cannot perform '+' operation on " + left->repr() + " and " + right->repr());
+    make_error(frame, "Cannot perform '+' operation on " + left->repr() + " and " + right->repr());
     exit();
 }
 
@@ -620,7 +621,7 @@ void Bytecode_Evaluator::eval_sub(std::shared_ptr<StackFrame>& frame)
 {
     if (frame->stack.size() < 2)
     {
-        make_error("Malfunctioned operation '-'");
+        make_error(frame, "Malfunctioned operation '-'");
         exit();
         return;
     }
@@ -680,7 +681,7 @@ void Bytecode_Evaluator::eval_sub(std::shared_ptr<StackFrame>& frame)
         return;
     }
 
-    make_error("Cannot perform '-' operation on " + left->repr() + " and " + right->repr());
+    make_error(frame, "Cannot perform '-' operation on " + left->repr() + " and " + right->repr());
     exit();
 }
 
@@ -688,7 +689,7 @@ void Bytecode_Evaluator::eval_mul(std::shared_ptr<StackFrame>& frame)
 {
     if (frame->stack.size() < 2)
     {
-        make_error("Malfunctioned operation '*'");
+        make_error(frame, "Malfunctioned operation '*'");
         exit();
         return;
     }
@@ -796,7 +797,7 @@ void Bytecode_Evaluator::eval_mul(std::shared_ptr<StackFrame>& frame)
         return;
     }
 
-    make_error("Cannot perform '*' operation on " + left->repr() + " and " + right->repr());
+    make_error(frame, "Cannot perform '*' operation on " + left->repr() + " and " + right->repr());
     exit();
 }
 
@@ -804,7 +805,7 @@ void Bytecode_Evaluator::eval_div(std::shared_ptr<StackFrame>& frame)
 {
     if (frame->stack.size() < 2)
     {
-        make_error("Malfunctioned operation '/'");
+        make_error(frame, "Malfunctioned operation '/'");
         exit();
         return;
     }
@@ -864,7 +865,7 @@ void Bytecode_Evaluator::eval_div(std::shared_ptr<StackFrame>& frame)
         return;
     }
 
-    make_error("Cannot perform '/' operation on " + left->repr() + " and " + right->repr());
+    make_error(frame, "Cannot perform '/' operation on " + left->repr() + " and " + right->repr());
     exit();
 }
 
@@ -872,7 +873,7 @@ void Bytecode_Evaluator::eval_mod(std::shared_ptr<StackFrame>& frame)
 {
     if (frame->stack.size() < 2)
     {
-        make_error("Malfunctioned operation '%'");
+        make_error(frame, "Malfunctioned operation '%'");
         exit();
         return;
     }
@@ -918,7 +919,7 @@ void Bytecode_Evaluator::eval_mod(std::shared_ptr<StackFrame>& frame)
         return;
     }
 
-    make_error("Cannot perform '%' operation on " + left->repr() + " and " + right->repr());
+    make_error(frame, "Cannot perform '%' operation on " + left->repr() + " and " + right->repr());
     exit();
 }
 
@@ -926,7 +927,7 @@ void Bytecode_Evaluator::eval_lt(std::shared_ptr<StackFrame>& frame)
 {
     if (frame->stack.size() < 2)
     {
-        make_error("Malfunctioned operation '<'");
+        make_error(frame, "Malfunctioned operation '<'");
         exit();
         return;
     }
@@ -981,7 +982,7 @@ void Bytecode_Evaluator::eval_gt(std::shared_ptr<StackFrame>& frame)
 {
     if (frame->stack.size() < 2)
     {
-        make_error("Malfunctioned operation '>'");
+        make_error(frame, "Malfunctioned operation '>'");
         exit();
         return;
     }
@@ -1036,7 +1037,7 @@ void Bytecode_Evaluator::eval_lte(std::shared_ptr<StackFrame>& frame)
 {
     if (frame->stack.size() < 2)
     {
-        make_error("Malfunctioned operation '<='");
+        make_error(frame, "Malfunctioned operation '<='");
         exit();
         return;
     }
@@ -1091,7 +1092,7 @@ void Bytecode_Evaluator::eval_gte(std::shared_ptr<StackFrame>& frame)
 {
     if (frame->stack.size() < 2)
     {
-        make_error("Malfunctioned operation '>='");
+        make_error(frame, "Malfunctioned operation '>='");
         exit();
         return;
     }
@@ -1146,7 +1147,7 @@ void Bytecode_Evaluator::eval_eq_eq(std::shared_ptr<StackFrame>& frame)
 {
     if (frame->stack.size() < 2)
     {
-        make_error("Malfunctioned operation '=='");
+        make_error(frame, "Malfunctioned operation '=='");
         exit();
         return;
     }
@@ -1224,7 +1225,7 @@ void Bytecode_Evaluator::eval_not_eq(std::shared_ptr<StackFrame>& frame)
 {
     if (frame->stack.size() < 2)
     {
-        make_error("Malfunctioned operation '!='");
+        make_error(frame, "Malfunctioned operation '!='");
         exit();
         return;
     }
@@ -1302,7 +1303,7 @@ void Bytecode_Evaluator::eval_and(std::shared_ptr<StackFrame>& frame)
 {
     if (frame->stack.size() < 2)
     {
-        make_error("Malfunctioned operation '&&'");
+        make_error(frame, "Malfunctioned operation '&&'");
         exit();
         return;
     }
@@ -1332,7 +1333,7 @@ void Bytecode_Evaluator::eval_and(std::shared_ptr<StackFrame>& frame)
         return;
     }
 
-    make_error("Cannot perform '&&' operation on " + left->repr() + " and " + right->repr());
+    make_error(frame, "Cannot perform '&&' operation on " + left->repr() + " and " + right->repr());
     exit();
 }
 
@@ -1340,7 +1341,7 @@ void Bytecode_Evaluator::eval_or(std::shared_ptr<StackFrame>& frame)
 {
     if (frame->stack.size() < 2)
     {
-        make_error("Malfunctioned operation '||'");
+        make_error(frame, "Malfunctioned operation '||'");
         exit();
         return;
     }
@@ -1362,7 +1363,7 @@ void Bytecode_Evaluator::eval_or(std::shared_ptr<StackFrame>& frame)
         return;
     }
 
-    make_error("Cannot perform '||' operation on " + left->repr() + " and " + right->repr());
+    make_error(frame, "Cannot perform '||' operation on " + left->repr() + " and " + right->repr());
     exit();
 }
 
@@ -1370,7 +1371,7 @@ void Bytecode_Evaluator::eval_not(std::shared_ptr<StackFrame>& frame)
 {
     if (frame->stack.size() < 1)
     {
-        make_error("Malfunctioned operation '!'");
+        make_error(frame, "Malfunctioned operation '!'");
         exit();
         return;
     }
@@ -1390,7 +1391,7 @@ void Bytecode_Evaluator::eval_not(std::shared_ptr<StackFrame>& frame)
         return;
     }
 
-    make_error("Cannot perform '!' operation on " + right->repr());
+    make_error(frame, "Cannot perform '!' operation on " + right->repr());
     exit();
 }
 
@@ -1398,7 +1399,7 @@ void Bytecode_Evaluator::eval_pos(std::shared_ptr<StackFrame>& frame)
 {
     if (frame->stack.size() < 1)
     {
-        make_error("Malfunctioned operation unary '+'");
+        make_error(frame, "Malfunctioned operation unary '+'");
         exit();
         return;
     }
@@ -1426,7 +1427,7 @@ void Bytecode_Evaluator::eval_pos(std::shared_ptr<StackFrame>& frame)
         return;
     }
 
-    make_error("Cannot perform '+' unary operation on " + right->repr());
+    make_error(frame, "Cannot perform '+' unary operation on " + right->repr());
     exit();
 }
 
@@ -1434,7 +1435,7 @@ void Bytecode_Evaluator::eval_neg(std::shared_ptr<StackFrame>& frame)
 {
     if (frame->stack.size() < 1)
     {
-        make_error("Malfunctioned operation unary '-'");
+        make_error(frame, "Malfunctioned operation unary '-'");
         exit();
         return;
     }
@@ -1482,7 +1483,7 @@ void Bytecode_Evaluator::eval_neg(std::shared_ptr<StackFrame>& frame)
         return;
     }
 
-    make_error("Cannot perform '-' unary operation on " + right->repr());
+    make_error(frame, "Cannot perform '-' unary operation on " + right->repr());
     exit();
 }
 
@@ -1490,7 +1491,7 @@ void Bytecode_Evaluator::eval_dot(std::shared_ptr<StackFrame>& frame)
 {
     if (frame->stack.size() < 2)
     {
-        make_error("Malfunctioned operation '.'");
+        make_error(frame, "Malfunctioned operation '.'");
         exit();
         return;
     }
@@ -1526,7 +1527,7 @@ void Bytecode_Evaluator::eval_dot(std::shared_ptr<StackFrame>& frame)
             return;
         }
 
-        make_error("Property '" + right->STRING.value + "' does not exist on type 'string'");
+        make_error(frame, "Property '" + right->STRING.value + "' does not exist on type 'string'");
         exit();
         return;
     }
@@ -1580,7 +1581,7 @@ void Bytecode_Evaluator::eval_dot(std::shared_ptr<StackFrame>& frame)
             return;
         }
         
-        make_error("Property '" + right->STRING.value + "' does not exist on type 'list'");
+        make_error(frame, "Property '" + right->STRING.value + "' does not exist on type 'list'");
         exit();
         return;
     }
@@ -1597,7 +1598,7 @@ void Bytecode_Evaluator::eval_dot(std::shared_ptr<StackFrame>& frame)
             return;
         }
         
-        make_error("Property '" + right->STRING.value + "' does not exist on type 'comma_list'");
+        make_error(frame, "Property '" + right->STRING.value + "' does not exist on type 'comma_list'");
         exit();
         return;
     }
@@ -1675,7 +1676,7 @@ void Bytecode_Evaluator::eval_dot(std::shared_ptr<StackFrame>& frame)
         return;
     }
 
-    make_error("Cannot perform '.' operation on " + left->repr() + " and " + right->repr());
+    make_error(frame, "Cannot perform '.' operation on " + left->repr() + " and " + right->repr());
     exit();
 }
 
@@ -1683,7 +1684,7 @@ void Bytecode_Evaluator::eval_range(std::shared_ptr<StackFrame>& frame)
 {
     if (frame->stack.size() < 2)
     {
-        make_error("Malfunctioned operation '..'");
+        make_error(frame, "Malfunctioned operation '..'");
         exit();
         return;
     }
@@ -1710,7 +1711,7 @@ void Bytecode_Evaluator::eval_range(std::shared_ptr<StackFrame>& frame)
         return;
     }
 
-    make_error("Cannot perform '..' operation on " + left->repr() + " and " + right->repr());
+    make_error(frame, "Cannot perform '..' operation on " + left->repr() + " and " + right->repr());
     exit();
 }
 
@@ -1760,7 +1761,7 @@ void Bytecode_Evaluator::eval_build_object(Bytecode op, std::shared_ptr<StackFra
 
         if (key->type != SO_Type::STRING)
         {
-            make_error("Object key must be either an id or a string");
+            make_error(frame, "Object key must be either an id or a string");
             exit();
             return;
         }
@@ -1810,7 +1811,7 @@ void Bytecode_Evaluator::eval_build_iter(Bytecode op, std::shared_ptr<StackFrame
 
     if (iterator->type != SO_Type::LIST)
     {
-        make_error("Iterator must be of type 'list'");
+        make_error(frame, "Iterator must be of type 'list'");
         exit();
         return;
     }
@@ -1841,7 +1842,7 @@ void Bytecode_Evaluator::eval_build_partial_op(std::shared_ptr<StackFrame>& fram
 {
     if (frame->stack.size() < 3)
     {
-        make_error("Malformed expression <Empty stack>");
+        make_error(frame, "Malformed expression <Empty stack>");
         exit();
         return;
     }
@@ -1866,7 +1867,7 @@ void Bytecode_Evaluator::eval_builtin_loop(Bytecode op, std::shared_ptr<StackFra
 {
     if (frame->stack.size() < op.index + 1)
     {
-        make_error("Malformed expression <Empty stack>");
+        make_error(frame, "Malformed expression <Empty stack>");
         exit();
         return;
     }
@@ -1993,7 +1994,7 @@ void Bytecode_Evaluator::eval_loop_start(Bytecode op, std::shared_ptr<StackFrame
 {
     if (frame->stack.size() == 0)
     {
-        make_error("Malformed expression <Empty stack>");
+        make_error(frame, "Malformed expression <Empty stack>");
         exit();
         return;
     }
@@ -2056,7 +2057,7 @@ void Bytecode_Evaluator::eval_break(Bytecode op, std::shared_ptr<StackFrame>& fr
 {
     if (op.data->type == SO_Type::EMPTY)
     {
-        make_error("'break' cannot be used outside of a loop");
+        make_error(frame, "'break' cannot be used outside of a loop");
         exit();
         return;
     }
@@ -2072,7 +2073,7 @@ void Bytecode_Evaluator::eval_return(std::shared_ptr<StackFrame>& frame)
 {
     if (frame->stack.size() == 0)
     {
-        make_error("Malformed expression <Empty stack>");
+        make_error(frame, "Malformed expression <Empty stack>");
         exit();
         return;
     }
@@ -2082,7 +2083,7 @@ void Bytecode_Evaluator::eval_return(std::shared_ptr<StackFrame>& frame)
 
     if (frame->outer_frame == nullptr)
     {
-        make_error("Cannot return out of main scope");
+        make_error(frame, "Cannot return out of main scope");
         exit();
         return;
     }
@@ -2097,7 +2098,7 @@ void Bytecode_Evaluator::eval_copy(std::shared_ptr<StackFrame>& frame)
 {
     if (frame->stack.size() == 0)
     {
-        make_error("Malformed expression <Empty stack>");
+        make_error(frame, "Malformed expression <Empty stack>");
         exit();
         return;
     }
@@ -2130,7 +2131,7 @@ void Bytecode_Evaluator::eval_remove_iter(std::shared_ptr<StackFrame>& frame)
 {
     if (frame->stack.size() == 0)
     {
-        make_error("Malformed expression <Empty stack>");
+        make_error(frame, "Malformed expression <Empty stack>");
         exit();
         return;
     }
@@ -2156,7 +2157,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         auto args = function->FUNCTION.arguments;
         if (args.size() != 1)
         {
-            make_error("Builtin function 'dir' expects 1 argument but " 
+            make_error(frame, "Builtin function 'dir' expects 1 argument but " 
             + std::to_string(args.size()) + " were provided");
             exit();
             return;
@@ -2205,7 +2206,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         auto args = function->FUNCTION.arguments;
         if (args.size() != 1)
         {
-            make_error("Builtin function 'read' expects 1 argument but " 
+            make_error(frame, "Builtin function 'read' expects 1 argument but " 
             + std::to_string(args.size()) + " were provided");
             exit();
             return;
@@ -2224,7 +2225,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         auto args = function->FUNCTION.arguments;
         if (args.size() != 2)
         {
-            make_error("Builtin function 'write' expects 2 argument but " 
+            make_error(frame, "Builtin function 'write' expects 2 argument but " 
             + std::to_string(args.size()) + " were provided");
             exit();
             return;
@@ -2246,7 +2247,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         auto args = function->FUNCTION.arguments;
         if (args.size() != 2)
         {
-            make_error("Builtin function 'append' expects 2 argument but " 
+            make_error(frame, "Builtin function 'append' expects 2 argument but " 
             + std::to_string(args.size()) + " were provided");
             exit();
             return;
@@ -2268,7 +2269,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         auto args = function->FUNCTION.arguments;
         if (args.size() != 0)
         {
-            make_error("Builtin function 'frame' expects 0 argument but " 
+            make_error(frame, "Builtin function 'frame' expects 0 argument but " 
             + std::to_string(args.size()) + " were provided");
             exit();
             return;
@@ -2309,7 +2310,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         auto args = function->FUNCTION.arguments;
         if (args.size() != 1)
         {
-            make_error("Builtin function 'clear_args' expects 2 argument but " 
+            make_error(frame, "Builtin function 'clear_args' expects 2 argument but " 
             + std::to_string(args.size()) + " were provided");
             exit();
             return;
@@ -2317,7 +2318,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
 
         if (args[0]->type != SO_Type::FUNCTION)
         {
-            make_error("Builtin function 'clear_args' expects an argument of type 'function'");
+            make_error(frame, "Builtin function 'clear_args' expects an argument of type 'function'");
             exit();
             return;
         }
@@ -2331,7 +2332,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         auto args = function->FUNCTION.arguments;
         if (args.size() != 1)
         {
-            make_error("Builtin function 'to_string' expects 1 argument but " 
+            make_error(frame, "Builtin function 'to_string' expects 1 argument but " 
             + std::to_string(args.size()) + " were provided");
             exit();
             return;
@@ -2346,7 +2347,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         auto args = function->FUNCTION.arguments;
         if (args.size() != 1)
         {
-            make_error("Builtin function 'to_list' expects 1 argument but " 
+            make_error(frame, "Builtin function 'to_list' expects 1 argument but " 
             + std::to_string(args.size()) + " were provided");
             exit();
             return;
@@ -2375,7 +2376,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         auto args = function->FUNCTION.arguments;
         if (args.size() != 1)
         {
-            make_error("Builtin function 'to_int' expects 1 argument but " 
+            make_error(frame, "Builtin function 'to_int' expects 1 argument but " 
             + std::to_string(args.size()) + " were provided");
             exit();
             return;
@@ -2410,14 +2411,14 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
                     result->INT.value = std::stol(args[0]->STRING.value);
                 }
             } catch(...) {
-                make_error("Unable to cast '" + args[0]->repr() + "' to an integer");
+                make_error(frame, "Unable to cast '" + args[0]->repr() + "' to an integer");
                 exit();
                 return;
             }
         }
         else
         {
-            make_error("Unable to cast '" + args[0]->repr() + "' to an integer");
+            make_error(frame, "Unable to cast '" + args[0]->repr() + "' to an integer");
             exit();
             return;
         }
@@ -2431,7 +2432,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         auto args = function->FUNCTION.arguments;
         if (args.size() != 1)
         {
-            make_error("Builtin function 'to_float' expects 1 argument but " 
+            make_error(frame, "Builtin function 'to_float' expects 1 argument but " 
             + std::to_string(args.size()) + " were provided");
             exit();
             return;
@@ -2458,14 +2459,14 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
             try {
                 result->FLOAT.value = std::stof(args[0]->STRING.value);
             } catch(...) {
-                make_error("Unable to cast '" + args[0]->repr() + "' to a float");
+                make_error(frame, "Unable to cast '" + args[0]->repr() + "' to a float");
                 exit();
                 return;
             }
         }
         else
         {
-            make_error("Unable to cast '" + args[0]->repr() + "' to a float");
+            make_error(frame, "Unable to cast '" + args[0]->repr() + "' to a float");
             exit();
             return;
         }
@@ -2479,7 +2480,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         auto args = function->FUNCTION.arguments;
         if (args.size() != 1)
         {
-            make_error("Builtin function 'type' expects 1 argument but " 
+            make_error(frame, "Builtin function 'type' expects 1 argument but " 
             + std::to_string(args.size()) + " were provided");
             exit();
             return;
@@ -2510,7 +2511,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         auto args = function->FUNCTION.arguments;
         if (args.size() != 1)
         {
-            make_error("Builtin function 'address' expects 1 argument but " 
+            make_error(frame, "Builtin function 'address' expects 1 argument but " 
             + std::to_string(args.size()) + " were provided");
             exit();
             return;
@@ -2526,13 +2527,13 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         auto args = function->FUNCTION.arguments;
         if (args.size() != 2)
         {
-            make_error("Builtin function 'error' expects 2 arguments but " 
+            make_error(frame, "Builtin function 'error' expects 2 arguments but " 
             + std::to_string(args.size()) + " were provided");
             exit();
             return;
         }
 
-        make_custom_error(args[0]->STRING.value, args[1]->STRING.value, frame);
+        make_custom_error(frame, args[0]->STRING.value, args[1]->STRING.value);
         exit();
         return;
     }
@@ -2543,7 +2544,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         auto args = function->FUNCTION.arguments;
         if (args.size() != 2)
         {
-            make_error("Builtin function 'var' expects 2 argument but " 
+            make_error(frame, "Builtin function 'var' expects 2 argument but " 
             + std::to_string(args.size()) + " were provided");
             exit();
             return;
@@ -2551,7 +2552,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
 
         if (args[0]->type != SO_Type::STRING)
         {
-            make_error("Builtin function 'var' expects a variable name");
+            make_error(frame, "Builtin function 'var' expects a variable name");
             exit();
             return;
         }
@@ -2568,9 +2569,9 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
     if (function->FUNCTION.name == "var_out")
     {
         auto args = function->FUNCTION.arguments;
-        if (args.size() != 2)
+        if (args.size() != 3)
         {
-            make_error("Builtin function 'var_out' expects 2 argument but " 
+            make_error(frame, "Builtin function 'var_out' expects 3 argument but " 
             + std::to_string(args.size()) + " were provided");
             exit();
             return;
@@ -2578,23 +2579,49 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
 
         if (args[0]->type != SO_Type::STRING)
         {
-            make_error("Builtin function 'var_out' expects a variable name");
+            make_error(frame, "Builtin function 'var_out' expects a variable name");
+            exit();
+            return;
+        }
+
+        if (args[2]->type != SO_Type::INT)
+        {
+            make_error(frame, "Builtin function 'var_out' expects a depth number");
             exit();
             return;
         }
 
         if (frame->outer_frame == nullptr)
         {
-            make_error("Builtin function 'var_out' cannot be called at the top level");
+            make_error(frame, "Builtin function 'var_out' cannot be called at the top level");
             exit();
             return;
         }
 
-        frame->outer_frame->locals[args[0]->STRING.value] = args[1];
+        std::string name = args[0]->STRING.value;
+        auto value = args[1];
+        int depth = args[2]->INT.value;
+
+        std::shared_ptr<StackFrame> outer_frame = frame;
+
+        for (int i = 0; i < depth; i++)
+        {
+            outer_frame = outer_frame->outer_frame;
+
+            if (outer_frame == nullptr)
+            {
+                make_error(frame, "Cannot access outer frame at level " + std::to_string(i));
+                exit();
+                return;
+            }
+        }
+
+        outer_frame->locals[name] = args[1];
         if (args[1]->type == SO_Type::FUNCTION)
         {
-            args[1]->FUNCTION.name = args[0]->STRING.value;
+            args[1]->FUNCTION.name = name;
         }
+
         frame->stack.push_back(so_make_empty());
         return;
     }
@@ -2604,7 +2631,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         auto args = function->FUNCTION.arguments;
         if (args.size() != 1)
         {
-            make_error("Builtin function 'delete' expects 1 argument but " 
+            make_error(frame, "Builtin function 'delete' expects 1 argument but " 
             + std::to_string(args.size()) + " were provided");
             exit();
             return;
@@ -2612,7 +2639,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
 
         if (args[0]->type != SO_Type::STRING)
         {
-            make_error("Builtin function 'delete' expects a variable name");
+            make_error(frame, "Builtin function 'delete' expects a variable name");
             exit();
             return;
         }
@@ -2626,7 +2653,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         auto args = function->FUNCTION.arguments;
         if (args.size() != 2)
         {
-            make_error("Builtin function 'delete_prop' expects 2 argument but " 
+            make_error(frame, "Builtin function 'delete_prop' expects 2 argument but " 
             + std::to_string(args.size()) + " were provided");
             exit();
             return;
@@ -2634,7 +2661,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
 
         if (args[0]->type != SO_Type::OBJECT && args[1]->type != SO_Type::STRING)
         {
-            make_error("Builtin function 'delete_prop' expects an object and a property name");
+            make_error(frame, "Builtin function 'delete_prop' expects an object and a property name");
             exit();
             return;
         }
@@ -2648,7 +2675,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         auto args = function->FUNCTION.arguments;
         if (args.size() != 1)
         {
-            make_error("Builtin function 'shape' expects 1 argument but " 
+            make_error(frame, "Builtin function 'shape' expects 1 argument but " 
             + std::to_string(args.size()) + " were provided");
             exit();
             return;
@@ -2698,7 +2725,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
             return;
         }
 
-        make_error("Builtin function 'shape' expects argument of type 'object' or 'function'");
+        make_error(frame, "Builtin function 'shape' expects argument of type 'object' or 'function'");
         exit();
         return;
     }
@@ -2708,7 +2735,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         auto args = function->FUNCTION.arguments;
         if (args.size() != 1)
         {
-            make_error("Builtin function 'out' expects 1 argument but " 
+            make_error(frame, "Builtin function 'out' expects 1 argument but " 
             + std::to_string(args.size()) + " were provided");
             exit();
             return;
@@ -2716,7 +2743,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
 
         if (frame->outer_frame == nullptr)
         {
-            make_error("Cannot push out a value when in the main scope");
+            make_error(frame, "Cannot push out a value when in the main scope");
             exit();
             return;
         }
@@ -2730,7 +2757,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         auto args = function->FUNCTION.arguments;
         if (args.size() != 0)
         {
-            make_error("Builtin function 'out' expects 0 argument but " 
+            make_error(frame, "Builtin function 'out' expects 0 argument but " 
             + std::to_string(args.size()) + " were provided");
             exit();
             return;
@@ -2749,7 +2776,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         auto args = function->FUNCTION.arguments;
         if (args.size() != 1)
         {
-            make_error("Builtin function 'import' expects 1 argument but " 
+            make_error(frame, "Builtin function 'import' expects 1 argument but " 
             + std::to_string(args.size()) + " were provided");
             exit();
             return;
@@ -2815,7 +2842,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         auto args = function->FUNCTION.arguments;
         if (args.size() != 1)
         {
-            make_error("Builtin function 'use' expects 1 argument but " 
+            make_error(frame, "Builtin function 'use' expects 1 argument but " 
             + std::to_string(args.size()) + " were provided");
             exit();
             return;
@@ -2912,7 +2939,7 @@ void Bytecode_Evaluator::eval_call_function(Bytecode op, std::shared_ptr<StackFr
 {
     if (frame->stack.size() == 0)
     {
-        make_error("Malformed expression <Empty stack>");
+        make_error(frame, "Malformed expression <Empty stack>");
         exit();
         return;
     }
@@ -2922,7 +2949,7 @@ void Bytecode_Evaluator::eval_call_function(Bytecode op, std::shared_ptr<StackFr
 
     if (!(function->type == SO_Type::FUNCTION))
     {
-        make_error("Malformed function call - no function found");
+        make_error(frame, "Malformed function call - no function found");
         exit();
         return;
     }
@@ -2938,7 +2965,7 @@ void Bytecode_Evaluator::eval_call_function(Bytecode op, std::shared_ptr<StackFr
     {
         if (frame->stack.size() == 0)
         {
-            make_error("Malformed expression <Empty stack>");
+            make_error(frame, "Malformed expression <Empty stack>");
             exit();
             return;
         }
@@ -2976,7 +3003,7 @@ void Bytecode_Evaluator::eval_call_function(Bytecode op, std::shared_ptr<StackFr
 
     auto function_frame = std::make_shared<StackFrame>();
     function_frame->outer_frame = frame;
-    function_frame->name = name;
+    function_frame->name = function->FUNCTION.name;
 
     for (auto elem : function->FUNCTION.closure)
     {
@@ -3019,7 +3046,7 @@ void Bytecode_Evaluator::eval_call_function(Bytecode op, std::shared_ptr<StackFr
 
     Bytecode_Evaluator evaluator(function->FUNCTION.instructions);
     evaluator.repl = repl;
-    evaluator.file_name = name;
+    evaluator.file_name = function->FUNCTION.file_name;
     evaluator.evaluate(function_frame);
 
     function_frame->locals.clear();
@@ -3035,7 +3062,7 @@ void Bytecode_Evaluator::eval_arrow(std::shared_ptr<StackFrame>& frame)
 {
     if (frame->stack.size() < 2)
     {
-        make_error("Malfunctioned operation '->'");
+        make_error(frame, "Malfunctioned operation '->'");
         exit();
         return;
     }
@@ -3052,19 +3079,19 @@ void Bytecode_Evaluator::eval_arrow(std::shared_ptr<StackFrame>& frame)
         {
             if (right->OP.is_unary)
             {
-                make_error("Unary operator '" + right->repr() + "' can only be injected with one value");
+                make_error(frame, "Unary operator '" + right->repr() + "' can only be injected with one value");
             }
 
             if (left->COMMA_LIST.objects.size() != 2)
             {
-                make_error("Cannot inject more than 2 values into the partial operator " + right->repr());
+                make_error(frame, "Cannot inject more than 2 values into the partial operator " + right->repr());
                 exit();
                 return;
             }
 
             if (right->OP.left->type != SO_Type::EMPTY && right->OP.right->type != SO_Type::EMPTY)
             {
-                make_error("Operator " + right->repr() + " is not a fully partial operator. It can only be injected with a single value");
+                make_error(frame, "Operator " + right->repr() + " is not a fully partial operator. It can only be injected with a single value");
                 exit();
                 return;
             }
@@ -3295,7 +3322,7 @@ void Bytecode_Evaluator::eval_arrow(std::shared_ptr<StackFrame>& frame)
         return;
     }
 
-    make_error("Cannot perform '->' operation on " + right->repr());
+    make_error(frame, "Cannot perform '->' operation on " + right->repr());
     exit();
 }
 
@@ -3303,7 +3330,7 @@ void Bytecode_Evaluator::eval_jump_if_false(Bytecode op, std::shared_ptr<StackFr
 {
     if (frame->stack.size() == 0)
     {
-        make_error("Malformed expression <Empty stack>");
+        make_error(frame, "Malformed expression <Empty stack>");
         exit();
         return;
     }
@@ -3323,14 +3350,23 @@ void Bytecode_Evaluator::eval_jump_if_false(Bytecode op, std::shared_ptr<StackFr
     return;
 }
 
-void Bytecode_Evaluator::make_error(std::string message)
+void Bytecode_Evaluator::make_error(std::shared_ptr<StackFrame>& frame, std::string message)
 {
     force_exit = true;
     auto error = "\nError in '" + file_name + "' (" + std::to_string(line) + ", " + std::to_string(column) + ") - " + message + "\n";
     errors.push_back(error);
+
+    auto outer_frame = frame->outer_frame;
+    while (outer_frame != nullptr)
+    {
+        auto error = "(Cascading) Error in '" + outer_frame->name + "' (" + std::to_string(outer_frame->line) + ", " + std::to_string(outer_frame->column) + ") - " + message + "\n";
+        errors.push_back(error);
+
+        outer_frame = outer_frame->outer_frame;
+    }
 }
 
-void Bytecode_Evaluator::make_custom_error(std::string type, std::string message, std::shared_ptr<StackFrame>& frame)
+void Bytecode_Evaluator::make_custom_error(std::shared_ptr<StackFrame>& frame, std::string type, std::string message)
 {
     force_exit = true;
     auto error = type + " Error in '" + file_name + "' (" + std::to_string(line) + ", " + std::to_string(column) + ") - " + message + "\n";

@@ -87,6 +87,7 @@ struct Object_Object
 struct Function_Object
 {
     std::string name;
+    std::string file_name;
     std::vector<std::string> parameters;
     std::vector<std::shared_ptr<StackObject>> arguments;
     std::unordered_map<std::string, std::shared_ptr<StackObject>> closure;

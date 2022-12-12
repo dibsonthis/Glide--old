@@ -386,6 +386,7 @@ std::vector<Bytecode> Bytecode_Generator::gen_block(std::shared_ptr<Node> node)
 std::vector<Bytecode> Bytecode_Generator::gen_build_function(std::shared_ptr<Node> node)
 {
     auto data = so_make_function();
+    data->FUNCTION.file_name = file_name;
     for (auto param : node->left->LIST.nodes)
     {
         data->FUNCTION.parameters.push_back(param->ID.value);
