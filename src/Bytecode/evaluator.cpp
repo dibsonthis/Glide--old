@@ -2985,6 +2985,12 @@ void Bytecode_Evaluator::eval_call_function(Bytecode op, std::shared_ptr<StackFr
     evaluator.evaluate(function_frame);
 
     function_frame->locals.clear();
+
+    if (evaluator.force_exit)
+    {
+        force_exit = true;
+        exit();
+    }
 }
 
 void Bytecode_Evaluator::eval_arrow(std::shared_ptr<StackFrame>& frame)
@@ -3281,12 +3287,14 @@ void Bytecode_Evaluator::eval_jump_if_false(Bytecode op, std::shared_ptr<StackFr
 
 void Bytecode_Evaluator::make_error(std::string message)
 {
+    force_exit = true;
     auto error = "\nError in '" + file_name + "' (" + std::to_string(line) + ", " + std::to_string(column) + ") - " + message + "\n";
     errors.push_back(error);
 }
 
 void Bytecode_Evaluator::make_custom_error(std::string type, std::string message, std::shared_ptr<StackFrame>& frame)
 {
+    force_exit = true;
     auto error = type + " Error in '" + file_name + "' (" + std::to_string(line) + ", " + std::to_string(column) + ") - " + message + "\n";
     errors.push_back(error);
 

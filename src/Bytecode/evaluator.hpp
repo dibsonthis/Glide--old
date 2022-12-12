@@ -36,6 +36,7 @@ struct Bytecode_Evaluator
     Bytecode current_op;
     std::vector<Bytecode> instructions;
     std::vector<std::string> errors;
+    bool force_exit = false;
     std::string file_name;
     std::unordered_map<std::string, std::shared_ptr<StackObject>> import_cache;
     bool repl = false;

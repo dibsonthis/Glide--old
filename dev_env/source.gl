@@ -2,3 +2,4 @@ test = import["../../../dev_env/imports/std/typed.gl"]
 
 x = 12
 test.assert[x < 7 "x must be greater than 7"]
+print[x]
