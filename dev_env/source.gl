@@ -1,8 +1,4 @@
-//t = import["../../../dev_env/imports/std/typed.gl"]
+test = import["../../../dev_env/imports/std/typed.gl"]
 
 x = 12
-if [x < 15] => {
-    error["Some Name" "Some message"]
-}
-
-print[x]
+test.assert[x < 7 "x must be greater than 7"]

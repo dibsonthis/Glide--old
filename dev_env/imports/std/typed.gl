@@ -1,51 +1,5 @@
-add = [a::int b::int] :: int => {
-    a + b
-}
-
-sort_by = [key _list::[any]] :: int => {
-
-    if [_list.length == 0] => {
-        ret []
+assert = [condition::bool message::string] => {
+    if [!condition] => {
+        error["Assert" message]
     }
-
-    keyed = [x] => {
-		if => {
-			x == empty: { ret x }
-			default: { ret key[x] }
-		}
-	}
-
-    quicksort = [_l :: [any]] :: [any] => {
-        swap = [i j] => {
-            tmp = _l.[i]
-            _l.[i] = _l.[j]
-            _l.[j] = tmp
-        }
-
-        partition = [low high] => {
-            pivot = keyed[_l.[high]]
-            i = low - 1
-            for [low..high j x] => {
-            if [keyed[_l.[x]] < pivot] => {
-                i = i + 1
-                swap[i x]
-            }
-            }
-            swap[(i + 1) high]
-            ret i + 1
-        }
-
-        _inner = [low high] => {
-            if [low < high] => {
-            pi = partition[low high]
-            _inner[low (pi - 1)]
-            _inner[(pi + 1) high]
-            }
-        }
-        
-        _inner[0 (_l.length - 1)]
-        ret _l
-    }
-
-    ret _list -> quicksort
 }

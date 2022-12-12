@@ -10,6 +10,8 @@
 
 struct StackFrame
 {
+    std::string name;
+    int line, column;
     std::shared_ptr<StackFrame> outer_frame;
     std::unordered_map<std::string, std::shared_ptr<StackObject>> locals;
     std::unordered_map<std::string, std::shared_ptr<StackObject>> globals = 
@@ -91,7 +93,7 @@ struct Bytecode_Evaluator
     std::shared_ptr<StackObject>& eval_lookup(std::string name, std::shared_ptr<StackFrame>& frame);
 
     void make_error(std::string message);
-    void make_custom_error(std::string type, std::string message);
+    void make_custom_error(std::string type, std::string message, std::shared_ptr<StackFrame>& frame);
     void update_loc(Bytecode op);
     void exit();
 

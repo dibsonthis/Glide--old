@@ -24,6 +24,7 @@ void Repl::interpret_statement(std::string statement, std::shared_ptr<StackFrame
 void Repl::run()
 {
     auto main_frame = std::make_shared<StackFrame>();
+    main_frame->name = "stdin";
 
     while (true)
     {

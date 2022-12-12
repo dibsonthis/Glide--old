@@ -71,6 +71,9 @@ void Bytecode_Evaluator::eval_instruction(std::shared_ptr<StackFrame>& frame)
     line = current_op.line;
     column = current_op.column;
 
+    frame->line = line;
+    frame->column = column;
+
     if (current_op.type == OpType::LOAD)
     {
         eval_load(current_op, frame);
@@ -2491,7 +2494,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
             return;
         }
 
-        make_custom_error(args[0]->STRING.value, args[1]->STRING.value);
+        make_custom_error(args[0]->STRING.value, args[1]->STRING.value, frame);
         exit();
         return;
     }
@@ -2738,6 +2741,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         parser.nodes.clear();
 
         auto import_frame = std::make_shared<StackFrame>();
+        import_frame->name = lexer.file_name;
 
         Bytecode_Evaluator evaluator(instructions);
         evaluator.import_cache = import_cache;
@@ -2809,6 +2813,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         parser.nodes.clear();
 
         auto import_frame = std::make_shared<StackFrame>();
+        import_frame->name = lexer.file_name;
 
         Bytecode_Evaluator evaluator(instructions);
         evaluator.import_cache = import_cache;
@@ -2933,6 +2938,7 @@ void Bytecode_Evaluator::eval_call_function(Bytecode op, std::shared_ptr<StackFr
 
     auto function_frame = std::make_shared<StackFrame>();
     function_frame->outer_frame = frame;
+    function_frame->name = name;
 
     for (auto elem : function->FUNCTION.closure)
     {
@@ -3197,6 +3203,7 @@ void Bytecode_Evaluator::eval_arrow(std::shared_ptr<StackFrame>& frame)
 
         auto function_frame = std::make_shared<StackFrame>();
         function_frame->outer_frame = frame;
+        function_frame->name = right->FUNCTION.name;
 
         auto name = right->FUNCTION.name;
 
@@ -3278,10 +3285,19 @@ void Bytecode_Evaluator::make_error(std::string message)
     errors.push_back(error);
 }
 
-void Bytecode_Evaluator::make_custom_error(std::string type, std::string message)
+void Bytecode_Evaluator::make_custom_error(std::string type, std::string message, std::shared_ptr<StackFrame>& frame)
 {
     auto error = type + " Error in '" + file_name + "' (" + std::to_string(line) + ", " + std::to_string(column) + ") - " + message + "\n";
     errors.push_back(error);
+
+    auto outer_frame = frame->outer_frame;
+    while (outer_frame != nullptr)
+    {
+        auto error = "(Cascading) " + type + " Error in '" + outer_frame->name + "' (" + std::to_string(outer_frame->line) + ", " + std::to_string(outer_frame->column) + ") - " + message + "\n";
+        errors.push_back(error);
+
+        outer_frame = outer_frame->outer_frame;
+    }
 }
 
 void Bytecode_Evaluator::exit()

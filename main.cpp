@@ -18,7 +18,7 @@ int main(int argc, char** argv)
         REPL
     };
 
-    Type type = Type::DEV;
+    Type type = Type::INTERP;
 
     if (type == Type::DEV)
     {
@@ -46,6 +46,7 @@ int main(int argc, char** argv)
         generator.nodes.clear();
 
         auto frame = std::make_shared<StackFrame>();
+        frame->name = file_name;
 
         Bytecode_Evaluator evaluator(instructions);
         evaluator.file_name = parser.file_name;
@@ -103,6 +104,7 @@ int main(int argc, char** argv)
     generator.nodes.clear();
 
     auto frame = std::make_shared<StackFrame>();
+    frame->name = file_name;
 
     Bytecode_Evaluator evaluator(instructions);
     evaluator.file_name = parser.file_name;
