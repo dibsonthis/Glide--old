@@ -1,4 +1,3 @@
 set = [] => {
-    x = [] => { var_out["res" true 2] }
-    x[]
+    12
 }

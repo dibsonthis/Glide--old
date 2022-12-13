@@ -1,3 +1,6 @@
-t = import["../../../dev_env/imports/std/typed.gl"]
+//t = import["../../../dev_env/imports/std/typed.gl"]
 
-t.set[]
+x = 1..10
+x.insert["hello there" 3]
+x.remove[3]
+print[x]

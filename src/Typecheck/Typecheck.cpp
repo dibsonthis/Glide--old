@@ -714,7 +714,7 @@ std::shared_ptr<Node> Typechecker::get_type_dot(std::shared_ptr<Node> node)
         return left;
     }
 
-    if (node->right->type == NodeType::FUNC_CALL)
+    if (left->type == NodeType::OBJECT && node->right->type == NodeType::FUNC_CALL)
     {
         // find the function inside the object
         if (left->OBJECT.properties.find(node->right->FUNC_CALL.name->ID.value) != left->OBJECT.properties.end())
@@ -879,8 +879,21 @@ std::shared_ptr<Node> Typechecker::get_type_dot(std::shared_ptr<Node> node)
         {
             auto type = std::make_shared<Node>(NodeType::LIST);
             auto obj = std::make_shared<Node>(NodeType::OBJECT);
-            obj->OBJECT.properties["key"] = std::make_shared<Node>(NodeType::STRING);
-            obj->OBJECT.properties["value"] = std::make_shared<Node>(NodeType::ANY);
+            obj->right = std::make_shared<Node>(NodeType::BLOCK);
+
+            auto key_node = std::make_shared<Node>(NodeType::COLON);
+            key_node->left = std::make_shared<Node>(NodeType::ID);
+            key_node->left->ID.value = "key";
+            key_node->right = std::make_shared<Node>(NodeType::STRING);
+
+            auto value_node = std::make_shared<Node>(NodeType::COLON);
+            value_node->left = std::make_shared<Node>(NodeType::ID);
+            value_node->left->ID.value = "value";
+            value_node->right = std::make_shared<Node>(NodeType::ANY);
+
+            obj->right->BLOCK.nodes.push_back(key_node);
+            obj->right->BLOCK.nodes.push_back(value_node);
+
             type->LIST.nodes.push_back(obj);
             return type;
         }

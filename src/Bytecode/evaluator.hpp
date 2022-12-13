@@ -42,6 +42,8 @@ struct Bytecode_Evaluator
     std::unordered_map<std::string, std::shared_ptr<StackObject>> import_cache;
     bool repl = false;
     int line, column;
+
+    bool string_in(std::string value, std::vector<std::string> vec);
     
     void forward();
     void backward();

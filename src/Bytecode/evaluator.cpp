@@ -1,5 +1,12 @@
 #include "evaluator.hpp"
 
+std::vector<std::string> list_builtins = {"clear", "append", "prepend", "insert", "remove"};
+
+bool Bytecode_Evaluator::string_in(std::string value, std::vector<std::string> vec)
+{
+    return std::find(vec.begin(), vec.end(), value) != vec.end();
+}
+
 void Bytecode_Evaluator::forward()
 {
     index++;
@@ -1580,6 +1587,97 @@ void Bytecode_Evaluator::eval_dot(std::shared_ptr<StackFrame>& frame)
             frame->stack.push_back(res);
             return;
         }
+        if (string_in(right->STRING.value, list_builtins))
+        {
+            int args_length = instructions[index+1].index;
+            std::vector<std::shared_ptr<StackObject>> args;
+
+            for (int i = 0; i < args_length; i++)
+            {
+                args.insert(args.begin(), frame->stack.back());
+                frame->stack.pop_back();
+            }
+            
+            // remove CALL_FUNCTION instruction
+            instructions.erase(instructions.begin() + index + 1);
+
+            if (right->STRING.value == "clear")
+            {
+                if (args_length > 0)
+                {
+                    make_error(frame, "Builtin function '" + right->STRING.value + "' expects 0 arguments");
+                    exit();
+                    return;
+                }
+                left->LIST.objects.clear();
+                frame->stack.push_back(so_make_empty());
+                return;
+            }
+
+            if (right->STRING.value == "append")
+            {
+                if (args_length != 1)
+                {
+                    make_error(frame, "Builtin function '" + right->STRING.value + "' expects 1 argument");
+                    exit();
+                    return;
+                }
+                left->LIST.objects.push_back(args[0]);
+                frame->stack.push_back(so_make_empty());
+                return;
+            }
+
+            if (right->STRING.value == "prepend")
+            {
+                if (args_length != 1)
+                {
+                    make_error(frame, "Builtin function '" + right->STRING.value + "' expects 1 argument");
+                    exit();
+                    return;
+                }
+                left->LIST.objects.insert(left->LIST.objects.begin(), args[0]);
+                frame->stack.push_back(so_make_empty());
+                return;
+            }
+
+            if (right->STRING.value == "insert")
+            {
+                if (args_length != 2)
+                {
+                    make_error(frame, "Builtin function '" + right->STRING.value + "' expects 2 arguments");
+                    exit();
+                    return;
+                }
+                if (args[1]->type != SO_Type::INT)
+                {
+                    make_error(frame, "Builtin function '" + right->STRING.value + "' expects the second argument to be an integer");
+                    exit();
+                    return;
+                }
+                left->LIST.objects.insert(left->LIST.objects.begin() + args[1]->INT.value, args[0]);
+                frame->stack.push_back(so_make_empty());
+                return;
+            }
+
+            if (right->STRING.value == "remove")
+            {
+                if (args_length != 1)
+                {
+                    make_error(frame, "Builtin function '" + right->STRING.value + "' expects 1 argument");
+                    exit();
+                    return;
+                }
+                if (args[0]->type != SO_Type::INT)
+                {
+                    make_error(frame, "Builtin function '" + right->STRING.value + "' expects argument to be an integer");
+                    exit();
+                    return;
+                }
+                left->LIST.objects.erase(left->LIST.objects.begin() + args[0]->INT.value);
+                frame->stack.push_back(so_make_empty());
+                return;
+            }
+        }
         
         make_error(frame, "Property '" + right->STRING.value + "' does not exist on type 'list'");
         exit();
@@ -2182,7 +2280,7 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
             auto obj = so_make_object();
             obj->OBJECT.properties["name"] = so_make_string(name);
             obj->OBJECT.properties["path"] = so_make_string(path);
-            obj->OBJECT.properties["is_file"] = so_make_bool(is_dir);
+            obj->OBJECT.properties["is_file"] = so_make_bool(!is_dir);
             dir_list->LIST.objects.push_back(obj);
         }
 
