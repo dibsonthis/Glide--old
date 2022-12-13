@@ -1,0 +1,120 @@
+std = import["../../../dev_env/imports/std/std.gl"]
+
+tests = []
+
+assert = [condition::bool message::string] => {
+    res = @{
+        passed: condition
+        message: message
+    }
+
+    tests.[tests.length] = res
+}
+
+run = [dir_path::string debug::bool] => {
+
+    spl = std.split["." dir_path]
+    if [spl.[1] != "test"] => {
+        print["Error: '" + dir_path + "' not a test file"]
+        ret
+    }
+
+    heading = "\nRunning tests on '" + dir_path
+    if [debug] => {
+        print[heading + "'\n" + (heading.to_chars.length * "-") + "\n"]
+    }
+
+    passed = []
+    failed = []
+    total = 0
+
+    test_file = import[dir_path]
+
+    functions = test_file._items -> std.filter[[x] => { type[x.value] == function }]
+
+    for [functions index func] => {
+
+        total += 1
+
+        passed_assertions = []
+        failed_assertions = []
+        total_assertions = 0
+
+        func.value[]
+
+        for [tests i res] => {
+            total_assertions += 1
+            if => {
+                res.passed: { passed_assertions.append[@{ name: func.key result: res }] }
+                default: { failed_assertions.append[@{ name: func.key result: res }] }
+            }
+        }
+
+        if [debug] => {
+            print["\n" func.key ":\n\n"]
+            print["Total: " total_assertions "\n"]
+            print["Passed: " passed_assertions.length "\n"]
+            print["Failed: " failed_assertions.length "\n\n"]
+        }
+
+        if => {
+            total_assertions == passed_assertions.length: {passed.append[passed_assertions]}
+            default: {failed.append[failed_assertions]}
+        }
+
+        tests.clear[]
+    }
+
+    if [debug] => {
+        print["=======================\n\nTotal: " total "\n"]
+        print["Passed: " passed.length "\n"]
+        print["Failed: " failed.length "\n\n"]
+    }
+
+    if [total == passed.length] => {
+        ret true
+    }
+
+    if [failed.length > 0] => {
+        print["\nFailed (" + dir_path + "):\n------\n"]
+        for [failed i t] => {
+            for [t ind v] => {
+                print[v.name ":\n" v.result "\n"]
+            }
+        }
+    }
+
+    ret false
+}
+
+run_dir = [dir_path::string debug::bool] => {
+    
+    file_list = dir[dir_path] -> std.filter[[x] => { x.is_file && (std.split["." x.name].[1] == "test") }] -> std.map[[x] => { x.path }]
+
+    total = file_list.length
+    passed = []
+    failed = []
+
+    for [file_list index file] => {
+        test = run[file debug]
+        if => {
+            test: { passed.append[file] }
+            default: { failed.append[file] }
+        }
+    }
+
+    print["\nResults:\n--------\n"]
+    
+    for [failed i v] => {
+        print[v ": Failed\n"]
+    }
+    for [passed i v] => {
+        print[v ": Passed\n"]
+    }
+
+    if [passed.length == total] => {
+        ret true
+    }
+
+    ret false
+}

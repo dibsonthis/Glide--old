@@ -1,6 +1,7 @@
 // -------- Const ---------- //
 
 number = (int, float)
+any = "any"
 alpha_lower = "abcdefghijklmnopqrstuvwxyz"
 alpha_upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 digits = "0123456789"
@@ -8,7 +9,7 @@ whitespace = " \n\t\r"
 
 // -------- List ---------- //
 
-map = [func _list::[any]] :: [any] => {
+map = [func _list :: [any]] :: [any] => {
 
 	copy = #_list
 
@@ -40,7 +41,7 @@ map = [func _list::[any]] :: [any] => {
             ret copy
         }
 
-        ret empty
+        ret []
     }
 
     _for [copy index] => {
@@ -50,11 +51,7 @@ map = [func _list::[any]] :: [any] => {
 	ret copy
 }
 
-filter = [func _list] => {
-
-    if [type[_list] != list] => {
-        ret empty
-    }
+filter = [func _list::[any]] :: [any] => {
 
 	new = []
 
@@ -112,10 +109,7 @@ filter = [func _list] => {
 	ret new
 }
 
-find = [func _list] => {
-    if [type[_list] != list] => {
-        ret
-    }
+find = [func _list::[any]] => {
 
     if => {
         type[func] == function: {
@@ -158,14 +152,10 @@ find = [func _list] => {
     }
 }
 
-reduce = [func _list] => {
-
-    if [type[_list] != list] => {
-        ret empty
-    }
+reduce = [func _list::[any]] :: any => {
 
 	if [_list.length == 0] => {
-		ret 0
+		ret
 	}
 
 	if [_list.length == 1] => {
@@ -193,11 +183,7 @@ reduce = [func _list] => {
 	ret x
 }
 
-zip = [func list_a list_b] => {
-
-    if [type[list_a] != list || type[list_b] != list] => {
-        ret empty
-    }
+zip = [func list_a::[any] list_b::[any]] :: [any] => {
 
 	if [list_a.length != list_b.length] => {
 		ret []
@@ -219,14 +205,10 @@ zip = [func list_a list_b] => {
 	ret copy
 }
 
-zip_many = [func args] => {
-
-    if [type[args] != list] => {
-        ret
-    }
+zip_many = [func args::[[any]]] :: [any] => {
 
     if [shape[func].params.length != args.length] => {
-        ret
+        ret []
     }
 
     _list = []
@@ -240,11 +222,7 @@ zip_many = [func args] => {
     ret _list
 }
 
-insert = [pos item _list] => {
-
-    if [type[_list] != list] => {
-        ret empty
-    }
+insert = [pos item _list::[any]] :: [any] => {
 
 	new = []
 	for [_list index] => {
@@ -256,33 +234,19 @@ insert = [pos item _list] => {
 	ret new
 }
 
-append = [item _list] => {
-
-    if [type[_list] != list] => {
-        ret empty
-    }
-
+append = [item _list::[any]] => {
 	copy = #_list
 	copy.[copy.length] = item
 	ret copy
 }
 
-prepend = [item _list] => {
-
-    if [type[_list] != list] => {
-        ret empty
-    }
-
+prepend = [item _list::[any]] => {
 	copy = #_list
 	copy.[-1] = item
 	ret copy
 }
 
-pop_f = [_list] => {
-
-    if [type[_list] != list] => {
-        ret empty
-    }
+pop_f = [_list::[any]] => {
 	
 	if [_list.length == 0] => {
 		obj = @{
@@ -299,11 +263,7 @@ pop_f = [_list] => {
 	ret obj
 }
 
-pop_b = [_list] => {
-
-    if [type[_list] != list] => {
-        ret empty
-    }
+pop_b = [_list::[any]] => {
 
 	if [_list.length == 0] => {
 		obj = @{
@@ -321,11 +281,7 @@ pop_b = [_list] => {
 	ret obj
 }
 
-index_of = [element _list] => {
-
-    if [type[_list] != list] => {
-        ret empty
-    }
+index_of = [element _list::[any]] :: int => {
 
     for[_list index item] => {
         if [item == element] => {
@@ -336,31 +292,17 @@ index_of = [element _list] => {
     ret (-1)
 }
 
-at = [index _list] => {
-
-    if [type[_list] != list] => {
-        ret empty
-    }
-
+at = [index _list::[any]] => {
 	_list.[index]
 }
 
-slice = [start end _list] => {
-
-    if [type[_list] != list] => {
-        ret empty
-    }
-
+slice = [start::int end::int _list::[any]] => {
     _list -> filter[[x i] => {
-        i >= start && i <= end
+        i >= start && i < end
     }]
 }
 
-unique = [_list] => {
-
-    if [type[_list] != list] => {
-        ret empty
-    }
+unique = [_list::[int]] :: [int] => {
 
     prev = @{}
     unique_list = []
@@ -373,11 +315,7 @@ unique = [_list] => {
     ret unique_list
 }
 
-sort = [_list] => {
-
-    if [type[_list] != list] => {
-        ret
-    }
+sort = [_list::[any]] :: [any] => {
 
     if [_list.length == 0] => {
         ret []
@@ -440,11 +378,7 @@ sort = [_list] => {
     ret _list -> quicksort
 }
 
-sort_by = [key _list] => {
-
-    if [type[_list] != list] => {
-        ret
-    }
+sort_by = [key _list::[any]] :: [any] => {
 
     if [_list.length == 0] => {
         ret []
@@ -457,7 +391,7 @@ sort_by = [key _list] => {
 		}
 	}
 
-    quicksort = [_l] => {
+    quicksort = [_l :: [any]] :: [any] => {
         swap = [i j] => {
             tmp = _l.[i]
             _l.[i] = _l.[j]
@@ -492,20 +426,11 @@ sort_by = [key _list] => {
     ret _list -> quicksort
 }
 
-join = [delim _list] => {
-
-    if [type[_list] != list] => {
-        ret empty
-    }
-
+join = [delim _list::[any]] => {
 	_list -> reduce[[a b] => { a + delim + b }]
 }
 
-swap = [i j _list] => {
-
-    if [type[_list] != list] => {
-        ret empty
-    }
+swap = [i j _list::[any]] => {
 
     copy = #_list
 
@@ -516,12 +441,7 @@ swap = [i j _list] => {
     ret copy
 }
 
-count = [value _list] => {
-
-    if [type[_list] != list] => {
-        ret empty
-    }
-
+count = [value _list::[any]] => {
 	res = 0
 	for [_list index item] => {
 		if [item == value] => {
@@ -531,7 +451,7 @@ count = [value _list] => {
 	ret res
 }
 
-to_object = [_list] => {
+to_object = [_list::[any]] => {
 
     if [type[_list] == object] => {
         ret _list
@@ -563,19 +483,11 @@ call = [f] => {
 
 // -------- String ---------- //
 
-chars = [_str] => {
-    if [type[_str] != string] => {
-        ret
-    }
-
+chars = [_str::string] => {
     _str.to_chars
 }
 
-split = [delim _str] => {
-
-    if [type[_str] != string] => {
-        ret
-    }
+split = [delim _str::string] => {
 
 	if [delim == ""] => {
 		ret _str.to_chars
@@ -775,76 +687,60 @@ is_type = [_type value] => {
         ret false
     }
 
+    if [_type == any] => {
+        ret true
+    }
+
     (value -> get_type, _type) -> equals
 }
 
-func_t = [func _type args] => {
+make_typed = [func _type] => {
 
-    name = shape[func].name
-    func_args = shape[func].args
-    func_params = shape[func].params
-
-    arg_index = func_args.length
-
-    if => {
-        type[args] == comma_list: {
-            args = to_list[args]
-            for [args i arg] => {
-                param_key = func_params.[i]
-
-                if [param_key == empty] => {
-                print["\nTypeError in function '" name "' - expected argument count of " func_params.length " but received " i + 1 " arguments\n"]
-                ret
-            }
-
-                if [!(arg -> is_type[_type.[param_key]])] => {
-                    print["\nTypeError in function '" name "' - expected argument '" param_key "' in position " i " to be of type '" _type.[param_key] "' but received argument of type '" arg -> get_type "'\n"]
-                    ret
-                }
-                func = arg -> func
-            }
-        }
-        default: {
-            param_key = func_params.[arg_index]
-
-            if [param_key == empty] => {
-                print["\nTypeError in function '" name "' - expected argument count of " func_params.length " but received " arg_index + 1 " arguments\n"]
-                ret
-            }
-
-            if [!(args -> is_type[_type.[param_key]])] => {
-                    print["\nTypeError in function '" name "' - expected argument '" param_key "' in position " arg_index " to be of type '" _type.[param_key] "' but received argument of type '" args -> get_type "'\n"]
-                    ret
-                }
-            func = args -> func
-        }
+    if [type[func] != function || type[_type] != object] => {
+        ret
     }
 
-    if [type[func] != function] => {
+    name = shape[func].name
 
-        if [_type.ret == empty] => {
+    if [_catch.length == 1] => {
+        name = _catch.[0]
+    }
+
+    func_params = shape[func].params
+    
+    f = [] => {
+        for [_args index arg] => {
+
+            if [index >= func_params.length] => {
+                print["Error in '" name "': Exceeded number of arguments (expected " func_params.length " but received " index + 1 ")\n"]
+                ret
+            }
+
+            param = shape[func].params.[index]
+            param_type = _type.[param]
+
+            if [!(std.is_type[param_type arg])] => {
+                print["TypeError in '" name "': '" param "' is expected to be of type '" _type.[param] "' but received '" std.get_type[arg] "'\n"]
+                ret
+            }
+
+            func = func[arg]
+        }
+
+        if [type[func] != function] => {
+
+            if [_type.ret != empty && !(is_type[_type.ret func])] => {
+                print["TypeError in '" name "': return value is expected to be of type '" _type.ret "' but received '" get_type[func] "'\n"]
+                ret
+            }
             ret func
         }
 
-        if [type[_type.ret] == comma_list] => {
-
-            if [func -> is_type[_type.ret]] => {
-                ret func
-            }
-
-            print["TypeError in function '" name "' - expected return value to be of type '" _type.ret "' but returned value is of type '" func -> get_type "'\n"]
-            ret
-        }
-
-        if [!(func -> is_type[_type.ret])] => {
-            print["TypeError in function '" name "' - expected return value to be of type '" _type.ret "' but returned value is of type '" func -> get_type "'\n"]
-            ret
-        }
-
-        ret func
+        ret make_typed[func _type]
     }
 
-    ret func_t[var[name func] _type]
+    var_out[name f]
+    ret f
 }
 
 var_t = [value _type] => {
@@ -907,7 +803,7 @@ println = [] => {
     }
 }
 
-clear = [file_path] => {
+clear = [file_path::string] => {
     write[file_path ""]
 }
 
@@ -931,11 +827,7 @@ is_alpha = [c] => {
 	ret false
 }
 
-upper = [_str] => {
-
-    if [type[_str] != string] => {
-        ret
-    }
+upper = [_str::string] :: string => {
 
 	if [_str == ""] => {
 		ret ""
@@ -954,11 +846,7 @@ upper = [_str] => {
 	ret _list
 }
 
-lower = [_str] => {
-
-    if [type[_str] != string] => {
-        ret
-    }
+lower = [_str::string] :: string => {
 
 	if [_str == ""] => {
 		ret ""

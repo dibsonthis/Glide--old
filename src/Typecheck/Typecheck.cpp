@@ -692,6 +692,10 @@ std::shared_ptr<Node> Typechecker::get_type_mod(std::shared_ptr<Node> node)
 
 std::shared_ptr<Node> Typechecker::get_type_equality(std::shared_ptr<Node> node)
 {
+    if (node->type == NodeType::PARTIAL_OP)
+    {
+        return std::make_shared<Node>(NodeType::ANY);
+    }
     auto left = get_type(node->left);
     if (left->type == NodeType::ERROR)
     {
@@ -940,7 +944,7 @@ std::shared_ptr<Node> Typechecker::get_type_arrow(std::shared_ptr<Node> node)
     }
 
     // TODO: proper typing on op injection
-    if (right->type == NodeType::OP || right->type == NodeType::PARTIAL_OP)
+    if (is_type(right, {NodeType::OP, NodeType::PARTIAL_OP}))
     {
         return std::make_shared<Node>(NodeType::ANY);
     }
@@ -1175,7 +1179,12 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
             return symbol_table[node->ID.value].value_type;
         }
     }
-    if (is_type(node, {NodeType::INT, NodeType::FLOAT, NodeType::STRING, NodeType::BOOL, NodeType::EMPTY, NodeType::ERROR, NodeType::FUNC_T}))
+    if (is_type(node, {NodeType::BOOL}))
+    {
+        node->TYPE.is_literal = false;
+        return node;
+    }
+    if (is_type(node, {NodeType::INT, NodeType::FLOAT, NodeType::STRING, NodeType::EMPTY, NodeType::ERROR, NodeType::FUNC_T}))
     {
         return node;
     }
@@ -1858,6 +1867,14 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         }
 
         return final_type;
+    }
+    if (is_type(node, {NodeType::OP}))
+    {
+        return std::make_shared<Node>(NodeType::ANY);
+    }
+    if (is_type(node, {NodeType::PARTIAL_OP}))
+    {
+        return std::make_shared<Node>(NodeType::ANY);
     }
     
     return std::make_shared<Node>(NodeType::ANY);

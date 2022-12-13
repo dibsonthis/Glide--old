@@ -1,4 +1,4 @@
 map_test = [] => {
-    expected = [2 4 6 8]
+    expected :: any = [2 4 6 8]
     expected = [1.5 2.5 3.5 4.5]
 }
