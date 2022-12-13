@@ -1598,8 +1598,7 @@ void Bytecode_Evaluator::eval_dot(std::shared_ptr<StackFrame>& frame)
                 frame->stack.pop_back();
             }
             
-            // remove CALL_FUNCTION instruction
-            instructions.erase(instructions.begin() + index + 1);
+            forward();
 
             if (right->STRING.value == "clear")
             {
