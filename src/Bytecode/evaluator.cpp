@@ -2895,7 +2895,14 @@ void Bytecode_Evaluator::eval_builtin(std::shared_ptr<StackObject> function, std
         parser.parse();
 
         Typechecker typechecker(lexer.file_name, parser.nodes);
-        typechecker.run();
+        bool check = typechecker.run();
+
+        if (!check)
+        {
+            force_exit = true;
+            exit();
+            return;
+        }
 
         Bytecode_Generator generator(parser.file_name, parser.nodes);
         auto instructions = generator.generate();

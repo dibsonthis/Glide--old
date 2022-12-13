@@ -1,9 +1,3 @@
-//t = import["../../../dev_env/imports/std/typed.gl"]
-
-x = []
-
-for [1..3 i] => {
-    x.append[i]
-    print[x]
-    x.clear[]
-}
+dir_path = "../../../dev_env/imports/std/typed.gl"
+t = import[dir_path]
+print["hi"]
