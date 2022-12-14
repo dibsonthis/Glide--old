@@ -960,7 +960,7 @@ std::shared_ptr<Node> Typechecker::get_type_arrow(std::shared_ptr<Node> node)
         }
         else
         {
-            right->FUNC_T.args.push_back(get_type(node->left));
+            right->FUNC_T.args.push_back(left);
         }
 
         for (int i = 0; i < right->FUNC_T.params.size(); i++)
@@ -1030,10 +1030,6 @@ std::shared_ptr<Node> Typechecker::get_type_arrow(std::shared_ptr<Node> node)
         }
 
         return get_type(right);
-    }
-    else
-    {
-        return right;
     }
 
     int line = this->line;

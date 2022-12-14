@@ -9,8 +9,9 @@ o = @{
     add: [x::int y::int] => {
         x + y
     }
+    sub: [x::int y::int] => {
+        x - y
+    }
 }
 
-4
->> o.add[5]
->> o.add[9]
+x :: float = (4 >> o.add[5] >> o.add[9] >> o.sub[20])
