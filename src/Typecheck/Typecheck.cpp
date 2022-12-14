@@ -1031,6 +1031,10 @@ std::shared_ptr<Node> Typechecker::get_type_arrow(std::shared_ptr<Node> node)
 
         return get_type(right);
     }
+    else
+    {
+        return right;
+    }
 
     int line = this->line;
     int column = this->column;

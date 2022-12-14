@@ -1,2 +1,16 @@
 
-t = import["../../../dev_env/imports/std/std.gl"]
+// std = import["../../../dev_env/imports/std/std.gl"]
+
+// 1..1000
+// >> std.filter[>200]
+// >> std.filter[<=300]
+
+o = @{
+    add: [x::int y::int] => {
+        x + y
+    }
+}
+
+4
+>> o.add[5]
+>> o.add[9]
