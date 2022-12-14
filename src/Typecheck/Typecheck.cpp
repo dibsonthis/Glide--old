@@ -969,7 +969,7 @@ std::shared_ptr<Node> Typechecker::get_type_arrow(std::shared_ptr<Node> node)
             {
                 break;
             }
-            auto arg = get_type(right->FUNC_T.args[i]);
+            auto arg = right->FUNC_T.args[i];
             if (arg->type == NodeType::ERROR)
             {
                 return arg;
@@ -1599,6 +1599,9 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
             errors.push_back(make_error("Syntax", "For loop cannot have an empty iterator", line, column));
             return std::make_shared<Node>(NodeType::ERROR);
         }
+
+        auto list_type = get_type(node->left->FUNC_CALL.args[0]);
+
         if (!is_type(get_type(node->left->FUNC_CALL.args[0]), {NodeType::LIST, NodeType::ANY}))
         {
             errors.push_back(make_error("Type", "For loop iterator must be a list", line, column));
@@ -1637,9 +1640,18 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
             auto value_name = node->left->FUNC_CALL.args[2]->ID.value;
             auto value_type = std::make_shared<Node>(NodeType::ANY);
 
+            if (value_name == "r_value")
+            {
+                std::cout << "here";
+            }
+
             auto list_type = get_type(node->left->FUNC_CALL.args[0]);
 
-            if (list_type->LIST.nodes.size() == 1)
+            if (list_type->type == NodeType::ANY)
+            {
+                value_type = list_type;
+            }
+            else if (list_type->LIST.nodes.size() == 1)
             {
                 value_type = list_type->LIST.nodes[0];
             }
