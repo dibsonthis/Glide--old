@@ -1571,10 +1571,31 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
     }
     if (is_type(node, {NodeType::WHILE_LOOP}))
     {
+        if (node->left->FUNC_CALL.args.size() != 1)
+        {
+            errors.push_back(make_error("Syntax", "While loop cannot have an empty conditional", line, column));
+            return std::make_shared<Node>(NodeType::ERROR);
+        }
+        auto conditional = get_type(node->left->FUNC_CALL.args[0]);
+        if (conditional->type != NodeType::BOOL)
+        {
+            errors.push_back(make_error("Type", "While loop conditional must evaluate to a boolean", line, column));
+            return std::make_shared<Node>(NodeType::ERROR);
+        }
         return get_type(node->right);
     }
     if (is_type(node, {NodeType::FOR_LOOP}))
     {
+        if (node->left->FUNC_CALL.args.size() == 0)
+        {
+            errors.push_back(make_error("Syntax", "For loop cannot have an empty iterator", line, column));
+            return std::make_shared<Node>(NodeType::ERROR);
+        }
+        if (get_type(node->left->FUNC_CALL.args[0])->type != NodeType::LIST)
+        {
+            errors.push_back(make_error("Type", "For loop iterator must be a list", line, column));
+            return std::make_shared<Node>(NodeType::ERROR);
+        }
         if (node->left->FUNC_CALL.args.size() == 1)
         {
             return get_type(node->right);
