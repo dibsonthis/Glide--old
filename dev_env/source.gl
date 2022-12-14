@@ -2,4 +2,12 @@
 // t = import["../../../dev_env/imports/std/test.gl"]
 // t.run_dir["src/tests" true]
 
-x :: int = 5 * 2
+// x = 1..100
+
+// for [x i v] => {
+//     a :: float = v / 2
+// }
+
+while[true] => {
+    f::int = 1.8
+}

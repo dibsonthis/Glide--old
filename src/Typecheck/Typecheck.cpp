@@ -1569,6 +1569,77 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 
         return func_type;
     }
+    if (is_type(node, {NodeType::WHILE_LOOP}))
+    {
+        return get_type(node->right);
+    }
+    if (is_type(node, {NodeType::FOR_LOOP}))
+    {
+        if (node->left->FUNC_CALL.args.size() == 1)
+        {
+            return get_type(node->right);
+        }
+        if (node->left->FUNC_CALL.args.size() == 2)
+        {
+            auto index_name = node->left->FUNC_CALL.args[1]->ID.value;
+            auto index_type = std::make_shared<Node>(NodeType::INT);
+            index_type->TYPE.is_literal = false;
+            symbol_table[index_name] = Type(index_type, index_type);
+
+            auto type = get_type(node->right);
+
+            if (type->type == NodeType::ERROR)
+            {
+                return type;
+            }
+
+            symbol_table.erase(index_name);
+
+            return type;
+        }
+
+        if (node->left->FUNC_CALL.args.size() == 3)
+        {
+            auto index_name = node->left->FUNC_CALL.args[1]->ID.value;
+            auto index_type = std::make_shared<Node>(NodeType::INT);
+            index_type->TYPE.is_literal = false;
+            symbol_table[index_name] = Type(index_type, index_type);
+
+            auto value_name = node->left->FUNC_CALL.args[2]->ID.value;
+            auto value_type = std::make_shared<Node>(NodeType::ANY);
+
+            auto list_type = get_type(node->left->FUNC_CALL.args[0]);
+
+            if (list_type->LIST.nodes.size() == 1)
+            {
+                value_type = list_type->LIST.nodes[0];
+            }
+            else
+            {
+                value_type = std::make_shared<Node>(NodeType::COMMA_LIST);
+                for (auto t : list_type->LIST.nodes)
+                {
+                    value_type->COMMA_LIST.nodes.push_back(t);
+                }
+            }
+
+            value_type->TYPE.is_literal = false;
+
+            symbol_table[value_name] = Type(value_type, value_type);
+
+            auto type = get_type(node->right);
+
+            if (type->type == NodeType::ERROR)
+            {
+                return type;
+            }
+
+            symbol_table.erase(index_name);
+            symbol_table.erase(value_name);
+
+            return type;
+        }
+    }
     if (is_type(node, {NodeType::PARTIAL_OP}))
     {
         return std::make_shared<Node>(NodeType::ANY);
