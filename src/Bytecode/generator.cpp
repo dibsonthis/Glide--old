@@ -1004,7 +1004,7 @@ std::vector<Bytecode> Bytecode_Generator::gen_bytecode(std::shared_ptr<Node> nod
     {
         return gen_if_block(node);
     }
-    if (is_type(node, {NodeType::RIGHT_ARROW_SINGLE}))
+    if (is_type(node, {NodeType::RIGHT_ARROW_DOUBLE}))
     {
         return gen_arrow(node);
     }

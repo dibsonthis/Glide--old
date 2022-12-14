@@ -444,13 +444,13 @@ void Lexer::tokenize()
 			advance(); // consume =
 			advance(); // consume >
 		}
-		else if (current_char == '-' && peek() == '>')
+		else if (current_char == '>' && peek() == '>')
 		{
 			std::shared_ptr<Node> node(new Node(NodeType::OP, line, column));
-			node->OP.op_type = NodeType::RIGHT_ARROW_SINGLE;
-			node->OP.value = "->";
+			node->OP.op_type = NodeType::RIGHT_ARROW_DOUBLE;
+			node->OP.value = ">>";
 			nodes.push_back(node);
-			advance(); // consume -
+			advance(); // consume >
 			advance(); // consume >
 		}
 		else if (current_char == '&' && peek() == '&')

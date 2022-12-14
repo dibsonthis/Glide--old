@@ -1035,7 +1035,7 @@ std::shared_ptr<Node> Typechecker::get_type_arrow(std::shared_ptr<Node> node)
     int line = this->line;
     int column = this->column;
 
-    errors.push_back(make_error("Type", "Cannot perform '->' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right), line, column));
+    errors.push_back(make_error("Type", "Cannot perform '>>' on types: " + node_type_to_string(left) + ", " + node_type_to_string(right), line, column));
     auto error = std::make_shared<Node>(NodeType::ERROR);
     return error;
 }
@@ -1569,6 +1569,10 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
 
         return func_type;
     }
+    if (is_type(node, {NodeType::PARTIAL_OP}))
+    {
+        return std::make_shared<Node>(NodeType::ANY);
+    }
     if (is_type(node, {NodeType::DOT}))
     {
         return get_type_dot(node);
@@ -1593,7 +1597,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
     {
         return get_type_mod(node);
     }
-    if (is_type(node, {NodeType::RIGHT_ARROW_SINGLE}))
+    if (is_type(node, {NodeType::RIGHT_ARROW_DOUBLE}))
     {
         return get_type_arrow(node);
     }
@@ -1869,10 +1873,6 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         return final_type;
     }
     if (is_type(node, {NodeType::OP}))
-    {
-        return std::make_shared<Node>(NodeType::ANY);
-    }
-    if (is_type(node, {NodeType::PARTIAL_OP}))
     {
         return std::make_shared<Node>(NodeType::ANY);
     }

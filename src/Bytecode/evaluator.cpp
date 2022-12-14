@@ -3166,7 +3166,7 @@ void Bytecode_Evaluator::eval_arrow(std::shared_ptr<StackFrame>& frame)
 {
     if (frame->stack.size() < 2)
     {
-        make_error(frame, "Malfunctioned operation '->'");
+        make_error(frame, "Malfunctioned operation '>>'");
         exit();
         return;
     }
@@ -3426,7 +3426,7 @@ void Bytecode_Evaluator::eval_arrow(std::shared_ptr<StackFrame>& frame)
         return;
     }
 
-    make_error(frame, "Cannot perform '->' operation on " + right->repr());
+    make_error(frame, "Cannot perform '>>' operation on " + right->repr());
     exit();
 }
 

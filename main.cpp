@@ -18,7 +18,7 @@ int main(int argc, char** argv)
         REPL
     };
 
-    Type type = Type::DEV;
+    Type type = Type::INTERP;
 
     if (type == Type::DEV)
     {

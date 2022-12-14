@@ -1,3 +1,5 @@
 
-t = import["../../../dev_env/imports/std/test.gl"]
-t.run_dir["src/tests" true]
+// t = import["../../../dev_env/imports/std/test.gl"]
+// t.run_dir["src/tests" true]
+
+x :: int = 5 * 2

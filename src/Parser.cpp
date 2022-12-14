@@ -64,7 +64,7 @@ void Parser::parse_arrow(std::vector<NodeType> end_node_types)
             break;
         }
 
-        if (is_type(current_node, {NodeType::RIGHT_ARROW_SINGLE}) && (!current_node->right && !current_node->left))
+        if (is_type(current_node, {NodeType::RIGHT_ARROW_DOUBLE}) && (!current_node->right && !current_node->left))
         {
 
             std::shared_ptr<Node> prev = peek(-1);
@@ -140,7 +140,7 @@ void Parser::parse_equal(std::vector<NodeType> end_node_types)
             std::shared_ptr<Node> prev = peek(-1);
             std::shared_ptr<Node> next = peek(1);
 
-            std::vector<NodeType> prev_types = {NodeType::RIGHT_ARROW_SINGLE, NodeType::L_BRACKET, NodeType::L_BRACE, NodeType::L_PAREN, NodeType::COMMA, NodeType::COLON, NodeType::START_OF_FILE};
+            std::vector<NodeType> prev_types = {NodeType::RIGHT_ARROW_DOUBLE, NodeType::L_BRACKET, NodeType::L_BRACE, NodeType::L_PAREN, NodeType::COMMA, NodeType::COLON, NodeType::START_OF_FILE};
             std::vector<NodeType> next_types = {NodeType::R_BRACKET, NodeType::R_BRACE, NodeType::R_PAREN, NodeType::COMMA, NodeType::COLON, NodeType::END_OF_FILE};
 
             if (is_type(prev, prev_types) || is_type(next, next_types) || is_underscore(prev) || is_underscore(next))
@@ -344,10 +344,10 @@ void Parser::parse_bin_op(std::vector<NodeType> types, std::vector<NodeType> end
             std::shared_ptr<Node> prev = peek(-1);
             std::shared_ptr<Node> next = peek(1);
 
-            std::vector<NodeType> prev_types = {NodeType::RIGHT_ARROW_SINGLE, 
+            std::vector<NodeType> prev_types = {NodeType::RIGHT_ARROW_DOUBLE, 
             NodeType::L_BRACKET, NodeType::L_BRACE, NodeType::L_PAREN, 
             NodeType::COMMA, NodeType::COLON, NodeType::EQUAL, NodeType::START_OF_FILE};
-            std::vector<NodeType> next_types = {NodeType::RIGHT_ARROW_SINGLE, 
+            std::vector<NodeType> next_types = {NodeType::RIGHT_ARROW_DOUBLE, 
             NodeType::R_BRACKET, NodeType::R_BRACE, NodeType::R_PAREN, 
             NodeType::COMMA, NodeType::COLON, NodeType::SEMICOLON, NodeType::END_OF_FILE};
 
@@ -430,10 +430,10 @@ void Parser::parse_right_arrow(std::vector<NodeType> end_node_types)
             std::shared_ptr<Node> prev = peek(-1);
             std::shared_ptr<Node> next = peek(1);
 
-            std::vector<NodeType> prev_types = {NodeType::RIGHT_ARROW_SINGLE, 
+            std::vector<NodeType> prev_types = {NodeType::RIGHT_ARROW_DOUBLE, 
             NodeType::L_BRACKET, NodeType::L_BRACE, NodeType::L_PAREN, 
             NodeType::COMMA, NodeType::COLON, NodeType::START_OF_FILE};
-            std::vector<NodeType> next_types = {NodeType::RIGHT_ARROW_SINGLE, 
+            std::vector<NodeType> next_types = {NodeType::RIGHT_ARROW_DOUBLE, 
             NodeType::R_BRACKET, NodeType::R_BRACE, NodeType::R_PAREN, 
             NodeType::COMMA, NodeType::COLON, NodeType::END_OF_FILE};
 
@@ -632,7 +632,7 @@ void Parser::parse_at(std::vector<NodeType> end_node_types)
             {
                 std::shared_ptr<Node> next = peek(1);
 
-                if (is_type(next, {NodeType::RIGHT_ARROW_SINGLE, NodeType::R_BRACKET, NodeType::R_BRACE, NodeType::R_PAREN, NodeType::COMMA, NodeType::END_OF_FILE}))
+                if (is_type(next, {NodeType::RIGHT_ARROW_DOUBLE, NodeType::R_BRACKET, NodeType::R_BRACE, NodeType::R_PAREN, NodeType::COMMA, NodeType::END_OF_FILE}))
                 {
                     current_node = custom_error(current_node, "@ expects a '{'");
                     advance();
@@ -682,7 +682,7 @@ void Parser::parse_hash(std::vector<NodeType> end_node_types)
                 {
                     std::shared_ptr<Node> next = peek(1);
 
-                    if (is_type(next, {NodeType::RIGHT_ARROW_SINGLE, NodeType::R_BRACKET, NodeType::R_BRACE, NodeType::R_PAREN, NodeType::COMMA, NodeType::END_OF_FILE}))
+                    if (is_type(next, {NodeType::RIGHT_ARROW_DOUBLE, NodeType::R_BRACKET, NodeType::R_BRACE, NodeType::R_PAREN, NodeType::COMMA, NodeType::END_OF_FILE}))
                     {
                         current_node = custom_error(current_node, "# expects an identifier");
                         advance();
@@ -734,7 +734,7 @@ void Parser::parse_un_op(std::vector<NodeType> types, std::vector<NodeType> end_
                 {
                     std::shared_ptr<Node> next = peek(1);
 
-                    if (!is_type(next, {NodeType::RIGHT_ARROW_SINGLE, NodeType::R_BRACKET, NodeType::R_BRACE, NodeType::R_PAREN, NodeType::COMMA, NodeType::END_OF_FILE}))
+                    if (!is_type(next, {NodeType::RIGHT_ARROW_DOUBLE, NodeType::R_BRACKET, NodeType::R_BRACE, NodeType::R_PAREN, NodeType::COMMA, NodeType::END_OF_FILE}))
                     {
                         current_node->right = next;
                         nodes.erase(nodes.begin() + (index + 1));
@@ -756,7 +756,7 @@ void Parser::parse_un_op(std::vector<NodeType> types, std::vector<NodeType> end_
 
                     current_node->left = std::make_shared<Node>(NodeType::EMPTY);
 
-                    if (is_type(prev, {NodeType::RIGHT_ARROW_SINGLE}))
+                    if (is_type(prev, {NodeType::RIGHT_ARROW_DOUBLE}))
                     {
                         current_node->type = NodeType::PARTIAL_OP;
 
@@ -797,7 +797,7 @@ void Parser::parse_postfix_un_op(std::vector<NodeType> types, std::vector<NodeTy
             {
                 std::shared_ptr<Node> prev = peek(-1);
 
-                if (!is_type(prev, {NodeType::RIGHT_ARROW_SINGLE, NodeType::L_BRACKET, NodeType::L_BRACE, NodeType::L_PAREN, NodeType::COMMA, NodeType::START_OF_FILE}))
+                if (!is_type(prev, {NodeType::RIGHT_ARROW_DOUBLE, NodeType::L_BRACKET, NodeType::L_BRACE, NodeType::L_PAREN, NodeType::COMMA, NodeType::START_OF_FILE}))
                 {
                     current_node->left = prev;
                     nodes.erase(nodes.begin() + (index - 1));
