@@ -44,8 +44,8 @@ map = [func _list :: [any]] :: [any] => {
         ret []
     }
 
-    _for [copy index] => {
-		copy.[index] = copy.[index] -> func
+    for [copy index] => {
+		copy.[index] = copy.[index] >> func
 	}
 
 	ret copy
@@ -98,8 +98,8 @@ filter = [func _list::[any]] :: [any] => {
         ret []
     }
 
-	_for [_list index] => {
-		if [_list.[index] -> func] => {
+	for [_list index] => {
+		if [_list.[index] >> func] => {
 			if => {
 				type[_list.[index]] == "_list": { new.[new.length] = [_list.[index]]}
 				default: { new.[new.length] = _list.[index] }
@@ -143,8 +143,8 @@ find = [func _list::[any]] => {
             ret
         }
         default: {
-            _for [_list index value] => {
-                if [value -> func] => {
+            for [_list index value] => {
+                if [value >> func] => {
                     ret _list.[index]
                 }
             }
@@ -166,7 +166,7 @@ reduce = [func _list::[any]] :: any => {
         if [type[func] == function] => {
             ret func[(_list.[0] _list.[1])]
         }
-		ret (_list.[0], _list.[1]) -> func
+		ret (_list.[0], _list.[1]) >> func
 	}
 
 	x = _list.[0]
@@ -177,8 +177,8 @@ reduce = [func _list::[any]] :: any => {
         ret x
     }
 
-	_for [1..(_list.length) index] => {
-		x = (x, _list.[index + 1]) -> func
+	for [1..(_list.length) index] => {
+		x = (x, _list.[index + 1]) >> func
 	}
 	ret x
 }
@@ -199,7 +199,7 @@ zip = [func list_a::[any] list_b::[any]] :: [any] => {
     }
 
     for [list_a index] => {
-		res = (list_a.[index], list_b.[index]) -> func
+		res = (list_a.[index], list_b.[index]) >> func
 		copy.[copy.length] = res
 	}
 	ret copy
@@ -215,7 +215,7 @@ zip_many = [func args::[[any]]] :: [any] => {
     for [args.[0] arg_i elem] => {
         res = func
         for [args args_i arg] => {
-            res = arg.[arg_i] -> res
+            res = arg.[arg_i] >> res
         }
         _list.[arg_i] = res
     }
@@ -224,25 +224,20 @@ zip_many = [func args::[[any]]] :: [any] => {
 
 insert = [pos item _list::[any]] :: [any] => {
 
-	new = []
-	for [_list index] => {
-		if [index == pos] => {
-			new.[new.length] = item
-		}
-		new.[new.length] = _list.[index]
-	}
+	new = #_list
+    new.insert[item pos]
 	ret new
 }
 
 append = [item _list::[any]] => {
 	copy = #_list
-	copy.[copy.length] = item
+	copy.append[item]
 	ret copy
 }
 
 prepend = [item _list::[any]] => {
 	copy = #_list
-	copy.[-1] = item
+	copy.prepend[item]
 	ret copy
 }
 
@@ -258,7 +253,7 @@ pop_f = [_list::[any]] => {
 
 	obj = @{
 		front: _list.[0]
-		rest: _list -> filter[[x i] => {i != 0}]
+		rest: _list >> filter[[x i] => {i != 0}]
 	}
 	ret obj
 }
@@ -276,7 +271,7 @@ pop_b = [_list::[any]] => {
 	last_index = _list.length - 1
 	obj = @{
 		back: _list.[last_index]
-		rest: _list -> filter[[x i] => { i != last_index}]
+		rest: _list >> filter[[x i] => { i != last_index}]
 	}
 	ret obj
 }
@@ -297,7 +292,7 @@ at = [index _list::[any]] => {
 }
 
 slice = [start::int end::int _list::[any]] => {
-    _list -> filter[[x i] => {
+    _list >> filter[[x i] => {
         i >= start && i < end
     }]
 }
@@ -326,10 +321,10 @@ sort = [_list::[any]] :: [any] => {
         if => {
             t == string: {
                 if [x.length == 1] => {
-                    ret x -> to_int
+                    ret x >> to_int
                 }
 
-                ret x.to_chars.[0] -> to_int
+                ret x.to_chars.[0] >> to_int
             }
             t == list || t == comma_list: {
                 ret x.length
@@ -350,7 +345,7 @@ sort = [_list::[any]] :: [any] => {
             _l.[j] = tmp
         }
 
-        partition = [low high] => {
+        partition = [low::int high::int] => {
             pivot = sortable[_l.[high]]
             i = low - 1
             for [low..high j x] => {
@@ -375,7 +370,7 @@ sort = [_list::[any]] :: [any] => {
         ret _l
     }
 
-    ret _list -> quicksort
+    ret _list >> quicksort
 }
 
 sort_by = [key _list::[any]] :: [any] => {
@@ -398,7 +393,7 @@ sort_by = [key _list::[any]] :: [any] => {
             _l.[j] = tmp
         }
 
-        partition = [low high] => {
+        partition = [low::int high::int] => {
             pivot = keyed[_l.[high]]
             i = low - 1
             for [low..high j x] => {
@@ -423,11 +418,11 @@ sort_by = [key _list::[any]] :: [any] => {
         ret _l
     }
 
-    ret _list -> quicksort
+    ret _list >> quicksort
 }
 
 join = [delim _list::[any]] => {
-	_list -> reduce[[a b] => { a + delim + b }]
+	_list >> reduce[[a b] => { a + delim + b }]
 }
 
 swap = [i j _list::[any]] => {
@@ -461,7 +456,7 @@ to_object = [_list::[any]] => {
         ret empty
     }
 
-    _list -> map[[x i] => { @{to_string[x]: i} }] -> reduce[+]
+    _list >> map[[x i] => { @{to_string[x]: i} }] >> reduce[+]
 }
 
 // -------- Object ---------- //
@@ -473,12 +468,9 @@ get = [property _object] => {
 // -------- Function ---------- //
 
 call = [f] => {
-
-    if [type[f] != function] => {
-        ret
+    if [type[f] == function] => {
+        f[]
     }
-    
-    f[]
 }
 
 // -------- String ---------- //
@@ -497,7 +489,7 @@ split = [delim _str::string] => {
     _list = _str.to_chars
     s = ""
 
-    _for[_list i c] => {
+    for[_list i c] => {
         if => {
             c == delim: {
                 new.[new.length] = s
@@ -540,11 +532,11 @@ equals = [a b] => {
                 ret false
             }
 
-            sa = a -> sort
-            sb = b -> sort
+            sa :: [any] = a >> sort
+            sb :: [any] = b >> sort
 
             for [sa index item] => {
-                if [!(item -> equals[sb.[index]])] => {
+                if [!(item >> equals[sb.[index]])] => {
                     ret false
                 }
             }
@@ -556,7 +548,7 @@ equals = [a b] => {
                 ret false
             }
 
-            if [!(a._keys -> sort -> equals[b._keys -> sort])] => {
+            if [!(a._keys >> sort >> equals[b._keys >> sort])] => {
                 ret false
             }
 
@@ -641,7 +633,7 @@ remove = [item _object] => {
         }
         t == list: {
             
-            ret _object -> filter[[x] => { x != item }]
+            ret _object >> filter[[x] => { x != item }]
         }
         default: {
             ret empty
@@ -655,12 +647,12 @@ get_type = [_object] => {
     _type = type[_object]
 
     if [_type == list] => {
-        type_list = _object -> map[[x] => { get_type[x] }] -> unique -> sort
+        type_list = _object >> map[[x] => { get_type[x] }] >> unique >> sort
         ret type_list
     }
 
     if [_type == comma_list] => {
-        type_list = to_list[_object] -> map[[x] => { get_type[x] }] -> unique -> sort
+        type_list = to_list[_object] >> map[[x] => { get_type[x] }] >> unique >> sort
         ret type_list
     }
 
@@ -680,7 +672,7 @@ get_type = [_object] => {
 is_type = [_type value] => {
     if [type[_type] == comma_list] => {
         for [to_list[_type] i v] => {
-            if [value -> is_type[v]] => {
+            if [value >> is_type[v]] => {
                 ret true
             }
         }
@@ -691,7 +683,7 @@ is_type = [_type value] => {
         ret true
     }
 
-    (value -> get_type, _type) -> equals
+    (value >> get_type, _type) >> equals
 }
 
 make_typed = [func _type] => {
@@ -719,8 +711,8 @@ make_typed = [func _type] => {
             param = shape[func].params.[index]
             param_type = _type.[param]
 
-            if [!(std.is_type[param_type arg])] => {
-                print["TypeError in '" name "': '" param "' is expected to be of type '" _type.[param] "' but received '" std.get_type[arg] "'\n"]
+            if [!(is_type[param_type arg])] => {
+                print["TypeError in '" name "': '" param "' is expected to be of type '" _type.[param] "' but received '" get_type[arg] "'\n"]
                 ret
             }
 
@@ -756,21 +748,21 @@ var_t = [value _type] => {
             obj = this.obj
 
             if [type[new_val] == int && this.type == float] => {
-                this.value = new_val -> to_float
+                this.value = new_val >> to_float
                 ret this
             }
 
             if [type[new_val] == float && this.type == int] => {
-                this.value = new_val -> to_int
+                this.value = new_val >> to_int
                 ret this
             }
 
-            if [new_val -> this.is_type[this.type]] => {
+            if [new_val >> this.is_type[this.type]] => {
                 this.value = new_val
                 ret this
             }
 
-            print["TypeError in '" this._name "' - variable of type '" this.type "' cannot be assigned a value of type '" new_val -> this.get_type "'\n"]
+            print["TypeError in '" this._name "' - variable of type '" this.type "' cannot be assigned a value of type '" new_val >> this.get_type "'\n"]
         }
         get: [] => {
             this.value
@@ -778,17 +770,17 @@ var_t = [value _type] => {
     }
 
     if [type[value] == int && _type == float] => {
-        typed_var.value = value -> to_float
+        typed_var.value = value >> to_float
         ret typed_var
     }
 
     if [type[value] == float && _type == int] => {
-        typed_var.value = value -> to_int
+        typed_var.value = value >> to_int
         ret typed_var
     }
 
-    if [!(value -> is_type[_type])] => {
-        print["TypeError - variable of type '" _type "' cannot be assigned a value of type '" value -> get_type "'\n"]
+    if [!(value >> is_type[_type])] => {
+        print["TypeError - variable of type '" _type "' cannot be assigned a value of type '" value >> get_type "'\n"]
         ret
     }
 
@@ -811,7 +803,7 @@ clear = [file_path::string] => {
 
 is_digit = [c] => {
 	digits_list = digits.to_chars
-	if [digits_list -> contains[c]] => {
+	if [digits_list >> contains[c]] => {
 		ret true
 	}
 
@@ -820,7 +812,7 @@ is_digit = [c] => {
 
 is_alpha = [c] => {
 	alpha = (alpha_lower + alpha_upper).to_chars
-	if [alpha -> contains[c]] => {
+	if [alpha >> contains[c]] => {
 		ret true
 	}
 
@@ -833,16 +825,16 @@ upper = [_str::string] :: string => {
 		ret ""
 	}
 
-    lower_to_upper_dict = (alpha_lower.to_chars, alpha_upper.to_chars) -> zip[[a b] => { @{a -> to_string : b} }] -> reduce[+]
+    lower_to_upper_dict = (alpha_lower.to_chars, alpha_upper.to_chars) >> zip[[a b] => { @{a >> to_string : b} }] >> reduce[+]
 
-	_list = _str -> chars
+	_list = _str >> chars
 	for [_list i c] => {
-        if [lower_to_upper_dict -> contains[c]] => {
+        if [lower_to_upper_dict >> contains[c]] => {
             _list.[i] = lower_to_upper_dict.[c]
         }
 	}
 
-	_list = _list -> join[""]
+	_list = _list >> join[""]
 	ret _list
 }
 
@@ -852,15 +844,15 @@ lower = [_str::string] :: string => {
 		ret ""
 	}
 
-    upper_to_lower_dict = (alpha_upper.to_chars, alpha_lower.to_chars) -> zip[[a b] => { @{a -> to_string : b} }] -> reduce[+]
+    upper_to_lower_dict = (alpha_upper.to_chars, alpha_lower.to_chars) >> zip[[a b] => { @{a >> to_string : b} }] >> reduce[+]
 
-	_list = _str -> chars
+	_list = _str >> chars
 	for [_list i c] => {
-        if [upper_to_lower_dict -> contains[c]] => {
+        if [upper_to_lower_dict >> contains[c]] => {
             _list.[i] = upper_to_lower_dict.[c]
         }
 	}
 
-	_list = _list -> join[""]
+	_list = _list >> join[""]
 	ret _list
 }

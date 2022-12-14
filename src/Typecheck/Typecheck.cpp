@@ -1292,6 +1292,14 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
         // check that the function actually returns the same type as the return type
         Typechecker tc(file_name, node->right->BLOCK.nodes);
 
+        // add name in symbol table (for recursive functions)
+
+        tc.symbol_table[node->ID.value] = Type(std::make_shared<Node>(NodeType::ANY), std::make_shared<Node>(NodeType::ANY));
+
+        // add _args keyword
+
+        tc.symbol_table["_args"] = Type(std::make_shared<Node>(NodeType::LIST), std::make_shared<Node>(NodeType::LIST));
+
         for (auto elem : symbol_table)
         {
             tc.symbol_table[elem.first] = elem.second;
@@ -1577,7 +1585,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
             return std::make_shared<Node>(NodeType::ERROR);
         }
         auto conditional = get_type(node->left->FUNC_CALL.args[0]);
-        if (conditional->type != NodeType::BOOL)
+        if (!is_type(conditional, {NodeType::BOOL, NodeType::ANY}))
         {
             errors.push_back(make_error("Type", "While loop conditional must evaluate to a boolean", line, column));
             return std::make_shared<Node>(NodeType::ERROR);
@@ -1591,7 +1599,7 @@ std::shared_ptr<Node> Typechecker::get_type(std::shared_ptr<Node> node)
             errors.push_back(make_error("Syntax", "For loop cannot have an empty iterator", line, column));
             return std::make_shared<Node>(NodeType::ERROR);
         }
-        if (get_type(node->left->FUNC_CALL.args[0])->type != NodeType::LIST)
+        if (!is_type(get_type(node->left->FUNC_CALL.args[0]), {NodeType::LIST, NodeType::ANY}))
         {
             errors.push_back(make_error("Type", "For loop iterator must be a list", line, column));
             return std::make_shared<Node>(NodeType::ERROR);
